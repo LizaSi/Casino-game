@@ -14,7 +14,8 @@ namespace FishNet.Discovery
 
 		private void Start()
 		{
-			if (networkDiscovery == null) networkDiscovery = FindObjectOfType<NetworkDiscovery>();
+			if (networkDiscovery == null)
+				networkDiscovery = FindObjectOfType<NetworkDiscovery>();
 
 			networkDiscovery.ServerFoundCallback += endPoint => _addresses.Add(endPoint.Address.ToString());
 		}
@@ -29,9 +30,11 @@ namespace FishNet.Discovery
 
 			GUILayout.BeginHorizontal();
 
-			if (GUILayout.Button("Start", buttonHeight)) InstanceFinder.ServerManager.StartConnection();
+			if (GUILayout.Button("Start", buttonHeight))
+				InstanceFinder.ServerManager.StartConnection();
 
-			if (GUILayout.Button("Stop", buttonHeight)) InstanceFinder.ServerManager.StopConnection(true);
+			if (GUILayout.Button("Stop", buttonHeight))
+				InstanceFinder.ServerManager.StopConnection(true);
 
 			GUILayout.EndHorizontal();
 
@@ -56,11 +59,13 @@ namespace FishNet.Discovery
 
 			if (networkDiscovery.IsSearching)
 			{
-				if (GUILayout.Button("Stop", buttonHeight)) networkDiscovery.StopSearchingOrAdvertising();
+				if (GUILayout.Button("Stop", buttonHeight))
+					networkDiscovery.StopSearchingOrAdvertising();
 			}
 			else
 			{
-				if (GUILayout.Button("Start", buttonHeight)) networkDiscovery.SearchForServers();
+				if (GUILayout.Button("Start", buttonHeight))
+					networkDiscovery.SearchForServers();
 			}
 
 			GUILayout.EndHorizontal();

@@ -1,3 +1,5 @@
+using FishNet.Discovery;
+using FishNet;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -28,7 +30,9 @@ namespace Unity.Services.Authentication.Samples
         [SerializeField]
         Text m_PlayerInfoText;
         [SerializeField]
-     //   InputField m_ProfileNameInput;
+        private NetworkDiscovery netDiscovery;
+
+        //   InputField m_ProfileNameInput;
 
         PlayerInfo m_PlayerInfo;
         string m_ExternalIds;
@@ -116,13 +120,22 @@ namespace Unity.Services.Authentication.Samples
                 await AuthenticationService.Instance.SignInAnonymouslyAsync();
                 if(m_PlayerNameInput)
                     await AuthenticationService.Instance.UpdatePlayerNameAsync(m_PlayerNameInput.text);
-               
+
+                //Start advertising a server
+                if (netDiscovery == null)
+                {
+                    netDiscovery = FindObjectOfType<NetworkDiscovery>();
+                    InstanceFinder.ServerManager.StartConnection();
+                    netDiscovery.AdvertiseServer();
+                 //   FindObjectOfType<NetworkDiscovery>().AdvertiseServer();
+                }
+
                 SceneManager.LoadScene("RoomSelection");
                 UpdateUI();
             }
             catch (RequestFailedException ex)
             {
-                Debug.LogError($"Sign in anonymously failed with error code: {ex.ErrorCode}");
+                Debug.LogError($"Login failed with error code: {ex.ErrorCode}");
                 m_ExceptionText.text = $"{ex.GetType().Name}: {ex.Message}";
             }
         }
