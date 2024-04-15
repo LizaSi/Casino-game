@@ -125,9 +125,8 @@ namespace Unity.Services.Authentication.Samples
                 if (netDiscovery == null)
                 {
                     netDiscovery = FindObjectOfType<NetworkDiscovery>();
-                    InstanceFinder.ServerManager.StartConnection();
-                    netDiscovery.AdvertiseServer();
-                 //   FindObjectOfType<NetworkDiscovery>().AdvertiseServer();
+                   // InstanceFinder.ServerManager.StartConnection();
+                    //   FindObjectOfType<NetworkDiscovery>().AdvertiseServer();
                 }
 
                 SceneManager.LoadScene("RoomSelection");

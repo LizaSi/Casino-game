@@ -44,11 +44,13 @@ namespace FishNet.Discovery
 
 			if (networkDiscovery.IsAdvertising)
 			{
-				if (GUILayout.Button("Stop", buttonHeight)) networkDiscovery.StopSearchingOrAdvertising();
+				if (GUILayout.Button("Stop", buttonHeight))
+					networkDiscovery.StopSearchingOrAdvertising();
 			}
 			else
 			{
-				if (GUILayout.Button("Start", buttonHeight)) networkDiscovery.AdvertiseServer();
+				if (GUILayout.Button("Start", buttonHeight))
+					networkDiscovery.AdvertiseServer();
 			}
 
 			GUILayout.EndHorizontal();

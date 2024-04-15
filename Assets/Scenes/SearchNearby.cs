@@ -13,7 +13,21 @@ public class Load : MonoBehaviour
     public Text resultText;
     private NetworkDiscovery net;
 
-    public void StartSearch()
+    public void CreateLobby()
+    {
+        InstanceFinder.ServerManager.StartConnection();
+        if (net.IsAdvertising)
+        {
+            /*if (GUILayout.Button("Stop", buttonHeight))
+                networkDiscovery.StopSearchingOrAdvertising();*/
+        }
+        else
+        {
+            net.AdvertiseServer();
+        }
+    }
+
+   /* public void StartSearch()
     {
         searchingText.gameObject.SetActive(true);
         try
@@ -26,8 +40,8 @@ public class Load : MonoBehaviour
         }
      //   resultText.gameObject.SetActive(true);
         SceneManager.LoadScene("JoinARoom");
-        SearchForUsers();
-    }
+       // SearchForUsers();
+    }*/
 
     private void SearchForUsers()
     {
