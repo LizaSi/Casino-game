@@ -29,6 +29,7 @@ public class ServerManager : MonoBehaviour
         if (!networkDiscovery.IsAdvertising)
         {
             networkDiscovery.AdvertiseServer();
+            SceneManager.LoadScene("CreateRoom");
         }
     }
 

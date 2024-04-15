@@ -1,7 +1,11 @@
+using FishNet.Discovery;
+using FishNet;
 using System.Collections;
 using System.Collections.Generic;
+using System.Net;
 using TMPro;
 using UnityEngine;
+using System.Linq;
 
 public class JoinAddress : MonoBehaviour
 {
@@ -16,6 +20,13 @@ public class JoinAddress : MonoBehaviour
             string addressesText = string.Join(", ", addresses);
             textUserNearby.text = addressesText;
         }
+    }
+
+    public void JoinRoom1_OnClick() // Need to create a list of buttons, where each button has a matching address.
+    {
+        //networkDiscovery.StopSearchingOrAdvertising();
+        string address = AddressList.Addresses.First();
+        InstanceFinder.ClientManager.StartConnection(address);
     }
 
     // Update is called once per frame
