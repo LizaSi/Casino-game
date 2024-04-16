@@ -14,19 +14,18 @@ public class JoinAddress : MonoBehaviour
     private TMP_Text textUserNearby;
     void Start()
     {
-        HashSet<string> addresses = AddressList.Addresses;
-        if (addresses != null && addresses.Count > 0)
+        
+        if (AddressList.Devices != null && AddressList.Devices.Count > 0)
         {
-            string addressesText = string.Join(", ", addresses);
-            textUserNearby.text = addressesText;
+            textUserNearby.text = AddressList.Usernames().ToString();
         }
     }
 
     public void JoinRoom1_OnClick() // Need to create a list of buttons, where each button has a matching address.
     {
         //networkDiscovery.StopSearchingOrAdvertising();
-        string address = AddressList.Addresses.First();
-        InstanceFinder.ClientManager.StartConnection(address);
+        string serverAddress = AddressList.Devices.First().server;
+        InstanceFinder.ClientManager.StartConnection(serverAddress);
     }
 
     // Update is called once per frame

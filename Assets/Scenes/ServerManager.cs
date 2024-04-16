@@ -6,6 +6,7 @@ using TMPro;
 using UnityEngine.SceneManagement;
 using Unity.Services.Authentication;
 using UnityEngine;
+using System.Net;
 
 public class ServerManager : MonoBehaviour
 {
@@ -21,7 +22,11 @@ public class ServerManager : MonoBehaviour
         if (networkDiscovery == null)
             networkDiscovery = FindObjectOfType<NetworkDiscovery>();
 
-        networkDiscovery.ServerFoundCallback += endPoint => _addresses.Add(endPoint.Address.ToString());
+        networkDiscovery.ServerFoundCallback += endPoint =>
+        {
+            _addresses.Add(endPoint.Address.ToString());
+            AddressList.Add(endPoint.Address.ToString(), AuthenticationService.Instance.PlayerName);
+        };
     }
 
     public void Advertise_OnClick()
@@ -56,10 +61,11 @@ public class ServerManager : MonoBehaviour
         // Check if any servers were found
         if (_addresses.Count > 0) // found a server
         {
-            SceneManager.LoadScene("JoinARoom", LoadSceneMode.Single);
+            SceneManager.LoadScene("JoinARoom");
             string addressesText = string.Join(", ", _addresses);
             _serversListLabel.text = addressesText;
-            AddressList.Addresses = _addresses;
+        //    AddressList.Addresses = _addresses;
+
         }
         else
         {

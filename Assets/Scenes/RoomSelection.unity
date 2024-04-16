@@ -594,7 +594,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   secret: ijntgbijntgb
-  port: 8080
+  port: 7772
   searchTimeout: 6
   automatic: 0
 --- !u!4 &564032657
