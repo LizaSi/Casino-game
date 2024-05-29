@@ -3,6 +3,7 @@ using Firebase;
 using Firebase.Database;
 using Firebase.Extensions;
 using System.Collections.Generic;
+using Unity.Services.Authentication.PlayerAccounts;
 
 public class FirebaseDB : MonoBehaviour
 {
@@ -39,37 +40,46 @@ public class FirebaseDB : MonoBehaviour
         DatabaseReference newServerRef = databaseReference.Child("servers").Push();
         newServerRef.Child("address").SetValueAsync(address);
         newServerRef.Child("username").SetValueAsync(username);
-        /*    databaseReference.Child("Servers").OrderByChild("address").EqualTo(address).GetValueAsync().ContinueWithOnMainThread(task =>
+    }
+
+    public void AddPlayerGuestToServer(string address)
+    {
+        // Add "PlayerGuest": LoggedUser.Username to the server node in the database
+        databaseReference.Child("servers").OrderByChild("address").EqualTo(address).GetValueAsync().ContinueWithOnMainThread(task =>
         {
+            if (task.IsFaulted)
+            {
+                Debug.LogError("Error adding PlayerGuest to server: " + task.Exception);
+                return;
+            }
+
             if (task.IsCompleted)
             {
                 DataSnapshot snapshot = task.Result;
-
-                if (!snapshot.Exists)
+                foreach (DataSnapshot serverSnapshot in snapshot.Children)
                 {
-                    // Server address doesn't exist in the database, add it
-                    string key = databaseReference.Child("Servers").Push().Key;
-                    ServerData serverData = new ServerData(address, username);
-                    string json = JsonUtility.ToJson(serverData);
-
-                    databaseReference.Child("Servers").Child(key).SetRawJsonValueAsync(json).ContinueWithOnMainThread(setTask =>
+                    string serverAddress = serverSnapshot.Child("address").Value.ToString();
+                    if (serverAddress == address)
                     {
-                        if (setTask.IsFaulted)
-                        {
-                            Debug.LogError("Error adding server: " + setTask.Exception);
-                        }
-                        else
-                        {
-                            Debug.Log("Server added successfully.");
-                        }
-                    });
+                        // Add logged user as PlayerGuest to the server node
+                        databaseReference.Child("servers").Child(serverSnapshot.Key).Child("PlayerGuest").SetValueAsync(LoggedUser.Username)
+                            .ContinueWithOnMainThread(addTask =>
+                            {
+                                if (addTask.IsFaulted)
+                                {
+                                    Debug.LogError("Error adding PlayerGuest to server: " + addTask.Exception);
+                                }
+                                else if (addTask.IsCompleted)
+                                {
+                                    Debug.Log("PlayerGuest added to server successfully.");
+                                }
+                            });
+                        return;
+                    }
                 }
+                Debug.LogError("No matching address found in DB: " + address);
             }
-            else
-            {
-                Debug.LogError("Error checking for existing server: " + task.Exception);
-            }
-        });*/
+        });
     }
 
     public void FetchServerUsername(string address, System.Action<string> callback)
@@ -80,15 +90,26 @@ public class FirebaseDB : MonoBehaviour
             {
                 Debug.LogError("Error fetching server username: " + task.Exception);
                 callback(null);
+                return;
             }
             else if (task.IsCompleted)
             {
                 DataSnapshot snapshot = task.Result;
                 foreach (DataSnapshot serverSnapshot in snapshot.Children)
                 {
-                    string username = serverSnapshot.Child("username").Value.ToString();
-                    callback(username);
-                    return;
+                    string serverAddress = serverSnapshot.Child("address").Value.ToString();
+                    if (serverAddress == address)
+                    {
+                        // Get the username from the sibling node
+                        string username = serverSnapshot.Child("username").Value.ToString();
+                        if (string.IsNullOrEmpty(username))
+                        {
+                            Debug.LogError("Username is null or not found in DB for address " + address);
+                            username = "Guest";
+                        }
+                        callback(username);
+                        return;
+                    }
                 }
                 callback(null);
             }

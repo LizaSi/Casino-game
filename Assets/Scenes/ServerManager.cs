@@ -10,6 +10,7 @@ using Unity.Services.Authentication.PlayerAccounts;
 using Unity.Services.Authentication;
 using System.Linq;
 using UnityEngine.UI;
+using Firebase.Database;
 
 public class ServerManager : MonoBehaviour
 {
@@ -24,10 +25,8 @@ public class ServerManager : MonoBehaviour
     public Transform serversListContainer; // Parent container for server entries
     private FirebaseDB firebaseManager;
 
-
     //private readonly HashSet<string> _addresses = new();
     private readonly Dictionary<string, string> serversFound = new();
-
 
     void Start()
     {
@@ -41,37 +40,39 @@ public class ServerManager : MonoBehaviour
     void OnServerAdvertising(EndPoint endPoint)
     {
         string newAddress = endPoint.ToString();
-        Debug.LogWarning("Address published is " + newAddress);
-      //  _serversListLabel.text = "Found  a server";
+        Debug.LogWarning("Address published is " + newAddress); // not realy a warning, for debugging 
+        
         firebaseManager.FetchServerUsername(newAddress, (username) =>
         {
             if (!string.IsNullOrEmpty(username))
             {
                 serversFound[newAddress] = username;
-              //  AddServerToUI(newAddress, username);
-                //     _serversListLabel.text += username;
             }
             else
             {
                 Debug.LogError("Server's username was empty");
             }
         });
-      //  AddressList.Add(newAddress, LoggedUser.Username);
-        // Call AddServer method
-    //    
     }
 
     private void AddServerToUI(string address, string username)
     {
-        GameObject serverEntry = Instantiate(serverEntryPrefab, serversListContainer);
-        TextMeshProUGUI usernameText = serverEntry.transform.Find("_serversListLabel").GetComponent<TextMeshProUGUI>();
-        Button joinButton = serverEntry.transform.Find("JoinButton").GetComponent<Button>();
+        _serversListLabel.text += username + "\n";
+        GameObject newJoinButton = Instantiate(serverEntryPrefab, serversListContainer);
+        newJoinButton.GetComponentInChildren<Text>().text = "Join " + username;
+        newJoinButton.SetActive(true);
 
-        usernameText.text = username;
-        joinButton.onClick.AddListener(() => JoinServer(address));
+        newJoinButton.GetComponent<Button>().onClick.AddListener(() => JoinServer_ButtonClick(address));
+
+        // Fix position of the new button
+        if (newJoinButton.TryGetComponent<RectTransform>(out var rectTransform))
+        {
+            rectTransform.anchoredPosition = Vector2.zero; // Adjust this if needed
+            rectTransform.localScale = Vector3.one;
+        }
     }
 
-    public void JoinServer(string address)
+    public void JoinServer_ButtonClick(string address)
     {
         Debug.Log("Joining server at address: " + address);
         Debug.LogWarning("Not implemented");
@@ -105,7 +106,6 @@ public class ServerManager : MonoBehaviour
             networkDiscovery.SearchForServers();
             StartCoroutine(DelayedServerCheck());
         }
-
        // StartCoroutine(DelayedServerCheck());
     }
 
@@ -113,25 +113,24 @@ public class ServerManager : MonoBehaviour
     {
         // Wait for 1 second before checking for available servers
         yield return new WaitForSeconds(1f);
-      //  firebaseManager.FetchServers(UpdateServerListUI);
 
         // Check if any servers were found
-         if (serversFound.Count > 0) // found a server
-         {
-            List<string> usernames = serversFound.Values.ToList();
-            string serversUsername = string.Join("\n", usernames);
-            _serversListLabel.text = serversUsername;
-            foreach(var serverFound in serversFound)
+        if (serversFound.Count > 0) // found a server
+        {
+            _serversListLabel.text = ""; // Clear existing text
+            foreach (var serverFound in serversFound)
             {
                 AddServerToUI(serverFound.Key, serverFound.Value);
+                firebaseManager.AddPlayerGuestToServer(serverFound.Key);
             }
         }
-         else
-         {
-             _serversListLabel.text += "No servers found";
-         }
+        else
+        {
+            _serversListLabel.text = "No servers found";
+        }
     }
 
+    
     private string GetLocalIPAddress()
     {
         var host = Dns.GetHostEntry(Dns.GetHostName());
@@ -139,15 +138,15 @@ public class ServerManager : MonoBehaviour
         {
             if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
             {
-                return ip.ToString();
+                return ip.ToString() + ":" +port;
             }
         }
         throw new System.Exception("No network adapters with an IPv4 address in the system!");
     }
-    private void UpdateServerListUI(List<ServerData> servers)
+    /*private void UpdateServerListUI(List<ServerData> servers)
     {
         // Clear previous buttons
-        /*foreach (Transform child in buttonParent)
+        *//*foreach (Transform child in buttonParent)
         {
             Destroy(child.gameObject);
         }
@@ -157,7 +156,7 @@ public class ServerManager : MonoBehaviour
             GameObject button = Instantiate(buttonPrefab, buttonParent);
             button.GetComponentInChildren<TMP_Text>().text = server.username; // Display the username on the button
             button.GetComponent<Button>().onClick.AddListener(() => JoinRoomOnClick(server.address));
-        }*/
+        }*//*
 
         if (servers.Count > 0) // The own logged in doesnt count 
         {
@@ -173,7 +172,7 @@ public class ServerManager : MonoBehaviour
         {
             _serversListLabel.text = "No servers found";
         }
-    }
+    }*/
 
     // Update is called once per frame
     void Update()

@@ -10,7 +10,7 @@ using Firebase.Database;
 using Unity.Services.Authentication.PlayerAccounts;
 using Firebase.Auth;
 using UnityEngine.UIElements;
-using UnityEditor.MemoryProfiler;
+//using UnityEditor.MemoryProfiler;
 
 
 public class Login : MonoBehaviour
@@ -246,6 +246,11 @@ public class Login : MonoBehaviour
                 m_Label.text = "Signed in but User is either null or invalid";
             }
         }
+        else
+        {
+            await createUser();
+            await SigninWithEmailAsync();
+        }
     }
 
     // Log the result of the specified task, returning true if the task
@@ -283,6 +288,25 @@ public class Login : MonoBehaviour
         return complete;
     }
 
+    private Task createUser()
+    {
+        string email = m_UsernameText.text;
+        string password = "123456";
+        if (!m_UsernameText.text.Contains('@'))
+            email = m_UsernameText.text + "@gmail.com";
+    //    string newDisplayName = displayName;
+        return auth.CreateUserWithEmailAndPasswordAsync(email, password)
+          .ContinueWithOnMainThread((task) => {
+              if (LogTaskCompletion(task, "User Creation"))
+              {
+                  var user = task.Result.User;
+                  DisplayDetailedUserInfo(user, 1);
+                //  return UpdateUserProfileAsync(newDisplayName: newDisplayName);
+              }
+              return task;
+          }).Unwrap();
+    }   
+   
     // Update is called once per frame
     void Update()
     {
