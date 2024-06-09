@@ -12,26 +12,35 @@ public class BlackjackManager : MonoBehaviour
     private List<Player> players;
     private Player dealer;
     private int currentPlayerIndex;
+    public int numberOfPlayers = 1;  // Default to 1 player, can be set from Unity Inspector
 
     void Start()
+    {
+        InitializeGame();
+        StartNewRound();
+    }
+
+    void InitializeGame()
     {
         deck = new Deck(5);  // Initialize with five decks
         players = new List<Player>();
 
-        // Assume game with 5 players; adjust as needed
-        for (int i = 0; i < 5; i++)
+        // Ensure number of players is between 1 and 5
+        numberOfPlayers = Mathf.Clamp(numberOfPlayers, 1, 5);
+
+        // Initialize players
+        for (int i = 0; i < numberOfPlayers; i++)
         {
             players.Add(new Player());
         }
 
         dealer = new Player();
-        StartNewRound();
     }
 
     void StartNewRound()
     {
         if (deck == null || deck.Count < 90)
-        { // Ensure there are enough cards, or reinitialize deck
+        { // Check if a new deck is needed
             deck = new Deck(5);
         }
         deck.Shuffle();
@@ -75,15 +84,11 @@ public class BlackjackManager : MonoBehaviour
             Debug.Log("Player " + currentPlayerIndex + " has busted.");
         }
 
-        // Check if the current player has stood or is busted, and then move to the next player
         if (players[currentPlayerIndex].HasStood || players[currentPlayerIndex].IsBusted)
         {
             NextPlayer();
         }
     }
-
-
-
 
     private void NextPlayer()
     {
@@ -134,3 +139,4 @@ public class BlackjackManager : MonoBehaviour
         Invoke("StartNewRound", 5); // Delay new round start by 5 seconds
     }
 }
+
