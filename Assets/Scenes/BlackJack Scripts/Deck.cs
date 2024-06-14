@@ -1,3 +1,4 @@
+
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -49,6 +50,51 @@ public class Deck
     public List<Card> GetCards()
     {
         return new List<Card>(cards); // Return a copy of the list to prevent external modifications
+    }
+
+    public static int GetHandValue(string hand)
+    {
+        List<Card> handCards = ParseHandString(hand);
+        return CalculateHandValue(handCards);
+    }
+    private static List<Card> ParseHandString(string hand)
+    {
+        List<Card> handCards = new List<Card>();
+        string[] cardStrings = hand.Split(", ");
+
+        foreach (string cardString in cardStrings)
+        {
+            int cardEnumValue = Card.StringToCard(cardString.Trim());
+            CardsByOrder cardEnum = (CardsByOrder)cardEnumValue;
+            handCards.Add(new Card(cardEnum));
+        }
+
+        return handCards;
+    }
+
+    private static int CalculateHandValue(List<Card> hand)
+    {
+        int value = 0;
+        int aceCount = 0;
+
+        foreach (var card in hand)
+        {
+            int cardValue = card.GetValue();
+            if (card.GetRank() == "Ace")
+            {
+                aceCount++;
+                cardValue = 11; // Initially treat Aces as 11
+            }
+            value += cardValue;
+        }
+        // Adjust for Aces if the total value exceeds 21
+        while (value > 21 && aceCount > 0)
+        {
+            value -= 10;
+            aceCount--;
+        }
+
+        return value;
     }
 }
 

@@ -12,65 +12,84 @@ public class GameServerManager : NetworkBehaviour
 {
     private Deck _deck;
     private int playerIndex = 0;
-
     public static int HostId { get; private set; }
 
     public static event Action OnInitialized;
     public static event Action OnTurnPass;
 
-    //   public static event Action <NetworkConnection, List<string>> OnHandChanged;
-
-    [SyncObject] private readonly SyncDictionary<NetworkConnection , string> _playerHands = new();
-    [SyncObject] private readonly SyncDictionary<NetworkConnection , bool> _playerIsMyTurn = new();
-    [SyncObject] private readonly SyncDictionary<NetworkConnection , int> _playersIndexes = new();
-   // [SyncVar] private bool _dealerHasResults;
-
+    [SyncObject] private readonly SyncDictionary<NetworkConnection, string> _playerHands = new();
+    [SyncObject] private readonly SyncDictionary<NetworkConnection, bool> _playerIsMyTurn = new();
+    [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playersIndexes = new();
 
     private static GameServerManager _instance;
 
-    private void Awake()
+    private void OnEnable()
     {
         if (_instance == null)
         {
             _instance = this;
         }
-        if (_deck == null || _deck.Count < 90)
-        {
-            _deck = new Deck(5);
-        }
-        _deck.Shuffle();
-
-
-        //     _playerHands.OnChange += playerHands_OnChange;
     }
-
-    private void playerHands_OnChange(SyncDictionaryOperation op, NetworkConnection key, string value, bool asServer)
-    {
-        if (op == SyncDictionaryOperation.Add || op == SyncDictionaryOperation.Set)
-        {
-      //      OnHandChanged?.Invoke(key, value);
-        }
-    }
-
-    public override void OnStartServer()
-    {
-        base.OnStartServer();
-      //  base.NetworkManager.ServerManager.OnRemoteConnectionState += ServerManager_OnRemoteConnectionState;
-    }
-
-    public override void OnStopServer()
-    {
-        base.OnStopServer();
-   //     base.NetworkManager.ServerManager.OnRemoteConnectionState -= ServerManager_OnRemoteConnectionState;
-
-    }
-
-    // Dictionary to map between client and its data
 
     private void Start()
     {
-        DealInitialCards();
         DealPlayersIndex();
+        NewRoundInit();
+    }
+
+    public static void NewRoundInit()
+    {
+        if (_instance._deck == null || _instance._deck.Count < 90)
+        {
+            _instance._deck = new Deck(5);
+        }
+        _instance._deck.Shuffle();
+        _instance.DealInitialCards();
+    }
+
+    [Server]
+    private void DealInitialCards()
+    {
+        bool isFirstTurnSet = false;
+        foreach (NetworkConnection conn in NetworkManager.ServerManager.Clients.Values)
+        {
+            if (!isFirstTurnSet)
+            {
+                isFirstTurnSet = true;
+                _playerIsMyTurn[conn] = true;
+                HostId = conn.ClientId;
+            }
+            else
+                _playerIsMyTurn[conn] = false;
+
+            _playerHands[conn] = PullCard() + ", " + PullCard();
+        }
+
+        UpdateBroadcast msg = new()
+        {
+            NewRound = true,
+            NewCards = false
+        };
+        InstanceFinder.ServerManager.Broadcast(msg);
+
+        if (base.NetworkManager.ServerManager.Clients.Count == 0)
+        {
+            UnityEngine.Debug.LogWarning("No clients found to deal cards");
+        }
+    }
+
+    [Server]
+    private void DealPlayersIndex()
+    {
+        foreach (NetworkConnection conn in base.NetworkManager.ServerManager.Clients.Values)
+        {
+            _playersIndexes[conn] = GenerateNewPlayerIndex();
+        }
+
+        if (base.NetworkManager.ServerManager.Clients.Count == 0)
+        {
+            UnityEngine.Debug.LogWarning("No clients found to deal index");
+        }
     }
 
     public static int GetPlayerIndex(NetworkConnection conn)
@@ -84,7 +103,7 @@ public class GameServerManager : NetworkBehaviour
 
     public static bool IsMyTurn(NetworkConnection conn)
     {
-        if(_instance._playerIsMyTurn.ContainsKey(conn))
+        if (_instance._playerIsMyTurn.ContainsKey(conn))
         {
             return _instance._playerIsMyTurn[conn];
         }
@@ -126,16 +145,9 @@ public class GameServerManager : NetworkBehaviour
         return GameResult.Lose;
     }
 
-
-    /*    public void HitCard_OnClick()
-        {
-            HitCard();
-        }*/
     [Client]
     public static void ClientCheck()
     {
-        //    string cardToAdd = _instance.PullCard();
-
         _instance.PassTurnServer();
     }
 
@@ -144,7 +156,7 @@ public class GameServerManager : NetworkBehaviour
     {
         PassTurnToNextClient(sender);
     }
-    //  [ServerRpc(RequireOwnership = false)]
+
     private void PassTurnToNextClient(NetworkConnection sender = null)
     {
         _playerIsMyTurn[sender] = false;
@@ -157,7 +169,6 @@ public class GameServerManager : NetworkBehaviour
                 PlayerId = nextClient.ClientId
             };
             InstanceFinder.ServerManager.Broadcast(msg);
-          //  OnTurnPass?.Invoke();
         }
         else
         {
@@ -169,8 +180,6 @@ public class GameServerManager : NetworkBehaviour
     [Client]
     public static void HitCard()
     {
-        //    string cardToAdd = _instance.PullCard();
-        
         _instance.HitCardServer();
     }
 
@@ -181,12 +190,13 @@ public class GameServerManager : NetworkBehaviour
         _playerHands[sender] += ", " + cardToAdd;
         string newPlayerHand = _playerHands[sender];
 
-            // If its the hosts hit, he shouldnt pass the turn
-        if (IsHost && HostId == sender.ClientId /* double check */)
+        // If its the hosts hit, he shouldnt pass the turn
+        if (HostId == sender.ClientId)
         {
-            TurnPassBroadcast msg = new()
+            UpdateBroadcast msg = new()
             {
-                PlayerId = HostId       
+                NewRound = false,
+                NewCards = true
             };
             InstanceFinder.ServerManager.Broadcast(msg);
         }
@@ -196,7 +206,7 @@ public class GameServerManager : NetworkBehaviour
 
             PassTurnToNextClient(sender);
         }
-        else 
+        else
         {
             UpdateBroadcast msg = new()
             {
@@ -222,60 +232,6 @@ public class GameServerManager : NetworkBehaviour
     }
 
     [Server]
-    private void DealInitialCards()
-    {
-        bool isFirstTurnSet = false;
-        foreach (NetworkConnection conn in base.NetworkManager.ServerManager.Clients.Values)
-        {
-            if (!isFirstTurnSet)
-            {
-                isFirstTurnSet = true;
-                _playerIsMyTurn[conn] = true;
-                HostId = conn.ClientId;
-            }
-            else
-                _playerIsMyTurn[conn] = false;
-
-            _playerHands[conn] = PullCard() + ", " + PullCard();
-        }
-
-        UpdateBroadcast msg = new()
-        {
-            NewRound = true,
-            NewCards = false
-        };
-        InstanceFinder.ServerManager.Broadcast(msg);
-        //  OnInitialized?.Invoke(); // Invoke the SERVER when game begins
-
-        if (base.NetworkManager.ServerManager.Clients.Count == 0)
-        {
-            UnityEngine.Debug.LogWarning("No clients found to deal cards");
-        }
-    }
-
- 
-    [ServerRpc(RequireOwnership = false)]
-    private void DidIWinServer(NetworkConnection sender = null)
-    {
-        
-       // _dealerHasResults = doesDealerHasResults;
-    }
-
-    [Server]
-    private void DealPlayersIndex()
-    {
-        foreach (NetworkConnection conn in base.NetworkManager.ServerManager.Clients.Values)
-        {
-            _playersIndexes[conn] = GenerateNewPlayerIndex();
-        }
-
-        if (base.NetworkManager.ServerManager.Clients.Count == 0)
-        {
-            UnityEngine.Debug.LogWarning("No clients found to deal index");
-        }
-    }
-
-    [Server]
     private int GenerateNewPlayerIndex()
     {
         playerIndex++;
@@ -285,29 +241,16 @@ public class GameServerManager : NetworkBehaviour
     [Server]
     private string PullCard()
     {
+        if (_deck == null || _deck.Count < 90)
+        {
+            _deck = new Deck(5);
+        }
+        _deck.Shuffle();
         UnityEngine.Debug.Log("There are " + _deck.GetCards().Count + " cards in deck");
         return _deck.DrawCard();
     }
 
-    private void InvokeHandleMyTurn(NetworkConnection client)
-    {
-        var clientId = base.NetworkManager.ServerManager.Clients.FirstOrDefault(c => c.Key == client.ClientId).Key;
-    }
-
-    public static bool IsInitialized()
-    {
-        return _instance != null;
-    }   
-
-    private void ServerManager_OnRemoteConnectionState(NetworkConnection arg1, RemoteConnectionStateArgs arg2)
-    {
-        if (arg2.ConnectionState != RemoteConnectionState.Started)
-        {
-            _playerHands.Remove(arg1);
-        }
-    }
-
-    public struct UpdateBroadcast: IBroadcast
+    public struct UpdateBroadcast : IBroadcast
     {
         public bool NewRound;
         public bool NewCards;
