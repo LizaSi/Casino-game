@@ -17,9 +17,9 @@ public class GameServerManager : NetworkBehaviour
     public static event Action OnInitialized;
     public static event Action OnTurnPass;
 
-    [SyncObject] private readonly SyncDictionary<NetworkConnection, string> _playerHands = new();
-    [SyncObject] private readonly SyncDictionary<NetworkConnection, bool> _playerIsMyTurn = new();
-    [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playersIndexes = new();
+    [SyncObject] private readonly SyncDictionary<NetworkConnection , string> _playerHands = new();
+    [SyncObject] private readonly SyncDictionary<NetworkConnection , bool> _playerIsMyTurn = new();
+    [SyncObject] private readonly SyncDictionary<NetworkConnection , int> _playersIndexes = new();
 
     private static GameServerManager _instance;
 
@@ -103,7 +103,7 @@ public class GameServerManager : NetworkBehaviour
 
     public static bool IsMyTurn(NetworkConnection conn)
     {
-        if (_instance._playerIsMyTurn.ContainsKey(conn))
+        if(_instance._playerIsMyTurn.ContainsKey(conn))
         {
             return _instance._playerIsMyTurn[conn];
         }
@@ -190,7 +190,7 @@ public class GameServerManager : NetworkBehaviour
         _playerHands[sender] += ", " + cardToAdd;
         string newPlayerHand = _playerHands[sender];
 
-        // If its the hosts hit, he shouldnt pass the turn
+            // If its the hosts hit, he shouldnt pass the turn
         if (HostId == sender.ClientId)
         {
             UpdateBroadcast msg = new()
@@ -206,7 +206,7 @@ public class GameServerManager : NetworkBehaviour
 
             PassTurnToNextClient(sender);
         }
-        else
+        else 
         {
             UpdateBroadcast msg = new()
             {
@@ -229,7 +229,7 @@ public class GameServerManager : NetworkBehaviour
         UnityEngine.Debug.LogWarning("Turn started for " + nextUserIndex);
 
         return _playersIndexes.FirstOrDefault(x => x.Value == nextUserIndex).Key;
-    }
+    }    
 
     [Server]
     private int GenerateNewPlayerIndex()
@@ -250,7 +250,7 @@ public class GameServerManager : NetworkBehaviour
         return _deck.DrawCard();
     }
 
-    public struct UpdateBroadcast : IBroadcast
+    public struct UpdateBroadcast: IBroadcast
     {
         public bool NewRound;
         public bool NewCards;
