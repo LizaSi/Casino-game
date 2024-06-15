@@ -11,15 +11,24 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/Scenes/Login.unity
     guid: a0fd239af123adb48bad56b361853d35
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
   - enabled: 1
     path: Assets/Scenes/RoomSelection.unity
-    guid: 3fc8acdd13e6c734bafef6554d6fdbcd
+    guid: 7f6a8128ae590489aae87c7288a58ea5
   - enabled: 1
     path: Assets/Scenes/JoinARoom.unity
     guid: 4fcc645c4df3da0489f4ecf38555016e
   - enabled: 1
     path: Assets/Scenes/CreateRoom.unity
-    guid: a1d6d56c6f4a151469d16657f61fb2dc
+    guid: 9b47a9f88927640ba991359e8f8440c6
+  - enabled: 0
+    path: 
+    guid: 00000000000000000000000000000000
+  - enabled: 1
+    path: Assets/Scenes/BlackJackRoom.unity
+    guid: 7225840f2b00a45468a56de34d117f44
   m_configObjects:
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 973bad3ab3355cb40854a747504c61a3, type: 2}
     com.unity.adaptiveperformance.simulator.provider_settings: {fileID: 11400000, guid: 564db219b9898cf44871cbf8c50e0363, type: 2}

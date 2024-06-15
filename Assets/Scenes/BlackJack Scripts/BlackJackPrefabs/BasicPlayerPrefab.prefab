@@ -19235,7 +19235,7 @@ MonoBehaviour:
     Rotation: {x: -0, y: 0.14678946, z: -0, w: 0.98916775}
     LocalScale: {x: 1.0442, y: 1.0442, z: 1.0442}
   _isNetworked: 1
-  _isGlobal: 0
+  _isGlobal: 1
   _initializeOrder: 0
   _defaultDespawnType: 0
   NetworkObserver: {fileID: 0}

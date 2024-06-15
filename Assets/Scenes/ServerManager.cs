@@ -1,102 +1,94 @@
 using FishNet;
 using FishNet.Discovery;
 using System.Collections;
-using System.Collections.Generic;
 using TMPro;
-using UnityEngine.SceneManagement;
 using UnityEngine;
 using System.Net;
+using FishNet.Broadcast;
+using FishNet.Connection;
+using FishNet.Object.Synchronizing;
+using System.Diagnostics;
 using Unity.Services.Authentication.PlayerAccounts;
-using Unity.Services.Authentication;
-using System.Linq;
-using UnityEngine.UI;
-using Firebase.Database;
+using FishNet.Managing;
+using UnityEngine.SceneManagement;
+using FishNet.Managing.Scened;
+using FishNet.Managing.Server;
+using UnityEngine.EventSystems;
 
 public class ServerManager : MonoBehaviour
 {
-    [SerializeField]
-    private NetworkDiscovery networkDiscovery;
-    [SerializeField]
-    private TMP_Text _serversListLabel;
+    public NetworkDiscovery networkDiscovery;
+    [SerializeField] private TMP_Text hostsText;
+    private string hostsMessage = "No hosts found";
 
-    private const int port = 7772;  // Assuming 7772 is the port used in FishNet object
+    // Declare serverFound as a synchronized list
+    [SyncObject] private readonly SyncList<bool> serverFound = new();
 
-    public GameObject serverEntryPrefab; // Reference to the server entry prefab
-    public Transform serversListContainer; // Parent container for server entries
-    private FirebaseDB firebaseManager;
+    private NetworkManager _networkManager;
+    //  public GameObject _networkHudCanvas;
 
-    //private readonly HashSet<string> _addresses = new();
-    private readonly Dictionary<string, string> serversFound = new();
-
-    void Start()
+    private void Awake()
     {
-        firebaseManager = FindObjectOfType<FirebaseDB>();
+        // Listening to SyncList callbacks
+        //      serverFound.OnChange += ServerFound_OnChange;
+    }
 
+    private void Start()
+    {
         if (networkDiscovery == null)
             networkDiscovery = FindObjectOfType<NetworkDiscovery>();
+
+        if (_networkManager == null)
+            _networkManager = FindObjectOfType<NetworkManager>();
+
         networkDiscovery.ServerFoundCallback += OnServerAdvertising;
     }
 
-    void OnServerAdvertising(EndPoint endPoint)
+    private void ServerFound_OnChange(SyncListOperation op, int index, bool oldItem, bool newItem, bool asServer)
     {
-        string newAddress = endPoint.ToString();
-        Debug.LogWarning("Address published is " + newAddress); // not realy a warning, for debugging 
-        
-        firebaseManager.FetchServerUsername(newAddress, (username) =>
-        {
-            if (!string.IsNullOrEmpty(username))
-            {
-                serversFound[newAddress] = username;
-            }
-            else
-            {
-                Debug.LogError("Server's username was empty");
-            }
-        });
+        // Handle changes in serverFound list
+        UpdateHostText();
     }
 
-    private void AddServerToUI(string address, string username)
+    private void UpdateHostText()
     {
-        _serversListLabel.text += username + "\n";
-        GameObject newJoinButton = Instantiate(serverEntryPrefab, serversListContainer);
-        newJoinButton.GetComponentInChildren<Text>().text = "Join " + username;
-        newJoinButton.SetActive(true);
-
-        newJoinButton.GetComponent<Button>().onClick.AddListener(() => JoinServer_ButtonClick(address));
-
-        // Fix position of the new button
-        if (newJoinButton.TryGetComponent<RectTransform>(out var rectTransform))
+        if (hostsText != null)
         {
-            rectTransform.anchoredPosition = Vector2.zero; // Adjust this if needed
-            rectTransform.localScale = Vector3.one;
+            if (serverFound.Count == 0 || !serverFound[0])
+            {
+                hostsText.text = "No Hosts found";
+            }
         }
     }
-
-    public void JoinServer_ButtonClick(string address)
-    {
-        Debug.Log("Joining server at address: " + address);
-        Debug.LogWarning("Not implemented");
-        // Add code here to join the server
-    }
-
 
     public void Advertise_OnClick()
     {
-        if (!networkDiscovery.IsAdvertising)
+        if (networkDiscovery != null && _networkManager != null)
         {
-           // LoggedUser.ServerAddress = GetLocalIPAddress();
-            networkDiscovery.AdvertiseServer();
+            _networkManager.ClientManager.StartConnection();
 
-            string localIPAddress = GetLocalIPAddress();
-            firebaseManager.AddServer(localIPAddress, LoggedUser.Username);
-            SceneManager.LoadScene("CreateRoom");
+
+            StartCoroutine(DelayedSceneLoad());
         }
     }
 
-    public void CreateServer_OnClick()
+    private IEnumerator DelayedSceneLoad()
     {
-        InstanceFinder.ServerManager.StartConnection();
-        _serversListLabel.text = "Created successfuly";
+        hostsText.text = "Creating room...";
+        // Start the client and server connections
+        yield return new WaitForSeconds(1f);
+
+        EventSystem[] eventSystems = FindObjectsOfType<EventSystem>();
+        Destroy(eventSystems[0].gameObject);
+
+        _networkManager.ServerManager.StartConnection();
+        networkDiscovery.AdvertiseServer();
+
+        yield return new WaitForSeconds(1f);
+
+        //   UnityEngine.SceneManagement.SceneManager.LoadScene("CreateRoom");
+        LoadScene("CreateRoom");
+        UnloadScene("RoomSelection");
     }
 
     public void SearchServer_OnClick()
@@ -106,87 +98,95 @@ public class ServerManager : MonoBehaviour
             networkDiscovery.SearchForServers();
             StartCoroutine(DelayedServerCheck());
         }
-       // StartCoroutine(DelayedServerCheck());
     }
 
     private IEnumerator DelayedServerCheck()
     {
-        // Wait for 1 second before checking for available servers
+        UnityEngine.Debug.Log("Start searching...");
         yield return new WaitForSeconds(1f);
 
+
         // Check if any servers were found
-        if (serversFound.Count > 0) // found a server
+        if (serverFound.Count == 0 || !serverFound[0])
         {
-            _serversListLabel.text = ""; // Clear existing text
-            foreach (var serverFound in serversFound)
-            {
-                AddServerToUI(serverFound.Key, serverFound.Value);
-                firebaseManager.AddPlayerGuestToServer(serverFound.Key);
-            }
+            hostsText.text = hostsMessage;
         }
         else
         {
-            _serversListLabel.text = "No servers found";
+            _networkManager.ClientManager.StartConnection(); // Also activates the canvas prefab!
+                                                             // join hosts room
+                                                             // UnityEngine.SceneManagement.SceneManager.LoadScene("CreateRoom");
+            EventSystem[] eventSystems = FindObjectsOfType<EventSystem>();
+            Destroy(eventSystems[0].gameObject);
+
+            yield return new WaitForSeconds(1f); //Maybe not needed, tlet the event system time to be deleted
+
+            LoadScene("CreateRoom");
+            UnloadScene("RoomSelection");
+
         }
     }
 
-    
-    private string GetLocalIPAddress()
+    private void OnServerAdvertising(EndPoint endPoint)
     {
-        var host = Dns.GetHostEntry(Dns.GetHostName());
-        foreach (var ip in host.AddressList)
+        // Update the synchronized list serverFound
+        if (serverFound.Count == 0)
         {
-            if (ip.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork)
-            {
-                return ip.ToString() + ":" +port;
-            }
+            serverFound.Add(true);
+            string newAddress = endPoint.ToString();
+            UnityEngine.Debug.LogWarning("Address published is " + newAddress);
+            UnityEngine.Debug.Log($"Server found at: {endPoint}");
         }
-        throw new System.Exception("No network adapters with an IPv4 address in the system!");
     }
-    /*private void UpdateServerListUI(List<ServerData> servers)
+    void LoadScene(string sceneName)
     {
-        // Clear previous buttons
-        *//*foreach (Transform child in buttonParent)
+        if (!InstanceFinder.IsServer)
         {
-            Destroy(child.gameObject);
+            return;
         }
+        SceneLoadData sld = new(sceneName);
+        InstanceFinder.SceneManager.LoadGlobalScenes(sld);
+    }
 
-        foreach (var server in servers)
-        {
-            GameObject button = Instantiate(buttonPrefab, buttonParent);
-            button.GetComponentInChildren<TMP_Text>().text = server.username; // Display the username on the button
-            button.GetComponent<Button>().onClick.AddListener(() => JoinRoomOnClick(server.address));
-        }*//*
-
-        if (servers.Count > 0) // The own logged in doesnt count 
-        {
-            List<string> usernames = new();
-            foreach (var server in servers)
-            {
-                usernames.Add(server.username);
-            }
-            string serversUsername = string.Join("\n", usernames);
-            _serversListLabel.text = serversUsername;
-        }
-        else
-        {
-            _serversListLabel.text = "No servers found";
-        }
-    }*/
-
-    // Update is called once per frame
-    void Update()
+    void UnloadScene(string sceneName)
     {
-        
-
-      /*  foreach (string address in _addresses)
+        if (!InstanceFinder.IsServer)
         {
-            if (GUILayout.Button(address))
-            {
-                networkDiscovery.StopSearchingOrAdvertising();
+            return;
+        }
 
-                InstanceFinder.ClientManager.StartConnection(address);
-            }
-        }*/
+        SceneUnloadData sld = new(sceneName);
+        InstanceFinder.SceneManager.UnloadGlobalScenes(sld);
+    }
+
+    private void OnDestroy()
+    {
+        networkDiscovery.ServerFoundCallback -= OnServerAdvertising;
+        //     UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
+    }
+
+}
+
+public struct TeamMember : IBroadcast
+{
+    public string username;
+    public string coins;
+
+    public TeamMember(string _user, string _coins)
+    {
+        this.username = _user;
+        this.coins = _coins;
+    }
+
+    public void Serialize(FishNet.Serializing.Writer writer)
+    {
+        writer.WriteString(username);
+        writer.WriteString(coins);
+    }
+
+    public void Deserialize(FishNet.Serializing.Reader reader)
+    {
+        username = reader.ReadString();
+        coins = reader.ReadString();
     }
 }
