@@ -1,44 +1,55 @@
 using FishNet.Connection;
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
-using FishNet.Transporting;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using FishNet.Broadcast;
 using FishNet;
+using Firebase.Database;
+using System.Threading.Tasks;
+using Unity.Services.Authentication.PlayerAccounts;
+using UnityEngine;
 
 public class GameServerManager : NetworkBehaviour
 {
     private Deck _deck;
     private int playerIndex = 0;
-    public static int HostId { get; private set; }
 
     public static event Action OnInitialized;
     public static event Action OnTurnPass;
 
-    [SyncObject] private readonly SyncDictionary<NetworkConnection , string> _playerHands = new();
-    [SyncObject] private readonly SyncDictionary<NetworkConnection , bool> _playerIsMyTurn = new();
-    [SyncObject] private readonly SyncDictionary<NetworkConnection , int> _playersIndexes = new();
+    [SyncObject] private readonly SyncDictionary<NetworkConnection, string> _playerHands = new();
+    [SyncObject] private readonly SyncDictionary<NetworkConnection, bool> _playerIsMyTurn = new();
+    [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playersIndexes = new();
 
     private static GameServerManager _instance;
 
-    private void OnEnable()
+    private void Awake()
     {
         if (_instance == null)
         {
             _instance = this;
+            OnInitialized?.Invoke();
         }
     }
-
     private void Start()
     {
-        DealPlayersIndex();
+        if (_instance == null)
+        {
+            _instance = this;
+            OnInitialized?.Invoke();
+        }
         NewRoundInit();
+        _instance.AssignPlayersIndex();
     }
 
     public static void NewRoundInit()
     {
+        if (_instance == null)
+        {
+            UnityEngine.Debug.LogError("Class not initiazlied");
+        }
         if (_instance._deck == null || _instance._deck.Count < 90)
         {
             _instance._deck = new Deck(5);
@@ -47,20 +58,19 @@ public class GameServerManager : NetworkBehaviour
         _instance.DealInitialCards();
     }
 
+    public static bool IsInitialized()
+    {
+        return _instance != null;
+    }
+
     [Server]
     private void DealInitialCards()
     {
         bool isFirstTurnSet = false;
         foreach (NetworkConnection conn in NetworkManager.ServerManager.Clients.Values)
         {
-            if (!isFirstTurnSet)
-            {
-                isFirstTurnSet = true;
-                _playerIsMyTurn[conn] = true;
-                HostId = conn.ClientId;
-            }
-            else
-                _playerIsMyTurn[conn] = false;
+            _playerIsMyTurn[conn] = !isFirstTurnSet;
+            isFirstTurnSet = true;
 
             _playerHands[conn] = PullCard() + ", " + PullCard();
         }
@@ -68,18 +78,19 @@ public class GameServerManager : NetworkBehaviour
         UpdateBroadcast msg = new()
         {
             NewRound = true,
-            NewCards = false
+            UpdateCards = false
         };
         InstanceFinder.ServerManager.Broadcast(msg);
 
-        if (base.NetworkManager.ServerManager.Clients.Count == 0)
+        /*if (base.NetworkManager.ServerManager.Clients.Count == 0)
         {
             UnityEngine.Debug.LogWarning("No clients found to deal cards");
-        }
+            return;
+        }*/
     }
 
     [Server]
-    private void DealPlayersIndex()
+    private void AssignPlayersIndex()
     {
         foreach (NetworkConnection conn in base.NetworkManager.ServerManager.Clients.Values)
         {
@@ -94,33 +105,38 @@ public class GameServerManager : NetworkBehaviour
 
     public static int GetPlayerIndex(NetworkConnection conn)
     {
-        if (_instance._playersIndexes.ContainsKey(conn))
-        {
-            return _instance._playersIndexes[conn];
-        }
-        return 0;
+        return _instance._playersIndexes.TryGetValue(conn, out int index) ? index : 0; ;
     }
 
-    public static bool IsMyTurn(NetworkConnection conn)
+    public static bool IsMyTurn(NetworkConnection conn = null)
     {
-        if(_instance._playerIsMyTurn.ContainsKey(conn))
+        if(_instance == null)
         {
-            return _instance._playerIsMyTurn[conn];
+            UnityEngine.Debug.LogError("GameServerManager instance is not initialized.");
+            return false;
         }
-        return false;
+
+        if (conn == null)
+        {
+            UnityEngine.Debug.LogError("NetworkConnection is null.");
+            return false;
+        }
+
+        if (_instance._playerIsMyTurn == null)
+        {
+            UnityEngine.Debug.LogError("Player turn status dictionary is not initialized.");
+            return false;
+        }
+        return _instance._playerIsMyTurn.TryGetValue(conn, out bool isTurn) && isTurn;
     }
     public static string GetPlayerHand(NetworkConnection conn)
     {
-        if (_instance._playerHands.ContainsKey(conn))
-        {
-            return _instance._playerHands[conn];
-        }
-        return "";
+        return _instance._playerHands.TryGetValue(conn, out string hand) ? hand : string.Empty;
     }
 
     public static List<string> GetAllPlayerHands(NetworkConnection conn)
     {
-        List<string> allPlayersCards = new List<string>();
+        List<string> allPlayersCards = new();
         foreach (string playerCards in _instance._playerHands.Values)
         {
             string cardsAsString = string.Join(", ", playerCards);
@@ -129,20 +145,60 @@ public class GameServerManager : NetworkBehaviour
         return allPlayersCards;
     }
 
-    public static GameResult DidIWin(NetworkConnection conn)
+    public static async Task<GameResult> DidIWin(NetworkConnection conn, string username)
     {
+        GameResult result;
         int clientValue = Deck.GetHandValue(_instance._playerHands[conn]);
         int dealerValue = Deck.GetHandValue(GetAllPlayerHands(conn)[0]);
 
         if ((clientValue > dealerValue && clientValue <= 21) || (dealerValue > 21 && clientValue <= 21))
         {
-            return GameResult.Win;
+            result = GameResult.Win;
         }
-        if (dealerValue == clientValue)
+        else if (dealerValue == clientValue)
         {
-            return GameResult.Tie;
+            result = GameResult.Tie;
         }
-        return GameResult.Lose;
+        else
+        {
+            result = GameResult.Lose;
+        }
+
+        await UpdateCoinsBasedOnResult(username, result);
+        return result;
+    }
+
+    private static async Task UpdateCoinsBasedOnResult(string username, GameResult result)
+    {
+        // Get the reference to the user's data
+        var userRef = FirebaseDatabase.DefaultInstance.GetReference("users").Child(username);
+
+        // Get the current coins
+        var dataSnapshot = await userRef.GetValueAsync();
+        int currentCoins = 0;
+
+        if (dataSnapshot.Exists && dataSnapshot.Child("coins").Value != null)
+        {
+            int.TryParse(dataSnapshot.Child("coins").Value.ToString(), out currentCoins);
+        }
+
+        // Update coins based on the game result
+        int updatedCoins = currentCoins;
+        switch (result)
+        {
+            case GameResult.Win:
+                updatedCoins += 100; // example coin reward for win
+                break;
+            case GameResult.Tie:
+                // No coin change for tie
+                break;
+            case GameResult.Lose:
+                updatedCoins -= 100; // example coin penalty for loss
+                break;
+        }
+
+        // Set the updated coin value back to Firebase
+        await userRef.Child("coins").SetValueAsync(updatedCoins);
     }
 
     [Client]
@@ -166,7 +222,7 @@ public class GameServerManager : NetworkBehaviour
             _playerIsMyTurn[nextClient] = true;
             TurnPassBroadcast msg = new()
             {
-                PlayerId = nextClient.ClientId
+                HostTurn = InstanceFinder.IsServer
             };
             InstanceFinder.ServerManager.Broadcast(msg);
         }
@@ -191,27 +247,27 @@ public class GameServerManager : NetworkBehaviour
         string newPlayerHand = _playerHands[sender];
 
             // If its the hosts hit, he shouldnt pass the turn
-        if (HostId == sender.ClientId)
+        if (sender.IsHost)
         {
             UpdateBroadcast msg = new()
             {
                 NewRound = false,
-                NewCards = true
+                UpdateCards = true
             };
             InstanceFinder.ServerManager.Broadcast(msg);
         }
-        else if (Deck.GetHandValue(newPlayerHand) > 21)
+        else if (Deck.GetHandValue(newPlayerHand) >= 21)
         {
-            UnityEngine.Debug.Log("Passed 21");
+            UnityEngine.Debug.LogWarning("Passed 21");
 
             PassTurnToNextClient(sender);
         }
-        else 
+        else // Client with 21 or less
         {
             UpdateBroadcast msg = new()
             {
                 NewRound = false,
-                NewCards = true
+                UpdateCards = true
             };
             InstanceFinder.ServerManager.Broadcast(msg);
         }
@@ -253,12 +309,12 @@ public class GameServerManager : NetworkBehaviour
     public struct UpdateBroadcast: IBroadcast
     {
         public bool NewRound;
-        public bool NewCards;
+        public bool UpdateCards;
     }
 
     public struct TurnPassBroadcast : IBroadcast
     {
-        public int PlayerId;
+        public bool HostTurn;
     }
 
     public enum GameResult
