@@ -14,23 +14,29 @@ using UnityEngine.SceneManagement;
 using FishNet.Managing.Scened;
 using FishNet.Managing.Server;
 using UnityEngine.EventSystems;
+using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class ServerManager : MonoBehaviour
 {
     public NetworkDiscovery networkDiscovery;
-    [SerializeField] private TMP_Text hostsText;
-    private string hostsMessage = "No hosts found";
+    [SerializeField] private Text hostsText;
+
 
     // Declare serverFound as a synchronized list
     [SyncObject] private readonly SyncList<bool> serverFound = new();
 
     private NetworkManager _networkManager;
-  //  public GameObject _networkHudCanvas;
+    private string _address;
+
+    //  public GameObject _networkHudCanvas;
 
     private void Awake()
     {
         // Listening to SyncList callbacks
-  //      serverFound.OnChange += ServerFound_OnChange;
+        //      serverFound.OnChange += ServerFound_OnChange;
+        networkDiscovery.ServerFoundCallback += endPoint => _address = (endPoint.Address.ToString());
+
     }
 
     private void Start()
@@ -66,8 +72,8 @@ public class ServerManager : MonoBehaviour
         if (networkDiscovery != null && _networkManager != null)
         {
             _networkManager.ClientManager.StartConnection();
-            
-            
+
+            StopCoroutine(DelayedServerCheck());
             StartCoroutine(DelayedSceneLoad());
         }
     }
@@ -102,29 +108,33 @@ public class ServerManager : MonoBehaviour
 
     private IEnumerator DelayedServerCheck()
     {
-        UnityEngine.Debug.Log("Start searching...");
+        int i = 0;
+        string[] dots = { ".", "..", "..."};
+        hostsText.text = "Searching" + dots[i];
         yield return new WaitForSeconds(1f);
 
-
         // Check if any servers were found
-        if (serverFound.Count == 0 || !serverFound[0])
+        while (serverFound.Count == 0 || !serverFound[0])
         {
-            hostsText.text = hostsMessage;
+            i++;
+            hostsText.text = "Searching" + dots[i % 3];
+            yield return new WaitForSeconds(0.5f);
         }
-        else
+
+        InstanceFinder.ClientManager.StartConnection(_address);
+
+        hostsText.text = "Connected!";
+        EventSystem[] eventSystems = FindObjectsOfType<EventSystem>();
+        Destroy(eventSystems[0].gameObject);
+
+        yield return new WaitForSeconds(1f); //Maybe not needed, tlet the event system time to be deleted
+
+        if (!LoadScene("CreateRoom"))
         {
-            _networkManager.ClientManager.StartConnection(); // Also activates the canvas prefab!
-               // join hosts room
-          // UnityEngine.SceneManagement.SceneManager.LoadScene("CreateRoom");
-            EventSystem[] eventSystems = FindObjectsOfType<EventSystem>();
-            Destroy(eventSystems[0].gameObject);
-
-            yield return new WaitForSeconds(1f); //Maybe not needed, tlet the event system time to be deleted
-
+            yield return new WaitForSeconds(3f);
             LoadScene("CreateRoom");
-            UnloadScene("RoomSelection");
-
         }
+        UnloadScene("RoomSelection");
     }
 
     private void OnServerAdvertising(EndPoint endPoint)
@@ -138,23 +148,25 @@ public class ServerManager : MonoBehaviour
             UnityEngine.Debug.Log($"Server found at: {endPoint}");
         }
     }
-    void LoadScene(string sceneName)
+    bool LoadScene(string sceneName)
     {
         if (!InstanceFinder.IsServer)
         {
-            return;
+            //hostsText.text = "Error connecting to host";
+            return false;
         }
         SceneLoadData sld = new(sceneName);
         InstanceFinder.SceneManager.LoadGlobalScenes(sld);
+        return true;
     }
 
     void UnloadScene(string sceneName)
     {
         if (!InstanceFinder.IsServer)
         {
+           // UnityEngine.SceneManagement.SceneManager.LoadScene(sceneName);
             return;
         }
-
         SceneUnloadData sld = new(sceneName);
         InstanceFinder.SceneManager.UnloadGlobalScenes(sld);
     }
