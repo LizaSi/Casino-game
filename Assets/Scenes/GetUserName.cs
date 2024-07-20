@@ -22,6 +22,11 @@ namespace Unity.Services.Authentication.PlayerAccounts
             // Invoke the event to notify subscribers
            // OnUserLoggedIn?.Invoke();
         }
+
+        internal static void SetIndex()
+        {
+            throw new NotImplementedException();
+        }
     }
 
     public class GetUserName : MonoBehaviour
