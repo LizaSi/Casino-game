@@ -1,13 +1,10 @@
+<<<<<<< HEAD
 using FishNet;
 using FishNet.Broadcast;
 using FishNet.Object;
 using FishNet.Object.Synchronizing;
-using FishNet.Observing;
-using IO.Swagger.Model;
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using TMPro;
 using Unity.Services.Authentication.PlayerAccounts;
 using UnityEngine;
@@ -22,13 +19,12 @@ public class CardsDisplayer : NetworkBehaviour
     public Button checkButton;
     public TMP_Text winText;
     public Button newRoundButton;
-    public Transform cardParent;
 
+    [SyncVar] private readonly bool roundFinished = false;
     private bool dealerChecked = false;
-    private List<GameObject> spawnedCards = new();
 
     private void OnEnable()
-    {
+    {        
         InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
         InstanceFinder.ClientManager.RegisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
         InstanceFinder.ClientManager.RegisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);
@@ -49,47 +45,32 @@ public class CardsDisplayer : NetworkBehaviour
             {
                 ShowWinMessage();
                 handleClientTurn();
-                StartCoroutine(FetchCoinsInDelay());
             }
         }
         if (msg.IsNewRoundMessge)
         {
-            if (!InstanceFinder.IsServer)
-            {
-                DespawnAllCards();
-                winText.text = "";
-                handleClientTurn();
-            }
-
-            UpdateCardsDisplay();            
+            winText.text = "";
+            UpdateCardsDisplay();
         }
-    }
-
-    private IEnumerator FetchCoinsInDelay()
-    {
-        yield return new WaitForSeconds(0.7f);
-        LoggedUser.FetchCoins();
     }
 
     private void OnTurnPassBroadcast(TurnPassBroadcast msg)
     {
+        if (msg.PlayerId == GameServerManager.HostId && InstanceFinder.IsServer)
+        {
+            Debug.LogWarning("Dealers turn");
+            handleDealerTurn();
+        }
         if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
         {
             handleClientTurn();
             StartCoroutine(ClientTurnInDelay());
-        }
-        else if (msg.HostTurn && base.Owner.IsHost && InstanceFinder.IsServer)
-        {
-            Debug.LogWarning("Dealers turn");
-            handleDealerTurn();
         }
     }
 
     private IEnumerator ClientTurnInDelay()
     {
         yield return new WaitForSeconds(0.8f);
-        handleClientTurn();
-        yield return new WaitForSeconds(1.8f);
         handleClientTurn();
     }
 
@@ -106,16 +87,16 @@ public class CardsDisplayer : NetworkBehaviour
             InstanceFinder.ServerManager.Broadcast(msgForClients);
             UpdateCardsDisplay();
         }
-        else if (msg.UpdateCards && !InstanceFinder.IsServer && base.Owner.IsLocalClient)
+        else if (msg.NewCards && !InstanceFinder.IsServer)
         {
             handleClientTurn();
             StartCoroutine(ClientTurnInDelay());
         }
-        else if (msg.UpdateCards) // only server reaches this part
+        else if (msg.NewCards) // only server reaches this part
         {
             handleDealerTurn();
             UpdateCardsDisplay();
-        }        
+        }
     }
 
     public void NewRound_OnClick()
@@ -135,7 +116,7 @@ public class CardsDisplayer : NetworkBehaviour
         HitCard();
     }
 
-    private async void ShowWinMessage()
+    private void ShowWinMessage()
     {
         if (InstanceFinder.IsServer || !base.Owner.IsLocalClient)
         {
@@ -143,7 +124,7 @@ public class CardsDisplayer : NetworkBehaviour
             return;
         }
 
-        GameResult result = await DidIWin(base.Owner, LoggedUser.Username);
+        GameResult result = DidIWin(base.Owner);
 
         switch (result)
         {
@@ -176,7 +157,7 @@ public class CardsDisplayer : NetworkBehaviour
 
     private void handleDealerTurn() 
     {
-        if (IsMyTurn(base.Owner) && InstanceFinder.IsServer)
+        if (IsMyTurn(base.Owner))
         {
             if (!dealerChecked)
             {
@@ -226,27 +207,27 @@ public class CardsDisplayer : NetworkBehaviour
             checkButton.gameObject.SetActive(false);
         }
 
-      /*  if (roundFinished)
+        if (roundFinished)
         {
             ShowWinMessage();
-        }*/
+        }
     }
 
     private void UpdateCardsDisplay()
     {
-        if (base.Owner.IsValid && GameServerManager.IsInitialized())
+        if (base.Owner.IsValid)
         {
             if (InstanceFinder.IsServer)
             {
                 List<string> cards = GetAllPlayerHands(base.Owner);
-                cardsText.text = "Players cards:\n" + string.Join("\n", cards);
-            //    DisplayCardsOnBoard(cards[0]); // only his own..
+                cardsText.text = "Players cards:\n" + string.Join("\n", cards);                
             }
             else if (base.Owner.IsLocalClient)
             {
                 string cards = GameServerManager.GetPlayerHand(base.Owner);
-                //   int playerIndex = GameServerManager.GetPlayerIndex(base.Owner);
-                DisplayCardsOnBoard(cards);
+                int playerIndex = GameServerManager.GetPlayerIndex(base.Owner);
+
+                cardsText.text = $"{LoggedUser.Username}'s ({playerIndex}) Cards: " + string.Join(", ", cards);
             }
         }
         else
@@ -254,48 +235,210 @@ public class CardsDisplayer : NetworkBehaviour
             Debug.LogWarning("Cant update, no valid owner");
         }
     }
-    void DisplayCardsOnBoard(string cards)
-    {
-        float cardSpacing = 300f;
-
-        string[] cardNames = cards.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);              
-
-        for (int i = 0; i < cardNames.Length; i++)
-        {
-            // Trim any extra whitespace from the card name
-            string cardName = cardNames[i].Trim();
-
-            // Load the card prefab from the Resources/Cards folder
-            string cardDir = "Cards/" + cardName;
-            GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir), cardParent);
-            instantiatedCard.transform.localScale = new Vector3(2000f, 1900f, 1f);
-            instantiatedCard.transform.rotation = Quaternion.identity;
-            instantiatedCard.transform.localPosition = new Vector3((i * cardSpacing)+537, 288, 15);
-            instantiatedCard.transform.rotation = Quaternion.Euler(0f, 181f, 0f);
-            if(instantiatedCard == null)
-            {
-                Debug.LogWarning("No card object found in Resources");
-                return;
-            }
-            ServerManager.Spawn(instantiatedCard);
-            spawnedCards.Add(instantiatedCard);
-        }
-    }
-
-    private void DespawnAllCards()
-    {
-        foreach (GameObject cardObject in spawnedCards)
-        {
-         //   ServerManager.Despawn(cardObject);
-            Debug.LogWarning("Despawning card");
-           Destroy(cardObject);
-        }
-        spawnedCards.Clear();
-    }
-
     public struct ClientMsgBroadcast : IBroadcast
     {
         public bool IsWinMessage;
         public bool IsNewRoundMessge;
     }
 }
+=======
+using FishNet;
+using FishNet.Connection;
+using FishNet.Object;
+using FishNet.Object.Synchronizing;
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using Unity.Services.Authentication.PlayerAccounts;
+using Unity.VisualScripting;
+using UnityEngine;
+using UnityEngine.UI;
+using static GameServerManager;
+
+public class CardsDisplayer : NetworkBehaviour
+{
+    [SerializeField]
+    public TMP_Text membersText;
+    public TMP_Text cardsText;
+    public Button hitButton;
+    public Button checkButton;
+    public TMP_Text winText;
+
+    //   private bool cardsInitialized = false;
+    [SyncVar] private bool roundFinished = false;
+    private bool dealerChecked = false;
+
+    private void OnEnable()
+    {
+        hitButton.gameObject.SetActive(false);
+        GameServerManager.OnInitialized += OnGameServerManagerInitialized;
+        GameServerManager.OnTurnPass += OnTurnPass;
+    }
+
+    private void OnDisable()
+    {
+        GameServerManager.OnInitialized -= OnGameServerManagerInitialized;
+        GameServerManager.OnTurnPass -= OnTurnPass;
+    }
+
+    private void OnGameServerManagerInitialized()
+    {
+        UpdateCardsDisplay();
+        StartCoroutine(UpdateCardsPeriodically(3f)); // Update every 1 second
+    }
+
+    private void OnTurnPass()
+    {
+        if (InstanceFinder.IsServer)
+            handleDealerTurn();
+        else if (base.Owner.IsLocalClient)
+            handleClientTurn();
+    }
+
+    private IEnumerator UpdateCardsPeriodically(float interval)
+    {
+        while (true)
+        {
+            yield return new WaitForSeconds(interval);
+            UpdateCardsDisplay();
+
+            if (InstanceFinder.IsServer)
+                handleDealerTurn();
+            else if (base.Owner.IsLocalClient)
+                handleClientTurn();
+        }
+    }
+
+    public void Check_OnClick()
+    {
+        ClientCheck();
+    }
+
+    public void Hit_OnClick()
+    {
+        HitCard();
+    }
+
+    public override void OnStopClient()
+    {
+        base.OnStopClient();
+        //    GameServerManager.OnHandChanged -= HandleHandChanged;
+    }
+
+    private void ShowWinMessage()
+    {
+        if (InstanceFinder.IsServer || !base.Owner.IsLocalClient)
+        {
+            winText.text = "";
+            return;
+        }
+
+        GameResult result = DidIWin(base.Owner);
+
+        switch (result)
+        {
+            case GameResult.Win:
+                winText.text = "You win!";
+                break;
+            case GameResult.Lose:
+                winText.text = "You lost...";
+                break;
+            case GameResult.Tie:
+                winText.text = "Tie!";
+                break;
+        }
+    }
+
+    private void HandleHandChanged(NetworkConnection conn, List<string> hand)
+    {
+        if (conn != base.Owner)
+            return;
+        UpdateCardsDisplay();
+    }
+
+      
+    void Update()
+    {
+        /*if(IsMyTurn(base.Owner))
+            handleClientTurn();*/
+
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+        {
+            if (InstanceFinder.IsServer)
+                handleDealerTurn();
+            else if (base.Owner.IsLocalClient)
+                handleClientTurn();
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha5))
+        {
+            ShowWinMessage();
+        }
+    }    
+
+    private void handleDealerTurn()
+    {
+        if (IsMyTurn(base.Owner)) // If reached to this and was true after false, it means round finishes, need to reveal your cards
+        {
+            if (!dealerChecked)
+            {
+                Debug.LogWarning("Server checked");
+                ClientCheck();
+                dealerChecked = true;
+                return;
+            }
+            List<string> cards = GetAllPlayerHands(base.Owner);
+            if (Deck.GetHandValue(cards[0]) < 17)
+                HitCard();
+            else
+            {
+              //  roundFinished = true;
+                Debug.LogWarning("Round finished. showing results");
+            }
+        }
+    }
+
+    private void handleClientTurn()
+    {
+        if (IsMyTurn(base.Owner))
+        {
+            hitButton.gameObject.SetActive(true);
+            checkButton.gameObject.SetActive(true);
+        }
+        else
+        {
+            hitButton.gameObject.SetActive(false);
+            checkButton.gameObject.SetActive(false);
+        }
+
+        if (roundFinished)
+        {
+            ShowWinMessage();
+        }
+    }
+
+    private void UpdateCardsDisplay()
+    {
+        if (base.Owner.IsValid)
+        {
+            if (InstanceFinder.IsServer)
+            {
+                List<string> cards = GetAllPlayerHands(base.Owner);
+                cardsText.text = "Players cards:\n" + string.Join("\n", cards);                
+            }
+            else if (base.Owner.IsLocalClient)
+            {
+                string cards = GameServerManager.GetPlayerHand(base.Owner);
+                int playerIndex = GameServerManager.GetPlayerIndex(base.Owner);
+
+                cardsText.text = $"{LoggedUser.Username}'s ({playerIndex}) Cards: " + string.Join(", ", cards);
+            }
+      //      cardsInitialized = true;
+        }
+        else
+        {
+            Debug.LogWarning("Cant update, no valid owner");
+        }
+    }
+}
+>>>>>>> 28492617fd857876dd52d1ae5d9c7e6cf180a49f
