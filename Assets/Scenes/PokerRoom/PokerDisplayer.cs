@@ -1,0 +1,272 @@
+using FishNet.Broadcast;
+using FishNet;
+using System.Collections;
+using System.Collections.Generic;
+using TMPro;
+using Unity.Services.Authentication.PlayerAccounts;
+using UnityEngine;
+using FishNet.Object;
+using UnityEngine.UI;
+using static PokerServerManager;
+
+public class PokerDisplayer : NetworkBehaviour
+{
+    [SerializeField] private Button BetButton;
+    [SerializeField] private Button checkButton;
+    [SerializeField] private Button FoldButton;
+    [SerializeField] private TMP_Text winText;
+    [SerializeField] private Button newRoundButton;
+    [SerializeField] private GameObject pokerComponentsParent;
+
+
+    private List<GameObject> spawnedCards = new();
+    private bool dealerRevealAllCards = false;
+    private PokerServerManager pokerServerManager;
+
+    public void StartGame(PokerServerManager gameManager)
+    {
+        pokerServerManager = gameManager;
+        pokerComponentsParent.SetActive(true);
+        InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
+        InstanceFinder.ClientManager.RegisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
+        InstanceFinder.ClientManager.RegisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);
+    }
+
+    private void OnDisable()
+    {
+        pokerComponentsParent.SetActive(false);
+        InstanceFinder.ClientManager.UnregisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
+        InstanceFinder.ClientManager.UnregisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
+        InstanceFinder.ClientManager.UnregisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);
+    }
+
+    private void OnClientMsgBroadcast(ClientMsgBroadcast msg)
+    {
+        if (msg.IsWinMessage)
+        {
+            if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
+            {
+                ShowWinMessage();
+                handleClientTurn();
+                StartCoroutine(FetchCoinsInDelay());
+            }
+        }
+        if (msg.IsNewRoundMessage)
+        {
+            if (!InstanceFinder.IsServer)
+            {
+                winText.text = "";
+                handleClientTurn();
+                StartCoroutine(ClientTurnInDelay());
+            }
+            else
+            {
+                dealerRevealAllCards = false;
+            }
+
+            DespawnAllCards();
+            UpdateCardsDisplay();
+        }
+    }
+
+    private IEnumerator FetchCoinsInDelay()
+    {
+        yield return new WaitForSeconds(0.7f);
+        LoggedUser.FetchCoins();
+    }
+
+    private void OnTurnPassBroadcast(TurnPassBroadcast msg)
+    {
+        if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
+        {
+            handleClientTurn();
+            StartCoroutine(ClientTurnInDelay());
+        }
+    }
+
+    private IEnumerator ClientTurnInDelay()
+    {
+        yield return new WaitForSeconds(0.8f);
+        handleClientTurn();
+        yield return new WaitForSeconds(1.8f);
+        handleClientTurn();
+    }
+
+    private void OnUpdateFromServer(UpdateBroadcast msg)
+    {
+        if (msg.UpdateCards && !InstanceFinder.IsServer && base.Owner.IsLocalClient)
+        {
+            handleClientTurn();
+            StartCoroutine(ClientTurnInDelay());
+        }
+    }
+
+    public void NewRound_OnClick()
+    {
+        pokerServerManager.NewRoundInit();
+        newRoundButton.gameObject.SetActive(false);
+    }
+
+    public void Check_OnClick()
+    {
+        pokerServerManager.ClientCheck();
+    }
+
+    public void Bet_OnClick()
+    {
+        int amountFromUI = 10;
+        pokerServerManager.ClientBet(amountFromUI);
+    }
+
+    private async void ShowWinMessage()
+    {
+        if (InstanceFinder.IsServer || !base.Owner.IsLocalClient)
+        {
+            winText.text = "";
+            return;
+        }
+
+        GameResult result = await pokerServerManager.DidIWin(base.Owner, LoggedUser.Username);
+
+        switch (result)
+        {
+            case GameResult.Win:
+                winText.text = "You win!";
+                break;
+            case GameResult.Lose:
+                winText.text = "You lost...";
+                break;
+            case GameResult.Tie:
+                winText.text = "Tie!";
+                break;
+        }
+    }
+
+    void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1)) // Just in case theres a non update bug
+        {
+            if (base.Owner.IsLocalClient)
+                handleClientTurn();
+        }
+        if (Input.GetKeyDown(KeyCode.Alpha5))
+        {
+            ShowWinMessage();
+        }
+    }
+
+    private IEnumerator StartRoundInDelay()
+    {
+        Debug.LogWarning("Server checked");
+        yield return new WaitForSeconds(0.2f); // Wait for client to get up before broadcasting it. 
+        pokerServerManager.ClientCheck();
+    }
+
+    private void handleClientTurn()
+    {
+        UpdateCardsDisplay();
+        if (pokerServerManager.IsMyTurn(base.Owner))
+        {
+            checkButton.gameObject.SetActive(true);
+            FoldButton.gameObject.SetActive(true);
+            BetButton.gameObject.SetActive(true);
+        }
+        else
+        {
+            FoldButton.gameObject.SetActive(false);
+            BetButton.gameObject.SetActive(false);
+            checkButton.gameObject.SetActive(false);
+        }
+    }
+
+    private void UpdateCardsDisplay()
+    {
+        if (base.Owner.IsValid && GameServerManager.IsInitialized())
+        {
+            if (base.Owner.IsLocalClient)
+            {
+                string cards = GameServerManager.GetPlayerHand(base.Owner);
+                //   int playerIndex = GameServerManager.GetPlayerIndex(base.Owner);
+                DisplayCardsOnBoard(cards);
+            }
+        }
+        else
+        {
+            Debug.LogWarning("Cant update, no valid owner");
+        }
+    }
+
+    void DisplayCardsServer(List<string> cards)
+    {
+        float cardSpacing = 300f;
+
+        string[] dealerCardsNames = cards[0].Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
+
+        for (int i = 0; i < dealerCardsNames.Length; i++)
+        {
+            string cardName = dealerCardsNames[i].Trim();
+
+            string cardDir = "Cards/" + cardName;
+            GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir));
+            instantiatedCard.transform.localScale = new Vector3(2000f, 1900f, 1f);
+            instantiatedCard.transform.rotation = Quaternion.identity;
+            instantiatedCard.transform.localPosition = new Vector3((i * cardSpacing) + 537, 288, 15);
+            instantiatedCard.transform.rotation = Quaternion.Euler(0f, 181f, 0f);
+            if (instantiatedCard == null)
+            {
+                Debug.LogWarning("No card object found in Resources");
+                return;
+            }
+            //   ServerManager.Spawn(instantiatedCard);
+            spawnedCards.Add(instantiatedCard);
+
+            if (!dealerRevealAllCards)
+                break;
+        }
+    }
+
+    void DisplayCardsOnBoard(string cards)
+    {
+        float cardSpacing = 300f;
+
+        string[] cardNames = cards.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
+
+        for (int i = 0; i < cardNames.Length; i++)
+        {
+            // Trim any extra whitespace from the card name
+            string cardName = cardNames[i].Trim();
+
+            // Load the card prefab from the Resources/Cards folder
+            string cardDir = "Cards/" + cardName;
+            GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir));
+            instantiatedCard.transform.localScale = new Vector3(2000f, 1900f, 1f);
+            instantiatedCard.transform.rotation = Quaternion.identity;
+            instantiatedCard.transform.localPosition = new Vector3((i * cardSpacing) + 537, 288, 15);
+            instantiatedCard.transform.rotation = Quaternion.Euler(0f, 181f, 0f);
+            if (instantiatedCard == null)
+            {
+                Debug.LogWarning("No card object found in Resources");
+                return;
+            }
+            ServerManager.Spawn(instantiatedCard);
+            spawnedCards.Add(instantiatedCard);
+        }
+    }
+
+    private void DespawnAllCards()
+    {
+        foreach (GameObject cardObject in spawnedCards)
+        {
+            //   ServerManager.Despawn(cardObject);
+            Destroy(cardObject);
+        }
+        Debug.Log("Despawning all cards");
+        spawnedCards.Clear();
+    }
+
+    public struct ClientMsgBroadcast : IBroadcast
+    {
+        public bool IsWinMessage;
+        public bool IsNewRoundMessage;
+    }
+}

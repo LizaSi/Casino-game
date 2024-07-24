@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "36087410930",
+    "firebase_url": "https://connectandbet-default-rtdb.europe-west1.firebasedatabase.app",
+    "project_id": "connectandbet",
+    "storage_bucket": "connectandbet.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:36087410930:android:be6ec07fd695da796c606b",
+        "android_client_info": {
+          "package_name": "com.DefaultCompany.com.unity.template.mobile2D"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyB_08K14MXST-vaZlLSfT8oZusW5nTk_4c"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
