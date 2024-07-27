@@ -27,15 +27,24 @@ public class PokerDisplayer : NetworkBehaviour
     private float tableCardSpacing = 1.5f;
     private int tableSpaceIndex = 0;
     private List<GameObject> spawnedCards = new();
-    private PokerServerManager pokerServerManager;
 
-    public void StartGame(PokerServerManager gameManager)
+    private void Start()
     {
-        pokerServerManager = gameManager;
-      //  pokerComponentsParent.SetActive(true);
-        DisplayCardsClient();
+        PokerServerManager.OnInitialized += OnPokerServerStarted;
+        if (PokerServerManager.IsInitialized())
+        {
+            OnPokerServerStarted();
+        }
+    }
+
+    private void OnPokerServerStarted()
+    {
+        InitGame();
+    }
+
+    public void InitGame()
+    {        
         StartCoroutine(StartRoundInDelay());
-     //   Init();
         InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
         InstanceFinder.ClientManager.RegisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
         InstanceFinder.ClientManager.RegisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);
@@ -109,19 +118,19 @@ public class PokerDisplayer : NetworkBehaviour
 
     public void NewRound_OnClick()
     {
-        pokerServerManager.NewRoundInit();
+        PokerServerManager.NewRoundInit();
         newRoundButton.gameObject.SetActive(false);
     }
 
     public void Check_OnClick()
     {
-        pokerServerManager.ClientCheck();
+        PokerServerManager.ClientCheck();
     }
 
     public void Bet_OnClick()
     {
         int amountFromUI = 10;
-        pokerServerManager.ClientBet(amountFromUI);
+        PokerServerManager.ClientBet(amountFromUI);
     }
 
     private async void ShowWinMessage()
@@ -132,7 +141,7 @@ public class PokerDisplayer : NetworkBehaviour
             return;
         }
 
-        GameResult result = await pokerServerManager.DidIWin(base.Owner, LoggedUser.Username);
+        GameResult result = await PokerServerManager.DidIWin(base.Owner, LoggedUser.Username);
 
         switch (result)
         {
@@ -160,21 +169,29 @@ public class PokerDisplayer : NetworkBehaviour
         }
         if (Input.GetKeyDown(KeyCode.Alpha5) && InstanceFinder.IsServer && !base.Owner.IsLocalClient)
         {
-            PokerServerManager.RevealCardOnTable();
+            PokerServerManager.RevealNewCardOnTable();
         }
     }
 
     private IEnumerator StartRoundInDelay()
     {
-        yield return new WaitForSeconds(0.2f); // Wait for client to get up before broadcasting it. 
         handleClientTurn();
+        yield return new WaitForSeconds(3f); // Wait for client to get up before broadcasting it. 
+        handleClientTurn();
+
         // pokerServerManager.ClientCheck();
     }
 
     private void handleClientTurn()
     {
+        if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
+        { 
+            return;
+        }
+
         DisplayCardsClient();
-        if (pokerServerManager.IsMyTurn(base.Owner))
+
+        if (PokerServerManager.IsMyTurn(base.Owner))
         {
             checkButton.gameObject.SetActive(true);
             FoldButton.gameObject.SetActive(true);
@@ -210,7 +227,7 @@ public class PokerDisplayer : NetworkBehaviour
             }
 
             DespawnAllCards();
-            DisplayCardsClient();
+            handleClientTurn();
         }
     }
 

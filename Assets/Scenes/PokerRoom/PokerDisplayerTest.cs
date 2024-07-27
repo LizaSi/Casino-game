@@ -15,16 +15,10 @@ public class PokerDisplayerTest : NetworkBehaviour
 
     private void Start()
     {
-        if (InstanceFinder.IsServer)
-            DisplayAllCards();
     }
 
     void Update()
     {
-        if (Input.GetKeyDown(KeyCode.Alpha1))
-        {
-            DisplayAllCards();
-        }
         if (Input.GetKeyDown(KeyCode.Alpha2))
         {
             DisplayCardsOnBoard(PokerServerManager.GetMyHand(base.Owner));
@@ -35,60 +29,6 @@ public class PokerDisplayerTest : NetworkBehaviour
     {
         DisplayCardsOnBoard(PokerServerManager.GetMyHand(base.Owner));
      //   string cards = GameServerManager.GetPlayerHand(base.Owner);
-    }
-
-    private void DisplayCardsClient()
-    {
-        int spaceIndex = 0;
-        List<string> allCards = pokerServerManager.GetAllPlayerHands(base.Owner);
-        foreach (string hand in allCards)
-        {
-            string[] cardNames = hand.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
-            for (int j = 0; j < cardNames.Length; j++)
-            {
-
-                string cardName = cardNames[j].Trim();
-                Debug.LogWarning("Displaying card " + cardName);
-
-
-                string cardDir = "Cards/" + cardName;
-                GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir));
-                Vector3 newPosition = CardTransform.position + new Vector3(spaceIndex * cardSpacing, 0, 0);
-
-                instantiatedCard.transform.SetPositionAndRotation(newPosition, CardTransform.rotation);
-                instantiatedCard.transform.localScale = CardTransform.localScale;
-
-                spawnedCards.Add(instantiatedCard);
-                spaceIndex++;
-            }
-        }
-    }
-
-    private void DisplayAllCards()
-    {
-        int spaceIndex = 0;
-        List<string> allCards = pokerServerManager.GetAllPlayerHands(base.Owner);
-        foreach (string hand in allCards)
-        {
-            string[] cardNames = hand.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
-            for (int j = 0; j < cardNames.Length; j++)
-            {
-
-                string cardName = cardNames[j].Trim();
-                Debug.LogWarning("Displaying card " + cardName);
-
-
-                string cardDir = "Cards/" + cardName;
-                GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir));
-                Vector3 newPosition = CardTransform.position + new Vector3(spaceIndex * cardSpacing, 0, 0);
-
-                instantiatedCard.transform.SetPositionAndRotation(newPosition, CardTransform.rotation);
-                instantiatedCard.transform.localScale = CardTransform.localScale;
-
-                spawnedCards.Add(instantiatedCard);
-                spaceIndex++;
-            }
-        }
     }
 
     private void DisplayCardsOnBoard(string cards)
