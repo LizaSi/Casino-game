@@ -221,7 +221,7 @@ public class GameServerManager : NetworkBehaviour
             _playerIsMyTurn[nextClient] = true;
             TurnPassBroadcast msg = new()
             {
-                HostTurn = InstanceFinder.IsServer
+                HostTurn = nextClient.IsLocalClient
             };
             InstanceFinder.ServerManager.Broadcast(msg);
         }
@@ -229,7 +229,6 @@ public class GameServerManager : NetworkBehaviour
         {
             UnityEngine.Debug.LogWarning("Cant find next client");
         }
-
     }
 
     [Client]
@@ -245,8 +244,8 @@ public class GameServerManager : NetworkBehaviour
         _playerHands[sender] += ", " + cardToAdd;
         string newPlayerHand = _playerHands[sender];
 
-        // If its the hosts hit, he shouldnt pass the turn
-        if (sender.IsHost)
+        // If the host hits, he shouldnt pass the turn
+        if (/*sender.IsHost && */!sender.IsLocalClient)
         {
             UpdateBroadcast msg = new()
             {
@@ -314,6 +313,7 @@ public class GameServerManager : NetworkBehaviour
     public struct TurnPassBroadcast : IBroadcast
     {
         public bool HostTurn;
+      //  public NetworkConnection TurnOwner;
     }
 
     public enum GameResult

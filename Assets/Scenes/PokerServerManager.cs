@@ -13,23 +13,71 @@ using UnityEngine;
 
 public class PokerServerManager : NetworkBehaviour
 {
+    private static PokerServerManager Instance;
+
     [SerializeField] private PokerDisplayer PokerDisplayerScript;
     private Deck _deck;
     private int playerIndex = 0;
+    private List<string> _tableCards = new();
 
     [SyncObject] private readonly SyncDictionary<NetworkConnection, string> _playerHands = new();
     [SyncObject] private readonly SyncDictionary<NetworkConnection, bool> _playerIsMyTurn = new();
     [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playersIndexes = new();
 
-    private void Start()
+    private void Awake()
     {
-        PokerDisplayerScript.StartGame(this);
-        NewRoundInit();
-        AssignPlayersIndex();
+        if (Instance == null)
+        {
+            Instance = this;
+        }
     }
 
+    private void Start()
+    {
+        if (Instance == null)
+        {
+            Instance = this;
+        }
+        NewRoundInit();
+        PokerDisplayerScript.StartGame(this);
+        //    PokerDisplayerScript.StartGame(this);
+        //   AssignPlayersIndex();
+    }
+
+    public static List<string> GetTableCards()
+    {
+        return Instance._tableCards;
+    }
+    
+    public static string GetMyHand(NetworkConnection conn)
+    {
+        return Instance._playerHands.TryGetValue(conn, out string hand) ? hand : string.Empty;
+    }
+
+    [Server]
     private void AssignPlayersIndex()
     {
+        int i = 0;
+        foreach (NetworkConnection conn in base.NetworkManager.ServerManager.Clients.Values)
+        {
+            if (i != 0)
+            {
+                _playersIndexes[conn] = GenerateNewPlayerIndex(); // host is not a player
+            }
+            i++;
+        }
+
+        if (base.NetworkManager.ServerManager.Clients.Count == 0)
+        {
+            UnityEngine.Debug.LogWarning("No clients found to deal index");
+        }
+    }
+
+    [Server]
+    private int GenerateNewPlayerIndex()
+    {
+        playerIndex++;
+        return playerIndex;
     }
 
     public void NewRoundInit()
@@ -39,7 +87,30 @@ public class PokerServerManager : NetworkBehaviour
             _deck = new Deck(1);
         }
         _deck.Shuffle();
-        DealInitialCards();
+        Instance.DealInitialCards();
+     //   PokerDisplayerScript.Init();
+    }
+
+    [Client]
+    public static void RevealCardOnTable()
+    {
+        Instance.HitCardServer();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void HitCardServer(NetworkConnection sender = null)
+    {
+        string cardToAdd = Instance.PullCard();
+        _tableCards.Add(cardToAdd);
+
+        UpdateBroadcast msg = new()
+        {
+            NewRound = false,
+            UpdateCards = true
+        };
+        InstanceFinder.ServerManager.Broadcast(msg);
+
+        Debug.LogWarning("New table hand: " + _tableCards.ToArray());
     }
 
     [Server]
@@ -51,9 +122,9 @@ public class PokerServerManager : NetworkBehaviour
             _playerIsMyTurn[conn] = !isFirstTurnSet;
             isFirstTurnSet = true;
 
-            if(!InstanceFinder.IsHost)
-                _playerHands[conn] = PullCard() + ", " + PullCard();
-        }        
+            _playerHands[conn] = PullCard() + ", " + PullCard();
+            Debug.LogWarning("Set 2 cards for a client");
+        }
     }
 
     [Server]
@@ -103,7 +174,7 @@ public class PokerServerManager : NetworkBehaviour
             UnityEngine.Debug.LogWarning("Cant find next client");
         }
 
-    }
+    }    
 
     private NetworkConnection GetNextPlayersTurn(NetworkConnection sender)
     {
@@ -196,6 +267,11 @@ public class PokerServerManager : NetworkBehaviour
             return false;
         }
         return _playerIsMyTurn.TryGetValue(conn, out bool isTurn) && isTurn;
+    }
+
+    public string GetInitCards()
+    {
+        return PullCard() + ", " + PullCard();
     }
 
     public struct UpdateBroadcast : IBroadcast

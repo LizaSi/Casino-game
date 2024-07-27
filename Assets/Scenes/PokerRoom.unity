@@ -472,6 +472,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: CanvasGame
       objectReference: {fileID: 0}
+    - target: {fileID: 238562043921381800, guid: 6ddb9a00093712d45b79e36fb1f7ed4e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 238562043921381810, guid: 6ddb9a00093712d45b79e36fb1f7ed4e, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -566,17 +570,6 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 6ddb9a00093712d45b79e36fb1f7ed4e, type: 3}
---- !u!114 &190961928 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4094985504187360634, guid: 6ddb9a00093712d45b79e36fb1f7ed4e, type: 3}
-  m_PrefabInstance: {fileID: 190961927}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f831b43128364c54eb84b5bfcc5ee1bc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &229003176
 GameObject:
   m_ObjectHideFlags: 0
@@ -2448,6 +2441,90 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 5620023247811269349, guid: 1527a0cbd402ee2429fd6695e19c6786, type: 3}
   m_PrefabInstance: {fileID: 916966587}
   m_PrefabAsset: {fileID: 0}
+--- !u!1 &917859597
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 917859598}
+  - component: {fileID: 917859599}
+  - component: {fileID: 917859600}
+  m_Layer: 0
+  m_Name: CardViewer
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &917859598
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917859597}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 309.68903, y: 691.7079, z: 940.2861}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 8287046796582292205}
+  m_Father: {fileID: 0}
+  m_RootOrder: 13
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &917859599
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917859597}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 90bdfb6e21619784da571c70bc61f7e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _componentIndexCache: 0
+  _addedNetworkObject: {fileID: 917859600}
+  _networkObjectCache: {fileID: 917859600}
+  pokerServerManager: {fileID: 957557617}
+  CardTransform: {fileID: 8287046796582292205}
+--- !u!114 &917859600
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 917859597}
+  m_Enabled: 0
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 26b716c41e9b56b4baafaf13a523ba2e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  <IsNested>k__BackingField: 0
+  <ComponentIndex>k__BackingField: 0
+  <PredictedSpawn>k__BackingField: {fileID: 0}
+  _networkBehaviours:
+  - {fileID: 917859599}
+  <ParentNetworkObject>k__BackingField: {fileID: 0}
+  <ChildNetworkObjects>k__BackingField: []
+  SerializedTransformProperties:
+    Position: {x: 309.68903, y: 691.7079, z: 940.2861}
+    Rotation: {x: 0, y: 0, z: 0, w: 1}
+    LocalScale: {x: 1, y: 1, z: 1}
+  _isNetworked: 1
+  _isGlobal: 0
+  _initializeOrder: 0
+  _defaultDespawnType: 0
+  NetworkObserver: {fileID: 0}
+  <PrefabId>k__BackingField: 0
+  <SpawnableCollectionId>k__BackingField: 0
+  _scenePathHash: 3513835212
+  <SceneId>k__BackingField: 15091807319339990371
+  <AssetPathHash>k__BackingField: 0
 --- !u!1001 &949729086
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2588,7 +2665,7 @@ MonoBehaviour:
   _componentIndexCache: 0
   _addedNetworkObject: {fileID: 957557616}
   _networkObjectCache: {fileID: 957557616}
-  PokerDisplayerScript: {fileID: 190961928}
+  PokerDisplayerScript: {fileID: 4094985504187360634, guid: 6ddb9a00093712d45b79e36fb1f7ed4e, type: 3}
 --- !u!4 &957557618
 Transform:
   m_ObjectHideFlags: 0
@@ -4997,3 +5074,69 @@ Light:
   m_UseViewFrustumForShadowCasterCull: 1
   m_ShadowRadius: 0
   m_ShadowAngle: 0
+--- !u!1001 &2771235075820669735
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    m_TransformParent: {fileID: 917859598}
+    m_Modifications:
+    - target: {fileID: 6157800276124713418, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
+      propertyPath: m_RootOrder
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6157800276124713418, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -312.47
+      objectReference: {fileID: 0}
+    - target: {fileID: 6157800276124713418, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -684.97
+      objectReference: {fileID: 0}
+    - target: {fileID: 6157800276124713418, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: -909.54
+      objectReference: {fileID: 0}
+    - target: {fileID: 6157800276124713418, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: -0.7607682
+      objectReference: {fileID: 0}
+    - target: {fileID: 6157800276124713418, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0.6490238
+      objectReference: {fileID: 0}
+    - target: {fileID: 6157800276124713418, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6157800276124713418, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6157800276124713418, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 279.064
+      objectReference: {fileID: 0}
+    - target: {fileID: 6157800276124713418, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6157800276124713418, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 6791206228304796528, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
+      propertyPath: m_Name
+      value: Table_Card_Transform_Poker
+      objectReference: {fileID: 0}
+    - target: {fileID: 6791206228304796528, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
+--- !u!4 &8287046796582292205 stripped
+Transform:
+  m_CorrespondingSourceObject: {fileID: 6157800276124713418, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
+  m_PrefabInstance: {fileID: 2771235075820669735}
+  m_PrefabAsset: {fileID: 0}
