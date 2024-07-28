@@ -399,9 +399,6 @@ MonoBehaviour:
   _componentIndexCache: 0
   _addedNetworkObject: {fileID: 238562043921381815}
   _networkObjectCache: {fileID: 238562043921381815}
-  BetButton: {fileID: 2074770364506275515}
-  checkButton: {fileID: 6241176132281631225}
-  FoldButton: {fileID: 7487779236258394406}
   winText: {fileID: 8632804720635569263}
   newRoundButton: {fileID: 110692520356709970}
   pokerComponentsParent: {fileID: 5443396713701156393}

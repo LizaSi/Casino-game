@@ -40,7 +40,6 @@ public class PokerServerManager : NetworkBehaviour
         {
             Instance = this;
         }
-        AssignPlayersIndex();
         NewRoundInit();
 
         OnInitialized?.Invoke();
@@ -68,6 +67,7 @@ public class PokerServerManager : NetworkBehaviour
             Instance._deck = new Deck(1);
         }
         Instance._deck.Shuffle();
+        Instance.AssignPlayersIndex();
         Instance.DealInitialCards();
     }
 
@@ -106,7 +106,7 @@ public class PokerServerManager : NetworkBehaviour
                 isFirstTurnSet = true;
 
                 _playerHands[conn] = PullCard() + ", " + PullCard();
-                Debug.LogWarning("Set 2 cards for a client");
+                Debug.LogWarning("Set 2 cards for a client and is my turn is " + _playerIsMyTurn[conn]);
             }
           
             i++;
@@ -123,6 +123,14 @@ public class PokerServerManager : NetworkBehaviour
         //_deck.Shuffle();
         UnityEngine.Debug.Log("There are " + _deck.GetCards().Count + " cards in deck");
         return _deck.DrawCard();
+    }
+
+    [Client]
+    public static void ClientFold(NetworkConnection conn)
+    {
+        Instance._playerHands.Remove(conn);
+        Instance._playerIsMyTurn.Remove(conn);
+        Instance._playersIndexes.Remove(conn);
     }
 
     [Client]
@@ -209,21 +217,10 @@ public class PokerServerManager : NetworkBehaviour
         await userRef.Child("coins").SetValueAsync(updatedCoins);
     }
 
-    public static bool IsMyTurn(NetworkConnection conn = null)
+    public static bool IsMyTurn(NetworkConnection conn) // Doesnt work somewhy
     {
-        if (conn == null)
-        {
-            UnityEngine.Debug.LogError("NetworkConnection is null.");
-            return false;
-        }
-
-        if (Instance._playerIsMyTurn == null)
-        {
-            UnityEngine.Debug.LogError("Player turn status dictionary is not initialized.");
-            return false;
-        }
-        if(Instance._playerIsMyTurn.TryGetValue(conn, out bool isTurn))
-        {
+        if(!Instance._playerIsMyTurn.TryGetValue(conn, out bool isTurn))
+        {            
             Debug.LogError("No network connection in PlayerIsMyTurn");
             return false;
         }
@@ -259,7 +256,7 @@ public class PokerServerManager : NetworkBehaviour
     {
         playerIndex++;
         return playerIndex;
-    }
+    }    
 
     public struct UpdateBroadcast : IBroadcast
     {

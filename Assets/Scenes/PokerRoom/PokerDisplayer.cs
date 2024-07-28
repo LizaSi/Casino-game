@@ -14,9 +14,6 @@ using System.Linq;
 
 public class PokerDisplayer : NetworkBehaviour
 {
-    [SerializeField] private Button BetButton;
-    [SerializeField] private Button checkButton;
-    [SerializeField] private Button FoldButton;
     [SerializeField] private TMP_Text winText;
     [SerializeField] private Button newRoundButton;
     [SerializeField] private GameObject pokerComponentsParent;
@@ -122,6 +119,12 @@ public class PokerDisplayer : NetworkBehaviour
         newRoundButton.gameObject.SetActive(false);
     }
 
+    public void Fold_OnClick()
+    {
+        PokerServerManager.ClientFold(base.Owner);
+        PokerServerManager.ClientCheck();
+    }
+
     public void Check_OnClick()
     {
         PokerServerManager.ClientCheck();
@@ -184,7 +187,7 @@ public class PokerDisplayer : NetworkBehaviour
 
     private void handleClientTurn()
     {
-        if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
+        if (InstanceFinder.IsServer) // If we want all client cards on table delete this line
         { 
             return;
         }
@@ -193,15 +196,11 @@ public class PokerDisplayer : NetworkBehaviour
 
         if (PokerServerManager.IsMyTurn(base.Owner))
         {
-            checkButton.gameObject.SetActive(true);
-            FoldButton.gameObject.SetActive(true);
-            BetButton.gameObject.SetActive(true);
+            pokerComponentsParent.SetActive(true);
         }
         else
         {
-            FoldButton.gameObject.SetActive(false);
-            BetButton.gameObject.SetActive(false);
-            checkButton.gameObject.SetActive(false);
+            pokerComponentsParent.SetActive(false);
         }
     }    
 
