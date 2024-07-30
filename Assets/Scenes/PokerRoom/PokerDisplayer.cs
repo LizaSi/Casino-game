@@ -41,7 +41,7 @@ public class PokerDisplayer : NetworkBehaviour
 
     public void InitGame()
     {        
-        StartCoroutine(StartRoundInDelay());
+        StartCoroutine(ClientTurnInDelay());
         InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
         InstanceFinder.ClientManager.RegisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
         InstanceFinder.ClientManager.RegisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);
@@ -58,7 +58,6 @@ public class PokerDisplayer : NetworkBehaviour
     private void DisplayCardsClient()
     {
         GameObject CardViewer = GameObject.Find("CardViewer");
-
         int spaceIndex = 0;
         string hand = GetMyHand(base.Owner);
         string[] cardNames = hand.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
@@ -87,30 +86,36 @@ public class PokerDisplayer : NetworkBehaviour
     {
         if (msg.UpdateCards && InstanceFinder.IsServer && !base.Owner.IsLocalClient)
         {
-            GameObject CardViewer = GameObject.Find("CardViewer");
-
-            List<string> tableCards = PokerServerManager.GetTableCards();
-
-            string cardName = tableCards.Last();
-            Debug.LogWarning("Displaying card " + cardName);
-
-            string cardDir = "Cards/" + cardName;
-            GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir));
-            Vector3 newPosition = TableCardTransform.position + new Vector3(tableSpaceIndex * tableCardSpacing, 0, 0);
-
-            instantiatedCard.transform.SetPositionAndRotation(newPosition, TableCardTransform.rotation);
-            instantiatedCard.transform.localScale = TableCardTransform.localScale;
-
-            instantiatedCard.transform.SetParent(CardViewer.transform, false);
-
-            spawnedCards.Add(instantiatedCard);
-            tableSpaceIndex++;
+            DisplayNewCardOnTable();
+            
         }
         if (msg.UpdateCards && !InstanceFinder.IsServer && base.Owner.IsLocalClient)
         {
            // handleClientTurn();
         //    StartCoroutine(ClientTurnInDelay());
         }
+    }
+
+    private void DisplayNewCardOnTable()
+    {
+        GameObject CardViewer = GameObject.Find("CardViewer");
+
+        List<string> tableCards = PokerServerManager.GetTableCards();
+
+        string cardName = tableCards.Last();
+        Debug.LogWarning("Displaying card " + cardName);
+
+        string cardDir = "Cards/" + cardName;
+        GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir));
+        Vector3 newPosition = TableCardTransform.position + new Vector3(tableSpaceIndex * tableCardSpacing, 0, 0);
+
+        instantiatedCard.transform.SetPositionAndRotation(newPosition, TableCardTransform.rotation);
+        instantiatedCard.transform.localScale = TableCardTransform.localScale;
+
+        instantiatedCard.transform.SetParent(CardViewer.transform, false);
+
+        spawnedCards.Add(instantiatedCard);
+        tableSpaceIndex++;
     }
 
     public void NewRound_OnClick()
@@ -121,8 +126,8 @@ public class PokerDisplayer : NetworkBehaviour
 
     public void Fold_OnClick()
     {
-        PokerServerManager.ClientFold(base.Owner);
         PokerServerManager.ClientCheck();
+        PokerServerManager.ClientFold(base.Owner);
     }
 
     public void Check_OnClick()
@@ -176,18 +181,9 @@ public class PokerDisplayer : NetworkBehaviour
         }
     }
 
-    private IEnumerator StartRoundInDelay()
-    {
-        handleClientTurn();
-        yield return new WaitForSeconds(3f); // Wait for client to get up before broadcasting it. 
-        handleClientTurn();
-
-        // pokerServerManager.ClientCheck();
-    }
-
     private void handleClientTurn()
     {
-        if (InstanceFinder.IsServer) // If we want all client cards on table delete this line
+        if (InstanceFinder.IsServer || !base.Owner.IsLocalClient) // If we want all client cards on table delete this line
         { 
             return;
         }
@@ -202,7 +198,7 @@ public class PokerDisplayer : NetworkBehaviour
         {
             pokerComponentsParent.SetActive(false);
         }
-    }    
+    }
 
 
     private void OnClientMsgBroadcast(ClientMsgBroadcast msg)

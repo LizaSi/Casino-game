@@ -17,7 +17,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &7166142869744895271
 RectTransform:
   m_ObjectHideFlags: 0
@@ -597,7 +597,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 3850698587815182671}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4094985504187360634}
+        m_TargetAssemblyTypeName: PokerDisplayer, Assembly-CSharp
+        m_MethodName: Bet_OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &1309194370073455158
 GameObject:
   m_ObjectHideFlags: 0
@@ -1392,7 +1404,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 4855474972094863411}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4094985504187360634}
+        m_TargetAssemblyTypeName: PokerDisplayer, Assembly-CSharp
+        m_MethodName: Check_OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &5443396713701156393
 GameObject:
   m_ObjectHideFlags: 0
@@ -1962,7 +1986,19 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 5914944428809759736}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 4094985504187360634}
+        m_TargetAssemblyTypeName: PokerDisplayer, Assembly-CSharp
+        m_MethodName: Fold_OnClick
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
 --- !u!1 &7754806162822586970
 GameObject:
   m_ObjectHideFlags: 0
@@ -1978,7 +2014,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &5641771496909363549
 RectTransform:
   m_ObjectHideFlags: 0

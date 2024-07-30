@@ -90,7 +90,7 @@ public class PokerServerManager : NetworkBehaviour
         };
         InstanceFinder.ServerManager.Broadcast(msg);
 
-        Debug.LogWarning("New table hand: " + _tableCards.ToArray());
+        Debug.LogWarning("New table hand: " + string.Join("",_tableCards));
     }
 
     [Server]
