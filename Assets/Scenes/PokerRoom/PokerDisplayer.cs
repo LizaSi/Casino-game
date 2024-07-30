@@ -11,6 +11,7 @@ using static PokerServerManager;
 using System;
 using FishNet.Connection;
 using System.Linq;
+using Unity.VisualScripting;
 
 public class PokerDisplayer : NetworkBehaviour
 {
@@ -19,11 +20,14 @@ public class PokerDisplayer : NetworkBehaviour
     [SerializeField] private GameObject pokerComponentsParent;
     [SerializeField] private Transform CardTransform;
     [SerializeField] private Transform TableCardTransform;
+    [SerializeField] private Text checkButtonText;
+
 
     private float cardSpacing = 2.8f;
     private float tableCardSpacing = 1.5f;
     private int tableSpaceIndex = 0;
     private List<GameObject> spawnedCards = new();
+    private List<Card> cardsOnTable = new();
 
     private void Start()
     {
@@ -42,9 +46,11 @@ public class PokerDisplayer : NetworkBehaviour
     public void InitGame()
     {        
         StartCoroutine(ClientTurnInDelay());
+        PokerServerManager.JoinWithName(base.Owner, LoggedUser.Username);
         InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
         InstanceFinder.ClientManager.RegisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
         InstanceFinder.ClientManager.RegisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);
+        NewRoundInit();
     }
 
     private void OnDisable()
@@ -86,8 +92,7 @@ public class PokerDisplayer : NetworkBehaviour
     {
         if (msg.UpdateCards && InstanceFinder.IsServer && !base.Owner.IsLocalClient)
         {
-            DisplayNewCardOnTable();
-            
+            DisplayCardDealer(msg.CardToAdd);
         }
         if (msg.UpdateCards && !InstanceFinder.IsServer && base.Owner.IsLocalClient)
         {
@@ -96,16 +101,15 @@ public class PokerDisplayer : NetworkBehaviour
         }
     }
 
-    private void DisplayNewCardOnTable()
+    private void DisplayCardDealer(string cardToAdd)
     {
+      /*  if (cardsOnTable.Contains(new Card(cardToAdd)))
+            return;*/
         GameObject CardViewer = GameObject.Find("CardViewer");
 
-        List<string> tableCards = PokerServerManager.GetTableCards();
+        Debug.LogWarning("Displaying card " + cardToAdd);
 
-        string cardName = tableCards.Last();
-        Debug.LogWarning("Displaying card " + cardName);
-
-        string cardDir = "Cards/" + cardName;
+        string cardDir = "Cards/" + cardToAdd;
         GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir));
         Vector3 newPosition = TableCardTransform.position + new Vector3(tableSpaceIndex * tableCardSpacing, 0, 0);
 
@@ -115,29 +119,39 @@ public class PokerDisplayer : NetworkBehaviour
         instantiatedCard.transform.SetParent(CardViewer.transform, false);
 
         spawnedCards.Add(instantiatedCard);
+        cardsOnTable.Add(new Card(cardToAdd));
         tableSpaceIndex++;
+    }
+
+    private void NewRoundInit()
+    {
+        PokerServerManager.NewRoundInit();
+        DespawnAllCards();
+        newRoundButton.gameObject.SetActive(false);
+        GiveBlindCoins(base.Owner);
     }
 
     public void NewRound_OnClick()
     {
-        PokerServerManager.NewRoundInit();
-        newRoundButton.gameObject.SetActive(false);
+        NewRoundInit();
     }
 
     public void Fold_OnClick()
     {
         PokerServerManager.ClientCheck();
         PokerServerManager.ClientFold(base.Owner);
+        pokerComponentsParent.SetActive(false);
     }
 
     public void Check_OnClick()
     {
         PokerServerManager.ClientCheck();
+        pokerComponentsParent.SetActive(false);
     }
 
     public void Bet_OnClick()
     {
-        int amountFromUI = 10;
+        int amountFromUI = 50;
         PokerServerManager.ClientBet(amountFromUI);
     }
 
@@ -193,14 +207,25 @@ public class PokerDisplayer : NetworkBehaviour
         if (PokerServerManager.IsMyTurn(base.Owner))
         {
             pokerComponentsParent.SetActive(true);
+            int coinsToCall = HowManyCoinsToCall(base.Owner);
+            if (coinsToCall > 0)
+            {
+                SetCheckButton(false, coinsToCall);
+            }
         }
-        else
+      /*  else
         {
             pokerComponentsParent.SetActive(false);
-        }
+        }*/
     }
 
-
+    private void SetCheckButton(bool isCheck, int callAmount = 0)
+    {
+        if (isCheck)
+            checkButtonText.text = "Check";
+        else
+            checkButtonText.text = "Call " + callAmount;
+    }
     private void OnClientMsgBroadcast(ClientMsgBroadcast msg)
     {
         if (msg.IsWinMessage)
@@ -236,7 +261,7 @@ public class PokerDisplayer : NetworkBehaviour
     {
         if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
         {
-            handleClientTurn();
+           // handleClientTurn();
             StartCoroutine(ClientTurnInDelay());
         }
     }

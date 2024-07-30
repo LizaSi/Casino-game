@@ -21,6 +21,11 @@ public class Card
         CardType = cardType;
     }
 
+    public Card(string cardType)
+    {
+        CardType = (CardsByOrder)Enum.Parse(typeof(CardsByOrder), cardType);
+    }
+
     public static int StringToCard(string cardAsText)
     {
         return translateTextToEnumCard(cardAsText);

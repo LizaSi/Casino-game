@@ -72,7 +72,16 @@ public class ServerManager : MonoBehaviour
         if (networkDiscovery != null && _networkManager != null)
         {
             _networkManager.ClientManager.StartConnection();
-
+            StopCoroutine(DelayedServerCheck());
+            StartCoroutine(DelayedSceneLoad());
+        }
+        else
+        {
+            networkDiscovery = FindObjectOfType<NetworkDiscovery>();
+            _networkManager = FindObjectOfType<NetworkManager>();
+            networkDiscovery.StopAllCoroutines();
+            _networkManager.StopAllCoroutines();
+            _networkManager.ClientManager.StartConnection();
             StopCoroutine(DelayedServerCheck());
             StartCoroutine(DelayedSceneLoad());
         }
@@ -101,6 +110,18 @@ public class ServerManager : MonoBehaviour
     {
         if (!networkDiscovery.IsSearching)
         {
+            networkDiscovery.SearchForServers();
+            StartCoroutine(DelayedServerCheck());
+        }
+        else if (networkDiscovery == null)
+        {
+            networkDiscovery = FindObjectOfType<NetworkDiscovery>();
+            _networkManager = FindObjectOfType<NetworkManager>();
+            networkDiscovery.StopAllCoroutines();
+            _networkManager.StopAllCoroutines();
+            _networkManager.ClientManager.StopConnection();
+            _networkManager.ServerManager.StopConnection(false);
+            _networkManager.ClientManager.StartConnection();
             networkDiscovery.SearchForServers();
             StartCoroutine(DelayedServerCheck());
         }

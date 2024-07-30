@@ -8,6 +8,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using TMPro;
 using Unity.VisualScripting;
 using UnityEngine;
 
@@ -16,16 +17,35 @@ public class PokerServerManager : NetworkBehaviour
     private static PokerServerManager Instance;
 
     [SerializeField] private PokerDisplayer PokerDisplayerScript;
+    [SerializeField] private TMP_InputField PotValue;
+
     private Deck _deck;
     private int playerIndex = 0;
     private List<string> _tableCards = new();
+    private int _currentBet = 0;
+    private int _pot = 0;
+    private int _smallBlind = 10;
+    private int _bigBlind = 20;
+    private int _currentTurnIndex = 0;
+    private int _blindIndex = 0;
+    private NetworkConnection _bigBlindConn;
 
     public static event Action OnInitialized;
 
     [SyncObject] private readonly SyncDictionary<NetworkConnection, string> _playerHands = new();
     [SyncObject] private readonly SyncDictionary<NetworkConnection, bool> _playerIsMyTurn = new();
     [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playersIndexes = new();
-
+    [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playerBets = new();
+    private readonly Dictionary<NetworkConnection, string> _playerNames = new();
+    public int Pot
+    {
+        get { return _pot; }
+        set
+        {
+            _pot = value;
+            UpdatePotValueText();
+        }
+    }
     private void Awake()
     {
         if (Instance == null)
@@ -40,9 +60,15 @@ public class PokerServerManager : NetworkBehaviour
         {
             Instance = this;
         }
-        NewRoundInit();
+        
+     //   NewRoundInit();
 
         OnInitialized?.Invoke();
+    }
+
+    public static void JoinWithName(NetworkConnection conn, string username)
+    {
+        Instance._playerNames.Add(conn, username);
     }
 
     public static bool IsInitialized()
@@ -69,6 +95,41 @@ public class PokerServerManager : NetworkBehaviour
         Instance._deck.Shuffle();
         Instance.AssignPlayersIndex();
         Instance.DealInitialCards();
+        Instance._currentBet = Instance._bigBlind;
+    }
+
+    public static int HowManyCoinsToCall(NetworkConnection conn)
+    {
+        return Instance._currentBet - Instance._playerBets[conn];
+    }
+
+    public async static void GiveBlindCoins(NetworkConnection conn)
+    {
+        if(Instance._blindIndex == 0)
+        {
+            Instance._bigBlindConn = conn;
+            await Instance.UpdateBlindCoins(conn, Instance._bigBlind);
+            Instance.Pot += Instance._bigBlind;
+            Instance._playerBets[conn] = Instance._bigBlind;
+            Debug.LogWarning("Gave big");
+        }
+        else if (Instance._blindIndex == 1)
+        {
+            await Instance.UpdateBlindCoins(conn, Instance._smallBlind);
+            Instance.Pot += Instance._smallBlind;
+            Instance._playerBets[conn] = Instance._smallBlind;
+            Debug.LogWarning("Gave small");
+        }
+        else
+        {
+            Instance._playerBets[conn] = 0;
+        }
+        Instance._blindIndex++;
+    }
+
+    private int getNextIndexTurn(int playersLength, int blindIndex)
+    {
+        return (blindIndex + 1) % (playersLength + 1) + 1;
     }
 
     [Client]
@@ -86,7 +147,8 @@ public class PokerServerManager : NetworkBehaviour
         UpdateBroadcast msg = new()
         {
             NewRound = false,
-            UpdateCards = true
+            UpdateCards = true,
+            CardToAdd = cardToAdd
         };
         InstanceFinder.ServerManager.Broadcast(msg);
 
@@ -97,13 +159,18 @@ public class PokerServerManager : NetworkBehaviour
     private void DealInitialCards()
     {
         int i = 0;
-        bool isFirstTurnSet = false;
         foreach (NetworkConnection conn in NetworkManager.ServerManager.Clients.Values)
         {
             if (i != 0) // Dealer doesnt need cards
             {
-                _playerIsMyTurn[conn] = !isFirstTurnSet;
-                isFirstTurnSet = true;
+                if(Instance._bigBlindConn == conn)
+                {
+                    _playerIsMyTurn[conn] = true;
+                }
+                else
+                {
+                    _playerIsMyTurn[conn] = false;
+                }
 
                 _playerHands[conn] = PullCard() + ", " + PullCard();
                 Debug.LogWarning("Set 2 cards for a client and is my turn is " + _playerIsMyTurn[conn]);
@@ -173,12 +240,30 @@ public class PokerServerManager : NetworkBehaviour
     {
         _playersIndexes.TryGetValue(sender, out int currentUserIndex);
 
-        int nextUserIndex = (currentUserIndex % _playersIndexes.Count) + 1;
+        int nextUserIndex = (currentUserIndex + 1 % _playersIndexes.Count);
 
         UnityEngine.Debug.LogWarning("Turn over for " + currentUserIndex);
         UnityEngine.Debug.LogWarning("Turn started for " + nextUserIndex);
 
         return _playersIndexes.FirstOrDefault(x => x.Value == nextUserIndex).Key;
+    }
+
+    private async Task UpdateBlindCoins(NetworkConnection conn, int coinToDecrease)
+    {
+        string name = _playerNames[conn];
+        DatabaseReference userRef = FirebaseDatabase.DefaultInstance.GetReference("users").Child(name);
+
+        DataSnapshot dataSnapshot = await userRef.GetValueAsync();
+        int currentCoins = 0;
+
+        if (dataSnapshot.Exists && dataSnapshot.Child("coins").Value != null)
+        {
+            int.TryParse(dataSnapshot.Child("coins").Value.ToString(), out currentCoins);
+        }
+
+        int updatedCoins = currentCoins - coinToDecrease;
+
+        await userRef.Child("coins").SetValueAsync(updatedCoins);
     }
 
     public static async Task<GameResult> DidIWin(NetworkConnection conn, string username)
@@ -254,14 +339,25 @@ public class PokerServerManager : NetworkBehaviour
     [Server]
     private int GenerateNewPlayerIndex()
     {
-        playerIndex++;
+        int numOfTotalPlayers = base.NetworkManager.ServerManager.Clients.Values.Count - 1;
+        playerIndex = (playerIndex + 1) % numOfTotalPlayers;
+        Debug.LogWarning("Player index " + playerIndex + " joined");
         return playerIndex;
-    }    
+    }
+
+    private void UpdatePotValueText()
+    {
+        if (PotValue != null)
+        {
+            PotValue.text = _pot.ToString();
+        }
+    }
 
     public struct UpdateBroadcast : IBroadcast
     {
         public bool NewRound;
         public bool UpdateCards;
+        public string CardToAdd;
     }
 
     public struct TurnPassBroadcast : IBroadcast
