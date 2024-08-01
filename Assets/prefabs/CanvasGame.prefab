@@ -412,7 +412,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 238562043921381800}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 952ddf32427a46d479385d30169842b9, type: 3}
   m_Name: 
@@ -473,7 +473,7 @@ MonoBehaviour:
   _initializeOrder: 0
   _defaultDespawnType: 1
   NetworkObserver: {fileID: 0}
-  <PrefabId>k__BackingField: 13
+  <PrefabId>k__BackingField: 14
   <SpawnableCollectionId>k__BackingField: 0
   _scenePathHash: 0
   <SceneId>k__BackingField: 0
@@ -934,7 +934,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: 182.48, y: 112.37}
+  m_AnchoredPosition: {x: 182.48, y: 199}
   m_SizeDelta: {x: 266.02, y: 66}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &4723888772984801887
@@ -2065,7 +2065,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
-  m_AnchoredPosition: {x: -203.4262, y: 112}
+  m_AnchoredPosition: {x: -203.4262, y: 198.6299}
   m_SizeDelta: {x: 266, y: 66}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!222 &1226667760523717008

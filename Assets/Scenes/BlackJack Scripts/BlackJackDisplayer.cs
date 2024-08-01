@@ -69,7 +69,10 @@ public class BlackJackDisplayer : NetworkBehaviour
             }
         }
     }
-
+    /// <summary>
+    /// This function need to be fixed!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    /// </summary>
+    /// <param name="amountOfActivePlayers"></param>
     void DisplayPlayerCharacterForServer(int amountOfActivePlayers)
     {
         string playerDir = "Player/PlayerInstruments";
@@ -84,6 +87,8 @@ public class BlackJackDisplayer : NetworkBehaviour
             }
             //   ServerManager.Spawn(instantiatedCard);
             spawnedPlayers.Add(instantiatedPlayer);
+            ServerManager.Spawn(instantiatedPlayer);
+
         }
         /*
         float cardSpacing = 300f;
@@ -432,7 +437,13 @@ public class BlackJackDisplayer : NetworkBehaviour
 
     void DisplayCardsOnBoard(string cards)
     {
-        float cardSpacing = 300f;
+        float card2Spacing_X = 0.07f;
+        float card2Spacing_Y = 0.03f;
+        float card2Spacing_Z = -0.1f;
+        float cardSpacing_X = -0.03f;
+        float cardSpacing_Y = 0.02f;
+        float cardSpacing_Z = -0.1f;
+
 
         string[] cardNames = cards.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
 
@@ -444,15 +455,23 @@ public class BlackJackDisplayer : NetworkBehaviour
             // Load the card prefab from the Resources/Cards folder
             string cardDir = "Cards/" + cardName;
             GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir), cardParent);
-            instantiatedCard.transform.localScale = new Vector3(2000f, 1900f, 1f);
+            instantiatedCard.transform.localScale = new Vector3(2.2816f, 2.2816f, 2.2816f);
             instantiatedCard.transform.rotation = Quaternion.identity;
-            instantiatedCard.transform.localPosition = new Vector3((i * cardSpacing) + 537, 288, 15);
-            instantiatedCard.transform.rotation = Quaternion.Euler(0f, 181f, 0f);
+            if (i < 2)
+            {
+                instantiatedCard.transform.localPosition = new Vector3((i * card2Spacing_X) - 4.05f, (i * card2Spacing_Y) + 2.48f, (i * card2Spacing_Z) + 31.42f);
+            }
+            else
+            {
+                instantiatedCard.transform.localPosition = new Vector3(((i - 2) * cardSpacing_X) -3.47f, ((i - 2) * cardSpacing_Y) + 2.48f, ((i - 2) * cardSpacing_Z) + 31.45f);
+            }
+            instantiatedCard.transform.rotation = Quaternion.Euler(270f, 0f, -69.864f);
             if (instantiatedCard == null)
             {
                 Debug.LogWarning("No card object found in Resources");
                 return;
             }
+            
             ServerManager.Spawn(instantiatedCard);
             spawnedCards.Add(instantiatedCard);
         }

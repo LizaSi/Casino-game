@@ -582,7 +582,7 @@ MonoBehaviour:
   NetworkObserver: {fileID: 0}
   <PrefabId>k__BackingField: 2
   <SpawnableCollectionId>k__BackingField: 0
-  _scenePathHash: 2376927613
+  _scenePathHash: 0
   <SceneId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 1938630773614287865
 --- !u!1 &6986259340715507009
@@ -889,14 +889,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 6986259340929485593}
-  m_LocalRotation: {x: -0, y: -0.58144265, z: -0, w: 0.81358737}
-  m_LocalPosition: {x: 0.92991877, y: 17.27151, z: 28.137907}
+  m_LocalRotation: {x: -0.07509232, y: -0.88596225, z: 0.43079254, w: -0.15443389}
+  m_LocalPosition: {x: -0.37, y: 4.91, z: 28.58}
   m_LocalScale: {x: 1.0442001, y: 1.0442, z: 1.0442001}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 9215061848001369911}
   m_RootOrder: 1
-  m_LocalEulerAnglesHint: {x: 0, y: -87.986, z: 0}
+  m_LocalEulerAnglesHint: {x: 51.862, y: -199.776, z: 0}
 --- !u!108 &6986259340929485592
 Light:
   m_ObjectHideFlags: 0
@@ -1966,14 +1966,14 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 8870042925291282255}
-  m_LocalRotation: {x: 0.21080372, y: 0.78937286, z: -0.23754166, w: 0.52538204}
-  m_LocalPosition: {x: -5.391173, y: 3.8900867, z: 31.296934}
+  m_LocalRotation: {x: 0.34990364, y: 0.680281, z: -0.37531534, w: 0.5233772}
+  m_LocalPosition: {x: -4.72, y: 4.13, z: 31.57}
   m_LocalScale: {x: 1.0442001, y: 1.0442, z: 1.0442}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 9215061848001369911}
   m_RootOrder: 4
-  m_LocalEulerAnglesHint: {x: 36.621, y: 97.796, z: 5.951}
+  m_LocalEulerAnglesHint: {x: 61.271, y: 110.767, z: 9.968}
 --- !u!20 &8870042925291282250
 Camera:
   m_ObjectHideFlags: 0
