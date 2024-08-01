@@ -20,13 +20,14 @@ public class PokerDisplayer : NetworkBehaviour
     [SerializeField] private GameObject pokerComponentsParent;
     [SerializeField] private Transform CardTransform;
     [SerializeField] private Transform TableCardTransform;
-    [SerializeField] private Text checkButtonText;
-
+    [SerializeField] private TMP_Text checkButtonText;
+    [SerializeField] private TMP_Text betCoinsText;
 
     private float cardSpacing = 2.8f;
     private float tableCardSpacing = 1.5f;
     private int tableSpaceIndex = 0;
     private List<GameObject> spawnedCards = new();
+    private List<string> spawnedCardNames = new();
     private List<Card> cardsOnTable = new();
 
     private void Start()
@@ -68,6 +69,8 @@ public class PokerDisplayer : NetworkBehaviour
         string hand = GetMyHand(base.Owner);
         string[] cardNames = hand.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
 
+        if (spawnedCardNames.Contains(cardNames[0]) || spawnedCardNames.Contains(cardNames[1]))
+            return;
         for (int j = 0; j < cardNames.Length; j++)
         {
             string cardName = cardNames[j].Trim();
@@ -83,6 +86,7 @@ public class PokerDisplayer : NetworkBehaviour
             // Set the parent of the instantiated card to CardViewer
             instantiatedCard.transform.SetParent(CardViewer.transform, false);
 
+            spawnedCardNames.Add(cardName);
             spawnedCards.Add(instantiatedCard);
             spaceIndex++;
         }
@@ -123,12 +127,14 @@ public class PokerDisplayer : NetworkBehaviour
         tableSpaceIndex++;
     }
 
-    private void NewRoundInit()
+    private async void NewRoundInit()
     {
         PokerServerManager.NewRoundInit();
         DespawnAllCards();
         newRoundButton.gameObject.SetActive(false);
-        GiveBlindCoins(base.Owner);
+        int givenAmount = await GiveBlindCoins(base.Owner);
+        if(base.Owner.IsLocalClient)
+            betCoinsText.text = "Gave " + givenAmount.ToString();
     }
 
     public void NewRound_OnClick()
@@ -146,7 +152,7 @@ public class PokerDisplayer : NetworkBehaviour
     public void Check_OnClick()
     {
         PokerServerManager.ClientCheck();
-        pokerComponentsParent.SetActive(false);
+     //   pokerComponentsParent.SetActive(false);
     }
 
     public void Bet_OnClick()
@@ -201,7 +207,7 @@ public class PokerDisplayer : NetworkBehaviour
         { 
             return;
         }
-
+        Debug.LogWarning("Handling clients turn");
         DisplayCardsClient();
 
         if (PokerServerManager.IsMyTurn(base.Owner))

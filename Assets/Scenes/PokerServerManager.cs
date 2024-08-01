@@ -17,7 +17,7 @@ public class PokerServerManager : NetworkBehaviour
     private static PokerServerManager Instance;
 
     [SerializeField] private PokerDisplayer PokerDisplayerScript;
-    [SerializeField] private TMP_InputField PotValue;
+    [SerializeField] private TMP_Text PotValue;
 
     private Deck _deck;
     private int playerIndex = 0;
@@ -34,7 +34,7 @@ public class PokerServerManager : NetworkBehaviour
 
     [SyncObject] private readonly SyncDictionary<NetworkConnection, string> _playerHands = new();
     [SyncObject] private readonly SyncDictionary<NetworkConnection, bool> _playerIsMyTurn = new();
-    [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playersIndexes = new();
+    [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playersIndexes = new(); //starting from 0
     [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playerBets = new();
     private readonly Dictionary<NetworkConnection, string> _playerNames = new();
     public int Pot
@@ -93,9 +93,10 @@ public class PokerServerManager : NetworkBehaviour
             Instance._deck = new Deck(1);
         }
         Instance._deck.Shuffle();
-        Instance.AssignPlayersIndex();
+        Instance.AssignPlayersIndexAndTurns();
         Instance.DealInitialCards();
         Instance._currentBet = Instance._bigBlind;
+        Instance._blindIndex = Instance.getNextIndexTurn(Instance._playersIndexes.Count, Instance._blindIndex);
     }
 
     public static int HowManyCoinsToCall(NetworkConnection conn)
@@ -103,28 +104,32 @@ public class PokerServerManager : NetworkBehaviour
         return Instance._currentBet - Instance._playerBets[conn];
     }
 
-    public async static void GiveBlindCoins(NetworkConnection conn)
+    public async static Task<int> GiveBlindCoins(NetworkConnection conn)
     {
-        if(Instance._blindIndex == 0)
+        int givenAmount = 0;
+
+        if (Instance._playersIndexes[conn] == 2)
         {
-            Instance._bigBlindConn = conn;
             await Instance.UpdateBlindCoins(conn, Instance._bigBlind);
             Instance.Pot += Instance._bigBlind;
             Instance._playerBets[conn] = Instance._bigBlind;
             Debug.LogWarning("Gave big");
+            givenAmount = Instance._bigBlind;
         }
-        else if (Instance._blindIndex == 1)
+        else if (Instance._playersIndexes[conn] == 1)
         {
             await Instance.UpdateBlindCoins(conn, Instance._smallBlind);
             Instance.Pot += Instance._smallBlind;
             Instance._playerBets[conn] = Instance._smallBlind;
             Debug.LogWarning("Gave small");
+            givenAmount = Instance._smallBlind;
         }
         else
         {
             Instance._playerBets[conn] = 0;
         }
-        Instance._blindIndex++;
+
+        return givenAmount;
     }
 
     private int getNextIndexTurn(int playersLength, int blindIndex)
@@ -163,15 +168,6 @@ public class PokerServerManager : NetworkBehaviour
         {
             if (i != 0) // Dealer doesnt need cards
             {
-                if(Instance._bigBlindConn == conn)
-                {
-                    _playerIsMyTurn[conn] = true;
-                }
-                else
-                {
-                    _playerIsMyTurn[conn] = false;
-                }
-
                 _playerHands[conn] = PullCard() + ", " + PullCard();
                 Debug.LogWarning("Set 2 cards for a client and is my turn is " + _playerIsMyTurn[conn]);
             }
@@ -208,6 +204,7 @@ public class PokerServerManager : NetworkBehaviour
     [Client]
     public static void ClientCheck()
     {
+        UnityEngine.Debug.LogWarning("Passing turn");
         Instance.PassTurnServer();
     }
 
@@ -302,7 +299,7 @@ public class PokerServerManager : NetworkBehaviour
         await userRef.Child("coins").SetValueAsync(updatedCoins);
     }
 
-    public static bool IsMyTurn(NetworkConnection conn) // Doesnt work somewhy
+    public static bool IsMyTurn(NetworkConnection conn)
     {
         if(!Instance._playerIsMyTurn.TryGetValue(conn, out bool isTurn))
         {            
@@ -318,7 +315,7 @@ public class PokerServerManager : NetworkBehaviour
     }
 
     [Server]
-    private void AssignPlayersIndex()
+    private void AssignPlayersIndexAndTurns()
     {
         int i = 0;
         foreach (NetworkConnection conn in base.NetworkManager.ServerManager.Clients.Values)
@@ -326,6 +323,15 @@ public class PokerServerManager : NetworkBehaviour
             if (i != 0)
             {
                 _playersIndexes[conn] = GenerateNewPlayerIndex(); // host is not a player
+                if (i == 1) // index 0 will be big blind and first
+                {
+                    _playerIsMyTurn[conn] = true;
+                    Instance._bigBlindConn = conn;
+                }
+                else
+                {
+                    _playerIsMyTurn[conn] = false;
+                }
             }
             i++;
         }

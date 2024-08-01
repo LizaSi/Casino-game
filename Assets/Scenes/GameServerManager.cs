@@ -283,7 +283,7 @@ public class GameServerManager : NetworkBehaviour
         UnityEngine.Debug.LogWarning("Turn started for " + nextUserIndex);
 
         return _playersIndexes.FirstOrDefault(x => x.Value == nextUserIndex).Key;
-    }    
+    }
 
     [Server]
     private int GenerateNewPlayerIndex()

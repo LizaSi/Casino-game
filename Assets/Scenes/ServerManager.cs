@@ -67,7 +67,7 @@ public class ServerManager : MonoBehaviour
         }
     }
 
-    public void Advertise_OnClick() 
+    public void Advertise_OnClick()
     {
         if (networkDiscovery != null && _networkManager != null)
         {
@@ -81,6 +81,7 @@ public class ServerManager : MonoBehaviour
             _networkManager = FindObjectOfType<NetworkManager>();
             networkDiscovery.StopAllCoroutines();
             _networkManager.StopAllCoroutines();
+            networkDiscovery.StopSearchingOrAdvertising();
             _networkManager.ClientManager.StartConnection();
             StopCoroutine(DelayedServerCheck());
             StartCoroutine(DelayedSceneLoad());
@@ -113,7 +114,7 @@ public class ServerManager : MonoBehaviour
             networkDiscovery.SearchForServers();
             StartCoroutine(DelayedServerCheck());
         }
-        else if (networkDiscovery == null)
+        else if (networkDiscovery == null || _networkManager == null)
         {
             networkDiscovery = FindObjectOfType<NetworkDiscovery>();
             _networkManager = FindObjectOfType<NetworkManager>();
