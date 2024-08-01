@@ -96,7 +96,7 @@ public class PokerServerManager : NetworkBehaviour
         Instance.AssignPlayersIndexAndTurns();
         Instance.DealInitialCards();
         Instance._currentBet = Instance._bigBlind;
-        Instance._blindIndex = Instance.getNextIndexTurn(Instance._playersIndexes.Count, Instance._blindIndex);
+     //   Instance._blindIndex = Instance.getNextIndexTurn(Instance._playersIndexes.Count, Instance._blindIndex);
     }
 
     public static int HowManyCoinsToCall(NetworkConnection conn)
@@ -108,17 +108,17 @@ public class PokerServerManager : NetworkBehaviour
     {
         int givenAmount = 0;
 
-        if (Instance._playersIndexes[conn] == 2)
+        if (Instance._playersIndexes[conn] == 1)
         {
-            await Instance.UpdateBlindCoins(conn, Instance._bigBlind);
+            await Instance.UpdateCoins(conn, Instance._bigBlind);
             Instance.Pot += Instance._bigBlind;
             Instance._playerBets[conn] = Instance._bigBlind;
             Debug.LogWarning("Gave big");
             givenAmount = Instance._bigBlind;
         }
-        else if (Instance._playersIndexes[conn] == 1)
+        else if (Instance._playersIndexes[conn] == 0)
         {
-            await Instance.UpdateBlindCoins(conn, Instance._smallBlind);
+            await Instance.UpdateCoins(conn, Instance._smallBlind);
             Instance.Pot += Instance._smallBlind;
             Instance._playerBets[conn] = Instance._smallBlind;
             Debug.LogWarning("Gave small");
@@ -169,7 +169,7 @@ public class PokerServerManager : NetworkBehaviour
             if (i != 0) // Dealer doesnt need cards
             {
                 _playerHands[conn] = PullCard() + ", " + PullCard();
-                Debug.LogWarning("Set 2 cards for a client and is my turn is " + _playerIsMyTurn[conn]);
+                Debug.Log("Set 2 cards for a client and is my turn is " + _playerIsMyTurn[conn]);
             }
           
             i++;
@@ -204,8 +204,16 @@ public class PokerServerManager : NetworkBehaviour
     [Client]
     public static void ClientCheck()
     {
-        UnityEngine.Debug.LogWarning("Passing turn");
+        Instance.ClientCall();
         Instance.PassTurnServer();
+    }
+
+    private async void ClientCall(NetworkConnection sender = null)
+    {
+        if (_currentBet > _playerBets[sender])
+        {
+            await UpdateCoins(sender, _currentBet - _playerBets[sender]);
+        }
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -216,6 +224,8 @@ public class PokerServerManager : NetworkBehaviour
 
     private void PassTurnToNextClient(NetworkConnection sender = null)
     {
+        if (sender == null)
+            Debug.LogError("Sender conn is null");
         _playerIsMyTurn[sender] = false;
         NetworkConnection nextClient = GetNextPlayersTurn(sender);
         if (nextClient != null && !sender.Equals(nextClient)) // To Add a not dealer check
@@ -237,7 +247,7 @@ public class PokerServerManager : NetworkBehaviour
     {
         _playersIndexes.TryGetValue(sender, out int currentUserIndex);
 
-        int nextUserIndex = (currentUserIndex + 1 % _playersIndexes.Count);
+        int nextUserIndex = (currentUserIndex + 1) % _playersIndexes.Count;
 
         UnityEngine.Debug.LogWarning("Turn over for " + currentUserIndex);
         UnityEngine.Debug.LogWarning("Turn started for " + nextUserIndex);
@@ -245,7 +255,7 @@ public class PokerServerManager : NetworkBehaviour
         return _playersIndexes.FirstOrDefault(x => x.Value == nextUserIndex).Key;
     }
 
-    private async Task UpdateBlindCoins(NetworkConnection conn, int coinToDecrease)
+    private async Task UpdateCoins(NetworkConnection conn, int coinToDecrease)
     {
         string name = _playerNames[conn];
         DatabaseReference userRef = FirebaseDatabase.DefaultInstance.GetReference("users").Child(name);
@@ -327,11 +337,14 @@ public class PokerServerManager : NetworkBehaviour
                 {
                     _playerIsMyTurn[conn] = true;
                     Instance._bigBlindConn = conn;
+                    Debug.LogWarning("player index 1 is big blind");
                 }
                 else
                 {
                     _playerIsMyTurn[conn] = false;
+                    Debug.LogWarning($"player index {i} joined");
                 }
+
             }
             i++;
         }

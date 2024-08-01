@@ -198,39 +198,45 @@ public class Login : MonoBehaviour
 
         if (signInAndFetchProfile)
         {
-            AuthResult authResult = await auth.SignInAndRetrieveDataWithCredentialAsync(
-                EmailAuthProvider.GetCredential(email, password));
-
-            HandleSignInWithAuthResult(authResult);
+            await auth.SignInAndRetrieveDataWithCredentialAsync(
+              EmailAuthProvider.GetCredential(email, password)).ContinueWithOnMainThread(
+                HandleSignInWithAuthResult);
         }
         else
         {
             m_Label.text = "Connecting...";
-
-            AuthResult authResult = await auth.SignInWithEmailAndPasswordAsync(email, password);
-
-            HandleSignInWithAuthResult(authResult);
+            await auth.SignInWithEmailAndPasswordAsync(email, password)
+            .ContinueWithOnMainThread(HandleSignInWithAuthResult);
         }
     }
 
-    private async void HandleSignInWithAuthResult(AuthResult authResult)
+    private async void HandleSignInWithAuthResult(Task<AuthResult> task)
     {
-        if (authResult.User != null && authResult.User.IsValid())
+        if (LogTaskCompletion(task, "Sign-in"))
         {
-            string email = authResult.User.Email;
-            int atIndex = email.IndexOf('@');
-            string username = authResult.User.Email[..atIndex];
+            if (task.Result.User != null && task.Result.User.IsValid())
+            {
+                string email = task.Result.User.Email;
+                int atIndex = email.IndexOf('@');
+                string username = task.Result.User.Email[..atIndex];
 
-            int coins = await FetchUserCoinsAsync(username);
-            LoggedUser.SetUser(username, coins);
+                int coins = await FetchUserCoinsAsync(username);
+                LoggedUser.SetUser(username, coins);
 
-            m_Label.text = string.Format("{0} signed in", LoggedUser.Username);
+                m_Label.text = string.Format("{0} signed in", LoggedUser.Username);
 
-            SceneManager.LoadScene("RoomSelection");
+                SceneManager.LoadScene("RoomSelection");
+            }
+            else
+            {
+                m_Label.text = "Signed in but User is either null or invalid";
+            }
         }
         else
         {
-            m_Label.text = "Signed in but User is either null or invalid";
+            m_Label.text = "Creating user";
+            await createUser();
+            await SigninWithEmailAsync();
         }
     }
 
@@ -275,8 +281,7 @@ public class Login : MonoBehaviour
             foreach (Exception exception in task.Exception.Flatten().InnerExceptions)
             {
                 string authErrorCode = "";
-                Firebase.FirebaseException firebaseEx = exception as Firebase.FirebaseException;
-                if (firebaseEx != null)
+                if (exception is Firebase.FirebaseException firebaseEx)
                 {
                     authErrorCode = String.Format("AuthError.{0}: ",
                       ((Firebase.Auth.AuthError)firebaseEx.ErrorCode).ToString());

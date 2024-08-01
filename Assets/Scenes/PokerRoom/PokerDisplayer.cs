@@ -219,10 +219,10 @@ public class PokerDisplayer : NetworkBehaviour
                 SetCheckButton(false, coinsToCall);
             }
         }
-      /*  else
+        else
         {
             pokerComponentsParent.SetActive(false);
-        }*/
+        }
     }
 
     private void SetCheckButton(bool isCheck, int callAmount = 0)
