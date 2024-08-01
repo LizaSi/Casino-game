@@ -288,6 +288,7 @@ GameObject:
   - component: {fileID: 7661383226115728781}
   - component: {fileID: 238562043921381814}
   - component: {fileID: 238562043921381815}
+  - component: {fileID: -5623016232567631013}
   m_Layer: 5
   m_Name: CanvasGame
   m_TagString: Untagged
@@ -460,6 +461,7 @@ MonoBehaviour:
   - {fileID: 4094985504187360634}
   - {fileID: 7661383226115728781}
   - {fileID: 238562043921381814}
+  - {fileID: -5623016232567631013}
   <ParentNetworkObject>k__BackingField: {fileID: 0}
   <ChildNetworkObjects>k__BackingField: []
   SerializedTransformProperties:
@@ -471,11 +473,38 @@ MonoBehaviour:
   _initializeOrder: 0
   _defaultDespawnType: 1
   NetworkObserver: {fileID: 0}
-  <PrefabId>k__BackingField: 11
+  <PrefabId>k__BackingField: 13
   <SpawnableCollectionId>k__BackingField: 0
   _scenePathHash: 0
   <SceneId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 8450685366989422023
+--- !u!114 &-5623016232567631013
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 238562043921381800}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d86974c5a3cd4485e84693033ff8ac28, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _componentIndexCache: 3
+  _addedNetworkObject: {fileID: 238562043921381815}
+  _networkObjectCache: {fileID: 238562043921381815}
+  _playerSpots:
+  - {fileID: 2193714837297826528, guid: 06512a197f3a242b3971413ff8c4ab5c, type: 3}
+  - {fileID: 8255967963138556278, guid: ec5293c9736f349e2b3e8a0a4ec95013, type: 3}
+  - {fileID: 5317753564044027787, guid: af29c4319dc3d4774922f15cd4a41f87, type: 3}
+  - {fileID: 5044224609491465420, guid: c196151fb78484d5da6c7e72e165d534, type: 3}
+  - {fileID: 2916396254185186211, guid: db86394dc02954b4f98216874be1a645, type: 3}
+  cardsText: {fileID: 2638725071282069564}
+  hitButton: {fileID: 8528279210259157939}
+  checkButton: {fileID: 651182570947797397}
+  winText: {fileID: 8632804720635569263}
+  newRoundButton: {fileID: 110692520356709970}
+  cardParent: {fileID: 0}
 --- !u!1 &264837409462167341
 GameObject:
   m_ObjectHideFlags: 0

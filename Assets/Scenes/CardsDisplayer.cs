@@ -8,7 +8,6 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using TMPro;
 using Unity.Services.Authentication.PlayerAccounts;
 using UnityEngine;
@@ -122,7 +121,7 @@ public class CardsDisplayer : NetworkBehaviour
         {
             handleDealerTurn();
             UpdateCardsDisplay();
-        }      
+        }        
     }
 
     public void NewRound_OnClick()
@@ -239,23 +238,17 @@ public class CardsDisplayer : NetworkBehaviour
     {
         if (base.Owner.IsValid && GameServerManager.IsInitialized())
         {
-            if (InstanceFinder.IsServer && !base.Owner.IsLocalClient)
+            if (InstanceFinder.IsServer)
             {
-                bool isDealersTurn = IsMyTurn(base.Owner);
-
-                string turnOf = isDealersTurn ? "Dealer's" : "Client's";
                 List<string> cards = GetAllPlayerHands(base.Owner);
-                cardsText.text = "Players cards:\n" + string.Join("\n", cards) +
-                    "\nAnd it's " + turnOf + " turn";
-
-                DisplayCardsServer(cards);
+                cardsText.text = "Players cards:\n" + string.Join("\n", cards);
+                DisplayCardsServer(cards); 
             }
             else if (base.Owner.IsLocalClient)
             {
                 string cards = GameServerManager.GetPlayerHand(base.Owner);
                 //   int playerIndex = GameServerManager.GetPlayerIndex(base.Owner);
                 DisplayCardsOnBoard(cards);
-                cardsText.text = "\nIt's " + (IsMyTurn(base.Owner)? "Clinet's": "Dealer's") + " turn";
             }
         }
         else

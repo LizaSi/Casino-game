@@ -100,7 +100,7 @@ public class MemberList : NetworkBehaviour
             button.gameObject.SetActive(true);
         }
     }
-
+    
     public void StartBlackjack_OnClick()
     {
         foreach (NetworkConnection conn in base.NetworkManager.ServerManager.Clients.Values)
@@ -122,9 +122,42 @@ public class MemberList : NetworkBehaviour
         {
             Debug.LogWarning("canvas members prefab is null");
         }
-      //  UnloadScene("CreateRoom");
-     //      UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby");
+        //  UnloadScene("CreateRoom");
+        //      UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby");
     }
+    
+    /*
+    public void StartBlackjack_OnClick()
+    {
+        foreach (NetworkConnection conn in base.NetworkManager.ServerManager.Clients.Values)
+        {
+            SceneManager.AddConnectionToScene(conn, UnityEngine.SceneManagement.SceneManager.GetSceneByName("Lobby"));
+        }
+
+        
+        GameObject player = GameObject.Find("BasicPlayerPrefab(Clone)");
+        GameObject canvasGame = GameObject.Find("CanvasGame(Clone)");
+        if (canvasGame != null && player != null)
+        {
+            // Retrieve the NetworkObject component attached to prefab
+            if (canvasGame.TryGetComponent<NetworkObject>(out var canvasNob) && player.TryGetComponent<NetworkObject>(out var playerNob))
+            {
+                LoadScene3(canvasNob, playerNob, "Lobby");
+                UnloadScene("CreateRoom");
+            }
+        }
+        else if (canvasGame == null)
+        {
+            Debug.LogWarning("canvas members prefab is null");
+        }
+        else
+        {
+            Debug.LogWarning("player prefab is null");
+        }
+        //  UnloadScene("CreateRoom");
+        //      UnityEngine.SceneManagement.SceneManager.LoadScene("Lobby");
+    }
+    */
     public void StartPoker_OnClick()
     {
         foreach (NetworkConnection conn in base.NetworkManager.ServerManager.Clients.Values)
@@ -160,7 +193,31 @@ public class MemberList : NetworkBehaviour
             MovedNetworkObjects = new NetworkObject[] { nob },
             ReplaceScenes = ReplaceOption.All
         };
-      //  InstanceFinder.SceneManager.LoadConnectionScenes(nob.Owner, sld);
+        //  InstanceFinder.SceneManager.LoadConnectionScenes(nob.Owner, sld);
+        InstanceFinder.SceneManager.LoadGlobalScenes(sld);
+    }
+
+    private void LoadScene3(NetworkObject canvasNob, NetworkObject playerNob, string sceneName)
+    {
+        if (!canvasNob.Owner.IsActive)
+        {
+            Debug.LogWarning("Net obj (CanvasGame) is not active");
+            return;
+        }
+
+        if (!playerNob.Owner.IsActive)
+        {
+            Debug.LogWarning("Net obj (Player) is not active");
+            return;
+        }
+
+
+        SceneLoadData sld = new(sceneName)
+        {
+            MovedNetworkObjects = new NetworkObject[] { canvasNob, playerNob },
+            ReplaceScenes = ReplaceOption.All
+        };
+        //  InstanceFinder.SceneManager.LoadConnectionScenes(nob.Owner, sld);
         InstanceFinder.SceneManager.LoadGlobalScenes(sld);
     }
 

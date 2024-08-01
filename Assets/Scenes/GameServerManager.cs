@@ -108,6 +108,12 @@ public class GameServerManager : NetworkBehaviour
         return _instance._playersIndexes.TryGetValue(conn, out int index) ? index : 0; ;
     }
 
+    public static int GetAmoutOfActivePlayers()
+    {
+        return _instance._playersIndexes.Count();
+    }
+
+
     public static bool IsMyTurn(NetworkConnection conn = null)
     {
         if(_instance == null)
