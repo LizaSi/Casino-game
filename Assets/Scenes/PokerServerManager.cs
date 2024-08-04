@@ -26,10 +26,8 @@ public class PokerServerManager : NetworkBehaviour
     private int _pot = 0;
     private int _smallBlind = 10;
     private int _bigBlind = 20;
-    private int _currentTurnIndex = 0;
-    private int _blindIndex = 0;
-    private NetworkConnection _bigBlindConn;
-
+    private int checkCounter = 0;
+    private bool flopRevealed = false;
     public static event Action OnInitialized;
 
     [SyncObject] private readonly SyncDictionary<NetworkConnection, string> _playerHands = new();
@@ -46,6 +44,7 @@ public class PokerServerManager : NetworkBehaviour
             UpdatePotValueText();
         }
     }
+
     private void Awake()
     {
         if (Instance == null)
@@ -61,42 +60,37 @@ public class PokerServerManager : NetworkBehaviour
             Instance = this;
         }
         
-     //   NewRoundInit();
-
         OnInitialized?.Invoke();
+    }
+
+    public static bool IsInitialized()
+    {
+        return Instance == null;
     }
 
     public static void JoinWithName(NetworkConnection conn, string username)
     {
         Instance._playerNames.Add(conn, username);
     }
-
-    public static bool IsInitialized()
-    {
-        return Instance != null;
-    }
-
-    public static List<string> GetTableCards()
-    {
-        return Instance._tableCards;
-    }
     
     public static string GetMyHand(NetworkConnection conn)
     {
         return Instance._playerHands.TryGetValue(conn, out string hand) ? hand : string.Empty;
-    }       
+    }
 
     public static void NewRoundInit()
     {     
-        if (Instance._deck == null || Instance._deck.Count == 0)
+        if (Instance._deck == null || Instance._deck.Count < 5)
         {
             Instance._deck = new Deck(1);
         }
+        Instance.checkCounter = 0;
+        Instance.flopRevealed = false;
         Instance._deck.Shuffle();
         Instance.AssignPlayersIndexAndTurns();
         Instance.DealInitialCards();
         Instance._currentBet = Instance._bigBlind;
-     //   Instance._blindIndex = Instance.getNextIndexTurn(Instance._playersIndexes.Count, Instance._blindIndex);
+      //   Instance._blindIndex = Instance.getNextIndexTurn(Instance._playersIndexes.Count, Instance._blindIndex);
     }
 
     public static int HowManyCoinsToCall(NetworkConnection conn)
@@ -113,7 +107,6 @@ public class PokerServerManager : NetworkBehaviour
             await Instance.UpdateCoins(conn, Instance._bigBlind);
             Instance.Pot += Instance._bigBlind;
             Instance._playerBets[conn] = Instance._bigBlind;
-            Debug.LogWarning("Gave big");
             givenAmount = Instance._bigBlind;
         }
         else if (Instance._playersIndexes[conn] == 0)
@@ -121,7 +114,6 @@ public class PokerServerManager : NetworkBehaviour
             await Instance.UpdateCoins(conn, Instance._smallBlind);
             Instance.Pot += Instance._smallBlind;
             Instance._playerBets[conn] = Instance._smallBlind;
-            Debug.LogWarning("Gave small");
             givenAmount = Instance._smallBlind;
         }
         else
@@ -169,9 +161,8 @@ public class PokerServerManager : NetworkBehaviour
             if (i != 0) // Dealer doesnt need cards
             {
                 _playerHands[conn] = PullCard() + ", " + PullCard();
-                Debug.Log("Set 2 cards for a client and is my turn is " + _playerIsMyTurn[conn]);
+                Debug.LogWarning("Set 2 cards for a client and is my turn is " + _playerIsMyTurn[conn]);
             }
-          
             i++;
         }
     }
@@ -197,29 +188,48 @@ public class PokerServerManager : NetworkBehaviour
     }
 
     [Client]
-    public static void ClientBet(int coinAmount)
+    public static void ClientBet(NetworkConnection conn, int coinAmount)
     {
+        Instance.Pot += coinAmount;
+        int callAmount = Instance._currentBet - Instance._playerBets[conn];
+        Instance._playerBets[conn] += coinAmount + callAmount;
+        Instance._currentBet = Instance._playerBets[conn];
     }
 
     [Client]
     public static void ClientCheck()
     {
-        Instance.ClientCall();
-        Instance.PassTurnServer();
+        Instance.CheckAndPassServer();
     }
 
     private async void ClientCall(NetworkConnection sender = null)
     {
-        if (_currentBet > _playerBets[sender])
+        int callAmount = _currentBet - _playerBets[sender];
+        if (callAmount > 0)
         {
-            await UpdateCoins(sender, _currentBet - _playerBets[sender]);
+            await UpdateCoins(sender, callAmount);
+            Pot += callAmount;
+            _playerBets[sender] = _currentBet;
         }
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void PassTurnServer(NetworkConnection sender = null)
+    private void CheckAndPassServer(NetworkConnection sender = null)
     {
+        checkCounter ++;
+        if (checkCounter >= _playersIndexes.Count) // Change to check if each player checked..
+        {
+            if (!flopRevealed)
+            {
+                flopRevealed = true;
+                RevealNewCardOnTable();
+                RevealNewCardOnTable();
+            }
+            RevealNewCardOnTable();
+            checkCounter = 0;
+        }
         PassTurnToNextClient(sender);
+        ClientCall(sender);
     }
 
     private void PassTurnToNextClient(NetworkConnection sender = null)
@@ -273,42 +283,6 @@ public class PokerServerManager : NetworkBehaviour
         await userRef.Child("coins").SetValueAsync(updatedCoins);
     }
 
-    public static async Task<GameResult> DidIWin(NetworkConnection conn, string username)
-    {
-        GameResult result;
-        result = GameResult.Win;
-        await UpdateCoinsBasedOnResult(username, result);
-        return result;
-    }
-
-    private static async Task UpdateCoinsBasedOnResult(string username, GameResult result)
-    {
-        DatabaseReference userRef = FirebaseDatabase.DefaultInstance.GetReference("users").Child(username);
-
-        DataSnapshot dataSnapshot = await userRef.GetValueAsync();
-        int currentCoins = 0;
-
-        if (dataSnapshot.Exists && dataSnapshot.Child("coins").Value != null)
-        {
-            int.TryParse(dataSnapshot.Child("coins").Value.ToString(), out currentCoins);
-        }
-
-        int updatedCoins = currentCoins;
-        switch (result)
-        {
-            case GameResult.Win:
-                updatedCoins += 100; 
-                break;
-            case GameResult.Tie:
-                break;
-            case GameResult.Lose:
-                updatedCoins -= 100; 
-                break;
-        }
-
-        await userRef.Child("coins").SetValueAsync(updatedCoins);
-    }
-
     public static bool IsMyTurn(NetworkConnection conn)
     {
         if(!Instance._playerIsMyTurn.TryGetValue(conn, out bool isTurn))
@@ -330,14 +304,13 @@ public class PokerServerManager : NetworkBehaviour
         int i = 0;
         foreach (NetworkConnection conn in base.NetworkManager.ServerManager.Clients.Values)
         {
-            if (i != 0)
+            if (i != 0) // assuming the first is the host
             {
-                _playersIndexes[conn] = GenerateNewPlayerIndex(); // host is not a player
-                if (i == 1) // index 0 will be big blind and first
+                _playersIndexes[conn] = GenerateNewPlayerIndex();
+                if (i == 1)
                 {
                     _playerIsMyTurn[conn] = true;
-                    Instance._bigBlindConn = conn;
-                    Debug.LogWarning("player index 1 is big blind");
+                   // Instance._bigBlindConn = conn;
                 }
                 else
                 {
@@ -366,7 +339,7 @@ public class PokerServerManager : NetworkBehaviour
 
     private void UpdatePotValueText()
     {
-        if (PotValue != null)
+        if (InstanceFinder.IsServer)
         {
             PotValue.text = _pot.ToString();
         }

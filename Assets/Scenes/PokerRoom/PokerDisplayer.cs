@@ -107,11 +107,11 @@ public class PokerDisplayer : NetworkBehaviour
 
     private void DisplayCardDealer(string cardToAdd)
     {
-      /*  if (cardsOnTable.Contains(new Card(cardToAdd)))
-            return;*/
+        if (cardsOnTable.Contains(new Card(cardToAdd)))
+            return;
         GameObject CardViewer = GameObject.Find("CardViewer");
 
-        Debug.LogWarning("Displaying card " + cardToAdd);
+     //   Debug.LogWarning("Displaying card " + cardToAdd);
 
         string cardDir = "Cards/" + cardToAdd;
         GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir));
@@ -158,31 +158,12 @@ public class PokerDisplayer : NetworkBehaviour
     public void Bet_OnClick()
     {
         int amountFromUI = 50;
-        PokerServerManager.ClientBet(amountFromUI);
+        PokerServerManager.ClientBet(base.Owner, amountFromUI);
     }
 
-    private async void ShowWinMessage()
+    private void ShowWinMessage()
     {
-        if (InstanceFinder.IsServer || !base.Owner.IsLocalClient)
-        {
-            winText.text = "";
-            return;
-        }
-
-        GameResult result = await PokerServerManager.DidIWin(base.Owner, LoggedUser.Username);
-
-        switch (result)
-        {
-            case GameResult.Win:
-                winText.text = "You win!";
-                break;
-            case GameResult.Lose:
-                winText.text = "You lost...";
-                break;
-            case GameResult.Tie:
-                winText.text = "Tie!";
-                break;
-        }
+        
     }
 
     void Update()
@@ -194,10 +175,6 @@ public class PokerDisplayer : NetworkBehaviour
              //   DisplayCardsClient();
                 handleClientTurn();
             }
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha5) && InstanceFinder.IsServer && !base.Owner.IsLocalClient)
-        {
-            PokerServerManager.RevealNewCardOnTable();
         }
     }
 
@@ -217,6 +194,10 @@ public class PokerDisplayer : NetworkBehaviour
             if (coinsToCall > 0)
             {
                 SetCheckButton(false, coinsToCall);
+            }
+            else
+            {
+                SetCheckButton(true);
             }
         }
         else
@@ -274,10 +255,10 @@ public class PokerDisplayer : NetworkBehaviour
 
     private IEnumerator ClientTurnInDelay()
     {
+      //  handleClientTurn();
         yield return new WaitForSeconds(0.8f);
         handleClientTurn();
-        yield return new WaitForSeconds(1.8f);
-        handleClientTurn();
+       // yield return new WaitForSeconds(1.8f);
     }
 
     private void DespawnAllCards()
