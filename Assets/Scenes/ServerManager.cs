@@ -16,6 +16,7 @@ using FishNet.Managing.Server;
 using UnityEngine.EventSystems;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using FishNet.Object;
 
 public class ServerManager : MonoBehaviour
 {
@@ -102,7 +103,6 @@ public class ServerManager : MonoBehaviour
 
         yield return new WaitForSeconds(1f);
 
-        //   UnityEngine.SceneManagement.SceneManager.LoadScene("CreateRoom");
         LoadScene("CreateRoom");
         UnloadScene("RoomSelection");
     }
@@ -149,7 +149,7 @@ public class ServerManager : MonoBehaviour
         EventSystem[] eventSystems = FindObjectsOfType<EventSystem>();
         Destroy(eventSystems[0].gameObject);
 
-        yield return new WaitForSeconds(1f); //Maybe not needed, tlet the event system time to be deleted
+        yield return new WaitForSeconds(3f); //Maybe not needed, tlet the event system time to be deleted
 
         if (!LoadScene("CreateRoom"))
         {
@@ -173,11 +173,11 @@ public class ServerManager : MonoBehaviour
 
     bool LoadScene(string sceneName)
     {
-        if (!InstanceFinder.IsServer)
+       /* if (!InstanceFinder.IsServer)
         {
             //hostsText.text = "Error connecting to host";
             return false;
-        }
+        }*/
         SceneLoadData sld = new(sceneName);
         InstanceFinder.SceneManager.LoadGlobalScenes(sld);
         return true;

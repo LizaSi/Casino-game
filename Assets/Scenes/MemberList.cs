@@ -9,9 +9,12 @@ using FishNet.Managing.Scened;
 using FishNet;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using TMPro;
 
 public class MemberList : NetworkBehaviour
 {
+    [SerializeField] private TMP_Text displayText;
+    
     [SyncObject]
     private readonly SyncDictionary<NetworkConnection, string> _playerNames = new();
     // Passing network con because need to disconnect a user when leave
@@ -22,15 +25,30 @@ public class MemberList : NetworkBehaviour
     {
         _instance = this;
         SetName(LoggedUser.Username);
-        var eventSystems = FindObjectsOfType<EventSystem>();
     }
 
-    private void Update()
+    public static void UpdateLobbyList()
     {
-        if (Input.GetKeyDown(KeyCode.F))
+        StringBuilder sb = new();
+        foreach (string username in _instance._playerNames.Values)
         {
-            SetName(LoggedUser.Username);
+            sb.AppendLine(username);
         }
+        _instance.displayText.text = sb.ToString();
+
+        /* GameObject canvasGame = GameObject.Find("CanvasGame(Clone)");
+         if (canvasGame != null)
+         {
+             if (canvasGame.TryGetComponent(out NameDisplayer nameDisplayerScript))
+             {
+                 if (toSet)
+                     nameDisplayerScript.SetName();
+                 else
+                 {
+                     nameDisplayerScript.RemoveText();
+                 }
+             }
+         }*/
     }
 
     public static string GetMembers(NetworkConnection conn)
@@ -53,11 +71,8 @@ public class MemberList : NetworkBehaviour
 
     public static string GetMember(NetworkConnection conn)
     {
-        StringBuilder sb = new();
-
         if (_instance == null || _instance._playerNames == null)
         {
-            //  Debug.LogWarning("Member list not yet initialized");
             return "";
         }
         return _instance._playerNames[conn];
@@ -73,6 +88,7 @@ public class MemberList : NetworkBehaviour
     private void ServerSetName(string name, NetworkConnection sender = null)
     {
         _playerNames[sender] = name;
+        UpdateLobbyList();
         Debug.Log(name + " is set");
     }
 
@@ -111,9 +127,9 @@ public class MemberList : NetworkBehaviour
         GameObject canvasGame = GameObject.Find("CanvasGame(Clone)");
         if (canvasGame != null)
         {
-            // Retrieve the NetworkObject component attached to prefab
             if (canvasGame.TryGetComponent<NetworkObject>(out var nob))
             {
+               // UpdateLobbyList(false);
                 LoadScene2(nob, "Lobby");
                 UnloadScene("CreateRoom");
             }
@@ -135,6 +151,7 @@ public class MemberList : NetworkBehaviour
         GameObject canvasGame = GameObject.Find("CanvasGame(Clone)");
         if (canvasGame != null)
         {
+           // UpdateLobbyList(false); 
             if (canvasGame.TryGetComponent<NetworkObject>(out var nob))
             {
                 LoadScene2(nob, "PokerRoom");

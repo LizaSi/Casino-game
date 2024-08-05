@@ -65,7 +65,7 @@ public class PokerServerManager : NetworkBehaviour
 
     public static bool IsInitialized()
     {
-        return Instance == null;
+        return Instance != null;
     }
 
     public static void JoinWithName(NetworkConnection conn, string username)

@@ -18,8 +18,8 @@ public class NameDisplayer : NetworkBehaviour
     {
         base.OnStartClient();
         SetName();
-        memberListCoroutine = StartCoroutine(UpdateNamePeriodically(0.5f)); // Update every 0.5 second
-        GameServerManager.OnInitialized += OnGameServerManagerInitialized;
+     //   memberListCoroutine = StartCoroutine(UpdateNamePeriodically(0.5f)); // Update every 0.5 second
+      //  GameServerManager.OnInitialized += OnGameServerManagerInitialized;
     }
 
     private void OnGameServerManagerInitialized()
@@ -32,9 +32,15 @@ public class NameDisplayer : NetworkBehaviour
     public override void OnOwnershipClient(NetworkConnection prevOwner)
     {
         base.OnOwnershipClient(prevOwner);
+        MemberList.UpdateLobbyList();
         SetName();
     }
-    
+
+    public void RemoveText()
+    {
+        displayText.gameObject.SetActive(false);
+    }
+
     private IEnumerator UpdateNamePeriodically(float interval)
     {
         while (true)

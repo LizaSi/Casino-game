@@ -22,6 +22,7 @@ public class PokerDisplayer : NetworkBehaviour
     [SerializeField] private Transform TableCardTransform;
     [SerializeField] private TMP_Text checkButtonText;
     [SerializeField] private TMP_Text betCoinsText;
+    [SerializeField] private TMP_InputField betInput;
 
     private float cardSpacing = 2.8f;
     private float tableCardSpacing = 1.5f;
@@ -157,8 +158,8 @@ public class PokerDisplayer : NetworkBehaviour
 
     public void Bet_OnClick()
     {
-        int amountFromUI = 50;
-        PokerServerManager.ClientBet(base.Owner, amountFromUI);
+        if(int.TryParse(betInput.text, out int amountFromUi))
+            PokerServerManager.ClientBet(base.Owner, amountFromUi);
     }
 
     private void ShowWinMessage()
