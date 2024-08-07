@@ -1,22 +1,14 @@
 using FishNet;
 using FishNet.Discovery;
 using System.Collections;
-using TMPro;
 using UnityEngine;
 using System.Net;
 using FishNet.Broadcast;
-using FishNet.Connection;
 using FishNet.Object.Synchronizing;
-using System.Diagnostics;
-using Unity.Services.Authentication.PlayerAccounts;
 using FishNet.Managing;
-using UnityEngine.SceneManagement;
 using FishNet.Managing.Scened;
-using FishNet.Managing.Server;
 using UnityEngine.EventSystems;
-using System.Collections.Generic;
 using UnityEngine.UI;
-using FishNet.Object;
 
 public class ServerManager : MonoBehaviour
 {
@@ -149,7 +141,7 @@ public class ServerManager : MonoBehaviour
         EventSystem[] eventSystems = FindObjectsOfType<EventSystem>();
         Destroy(eventSystems[0].gameObject);
 
-        yield return new WaitForSeconds(3f); //Maybe not needed, tlet the event system time to be deleted
+        yield return new WaitForSeconds(2f); //Maybe not needed, tlet the event system time to be deleted
 
         if (!LoadScene("CreateRoom"))
         {

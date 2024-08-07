@@ -1,14 +1,8 @@
 using FishNet;
 using FishNet.Broadcast;
 using FishNet.Object;
-using FishNet.Object.Synchronizing;
-using FishNet.Observing;
-using IO.Swagger.Model;
-using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.InteropServices.WindowsRuntime;
 using TMPro;
 using Unity.Services.Authentication.PlayerAccounts;
 using UnityEngine;
@@ -17,16 +11,17 @@ using static GameServerManager;
 
 public class CardsDisplayer : NetworkBehaviour
 {
-    [SerializeField]
     public TMP_Text cardsText;
     public Button hitButton;
     public Button checkButton;
     public TMP_Text winText;
     public Button newRoundButton;
-    public Transform cardParent;
+    public Transform cardParent; // to do: try to delete
 
     private bool dealerChecked = false;
     private List<GameObject> spawnedCards = new();
+    private int cardIndex = 0;
+    private List<string> spawnedCardsNames = new();
     private bool dealerRevealAllCards = false;
 
     private void OnEnable()
@@ -42,6 +37,26 @@ public class CardsDisplayer : NetworkBehaviour
         InstanceFinder.ClientManager.UnregisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
         InstanceFinder.ClientManager.UnregisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);
     }
+    private void NewRoundInit()
+    {
+        DespawnAllCards();
+        cardIndex = 0;
+        dealerChecked = false;
+        dealerRevealAllCards = false;
+        newRoundButton.gameObject.SetActive(false);
+    }
+
+    private void NewRoundInitAsClient()
+    {
+        DespawnAllCards();
+        cardIndex = 0;
+    }
+
+    public void NewRound_OnClick()
+    {
+        NewRoundInit();
+        GameServerManager.NewRoundInit();
+    }
 
     private void OnClientMsgBroadcast(ClientMsgBroadcast msg) 
     {
@@ -50,8 +65,14 @@ public class CardsDisplayer : NetworkBehaviour
             if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
             {
                 ShowWinMessage();
-                handleClientTurn();
+               // handleClientTurn();
+                hitButton.gameObject.SetActive(false);
+                checkButton.gameObject.SetActive(false);
                 StartCoroutine(FetchCoinsInDelay());
+            }
+            else if(InstanceFinder.IsServer)
+            {
+                StartCoroutine(UpdateCardsInDelay());
             }
         }
         if (msg.IsNewRoundMessage)
@@ -59,15 +80,9 @@ public class CardsDisplayer : NetworkBehaviour
             if (!InstanceFinder.IsServer)
             {
                 winText.text = "";
-                handleClientTurn();
+                NewRoundInitAsClient();
                 StartCoroutine(ClientTurnInDelay());
             }
-            else
-            {
-                dealerRevealAllCards = false;
-            }
-
-            DespawnAllCards();
             UpdateCardsDisplay();            
         }
     }
@@ -83,7 +98,7 @@ public class CardsDisplayer : NetworkBehaviour
         if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
         {
             handleClientTurn();
-            StartCoroutine(ClientTurnInDelay());
+         //   StartCoroutine(ClientTurnInDelay());
         }
         else if (msg.HostTurn && base.Owner.IsHost && InstanceFinder.IsServer)
         {
@@ -94,9 +109,7 @@ public class CardsDisplayer : NetworkBehaviour
 
     private IEnumerator ClientTurnInDelay()
     {
-        yield return new WaitForSeconds(0.8f);
-        handleClientTurn();
-        yield return new WaitForSeconds(1.8f);
+        yield return new WaitForSeconds(0.65f);
         handleClientTurn();
     }
 
@@ -116,21 +129,15 @@ public class CardsDisplayer : NetworkBehaviour
         else if (msg.UpdateCards && !InstanceFinder.IsServer && base.Owner.IsLocalClient)
         {
             handleClientTurn();
-            StartCoroutine(ClientTurnInDelay());
+            StartCoroutine(UpdateCardsInDelay()); //Because of the bug that broadcasting reaches before the actual value is changed on network.
         }
-        else if (msg.UpdateCards) // only server reaches this part
+        else if (msg.DealerTurn) // only server reaches this part
         {
             handleDealerTurn();
             UpdateCardsDisplay();
-        }      
-    }
-
-    public void NewRound_OnClick()
-    {
-        dealerChecked = false;
-        NewRoundInit();
-        newRoundButton.gameObject.SetActive(false);
-    }
+            StartCoroutine(UpdateCardsInDelay());
+        }
+    }   
 
     public void Check_OnClick()
     {
@@ -172,12 +179,9 @@ public class CardsDisplayer : NetworkBehaviour
         {
             if (InstanceFinder.IsServer)
                 handleDealerTurn();
-            else if (base.Owner.IsLocalClient)
+            else
                 handleClientTurn();
-        }
-        if (Input.GetKeyDown(KeyCode.Alpha5))
-        {
-            ShowWinMessage();
+            UpdateCardsDisplay();
         }
     }    
 
@@ -223,7 +227,7 @@ public class CardsDisplayer : NetworkBehaviour
     private void handleClientTurn()
     {
         UpdateCardsDisplay();
-        if (IsMyTurn(base.Owner))
+        if (IsMyTurn(base.Owner) && base.Owner.IsLocalClient)
         {
             hitButton.gameObject.SetActive(true);
             checkButton.gameObject.SetActive(true);
@@ -235,27 +239,38 @@ public class CardsDisplayer : NetworkBehaviour
         }
     }
 
+    private IEnumerator UpdateCardsInDelay() 
+    {
+        yield return new WaitForSeconds(0.2f);
+        UpdateCardsDisplay();
+        yield return new WaitForSeconds(1f);
+        UpdateCardsDisplay();
+
+        Debug.LogWarning("Updating cards in delay");
+    }
+
     private void UpdateCardsDisplay()
     {
         if (base.Owner.IsValid && GameServerManager.IsInitialized())
         {
-            if (InstanceFinder.IsServer && !base.Owner.IsLocalClient)
-            {
-                bool isDealersTurn = IsMyTurn(base.Owner);
-
-                string turnOf = isDealersTurn ? "Dealer's" : "Client's";
-                List<string> cards = GetAllPlayerHands(base.Owner);
-                cardsText.text = "Players cards:\n" + string.Join("\n", cards) +
-                    "\nAnd it's " + turnOf + " turn";
-
-                DisplayCardsServer(cards);
-            }
-            else if (base.Owner.IsLocalClient)
+            if (base.Owner.IsLocalClient) //For no double spawn
             {
                 string cards = GameServerManager.GetPlayerHand(base.Owner);
-                //   int playerIndex = GameServerManager.GetPlayerIndex(base.Owner);
-                DisplayCardsOnBoard(cards);
-                cardsText.text = "\nIt's " + (IsMyTurn(base.Owner)? "Clinet's": "Dealer's") + " turn";
+                int i = 0;
+                foreach (string card in cards.Split(','))
+                {
+                    if (InstanceFinder.IsServer && !dealerRevealAllCards && i == 0)
+                    {
+                        i++;
+                        continue; // Hide first card
+                    }
+                    if (!spawnedCardsNames.Contains(card))
+                    {
+                        SpawnCardOnBoard(card);
+                        spawnedCardsNames.Add(card); 
+                    }
+                    i++;
+                }
             }
         }
         else
@@ -264,60 +279,29 @@ public class CardsDisplayer : NetworkBehaviour
         }
     }
 
-    void DisplayCardsServer(List<string> cards)
+    void SpawnCardOnBoard(string cards)
     {
         float cardSpacing = 300f;
 
-        string[] dealerCardsNames = cards[0].Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
-
-        for (int i = 0; i < dealerCardsNames.Length; i++)
-        {
-            string cardName = dealerCardsNames[i].Trim();
-
-            string cardDir = "Cards/" + cardName;
-            GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir), cardParent);
-            instantiatedCard.transform.localScale = new Vector3(2000f, 1900f, 1f);
-            instantiatedCard.transform.rotation = Quaternion.identity;
-            instantiatedCard.transform.localPosition = new Vector3((i * cardSpacing) + 537, 288, 15);
-            instantiatedCard.transform.rotation = Quaternion.Euler(0f, 181f, 0f);
-            if (instantiatedCard == null)
-            {
-                Debug.LogWarning("No card object found in Resources");
-                return;
-            }
-         //   ServerManager.Spawn(instantiatedCard);
-            spawnedCards.Add(instantiatedCard);
-
-            if (!dealerRevealAllCards)
-                break;
-        }
-    }
-
-    void DisplayCardsOnBoard(string cards)
-    {
-        float cardSpacing = 300f;
-
-        string[] cardNames = cards.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);              
-
+        string[] cardNames = cards.Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
         for (int i = 0; i < cardNames.Length; i++)
         {
-            // Trim any extra whitespace from the card name
             string cardName = cardNames[i].Trim();
 
-            // Load the card prefab from the Resources/Cards folder
             string cardDir = "Cards/" + cardName;
             GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir), cardParent);
             instantiatedCard.transform.localScale = new Vector3(2000f, 1900f, 1f);
             instantiatedCard.transform.rotation = Quaternion.identity;
-            instantiatedCard.transform.localPosition = new Vector3((i * cardSpacing)+537, 288, 15);
+            instantiatedCard.transform.localPosition = new Vector3((cardIndex * cardSpacing)+537, 288, 15);
             instantiatedCard.transform.rotation = Quaternion.Euler(0f, 181f, 0f);
             if(instantiatedCard == null)
             {
                 Debug.LogWarning("No card object found in Resources");
                 return;
             }
-            ServerManager.Spawn(instantiatedCard);
+        //    ServerManager.Spawn(instantiatedCard);
             spawnedCards.Add(instantiatedCard);
+            cardIndex++;
         }
     }
 
@@ -325,11 +309,11 @@ public class CardsDisplayer : NetworkBehaviour
     {
         foreach (GameObject cardObject in spawnedCards)
         {
-         //   ServerManager.Despawn(cardObject);
            Destroy(cardObject);
         }
         Debug.Log("Despawning all cards");
         spawnedCards.Clear();
+        spawnedCardsNames.Clear();
     }
 
     public struct ClientMsgBroadcast : IBroadcast

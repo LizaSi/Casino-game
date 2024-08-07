@@ -40,8 +40,8 @@ public class GameServerManager : NetworkBehaviour
             _instance = this;
             OnInitialized?.Invoke();
         }
+        AssignPlayersIndex();
         NewRoundInit();
-        _instance.AssignPlayersIndex();
     }
 
     public static void NewRoundInit()
@@ -56,6 +56,9 @@ public class GameServerManager : NetworkBehaviour
         }
         _instance._deck.Shuffle();
         _instance.DealInitialCards();
+
+  //      _instance.DespawnDealerCards();
+     //   _instance.DisplayCardAsDealer(_instance.PullCard());
     }
 
     public static bool IsInitialized()
@@ -69,24 +72,18 @@ public class GameServerManager : NetworkBehaviour
         bool isFirstTurnSet = false;
         foreach (NetworkConnection conn in NetworkManager.ServerManager.Clients.Values)
         {
-            _playerIsMyTurn[conn] = !isFirstTurnSet;
+            _instance._playerIsMyTurn[conn] = !isFirstTurnSet;
             isFirstTurnSet = true;
 
-            _playerHands[conn] = PullCard() + ", " + PullCard();
+            _instance._playerHands[conn] = PullCard() + ", " + PullCard();
         }
 
         UpdateBroadcast msg = new()
         {
             NewRound = true,
-            UpdateCards = false
+            UpdateCards = true
         };
         InstanceFinder.ServerManager.Broadcast(msg);
-
-        /*if (base.NetworkManager.ServerManager.Clients.Count == 0)
-        {
-            UnityEngine.Debug.LogWarning("No clients found to deal cards");
-            return;
-        }*/
     }
 
     [Server]
@@ -95,11 +92,6 @@ public class GameServerManager : NetworkBehaviour
         foreach (NetworkConnection conn in base.NetworkManager.ServerManager.Clients.Values)
         {
             _playersIndexes[conn] = GenerateNewPlayerIndex();
-        }
-
-        if (base.NetworkManager.ServerManager.Clients.Count == 0)
-        {
-            UnityEngine.Debug.LogWarning("No clients found to deal index");
         }
     }
 
@@ -110,24 +102,13 @@ public class GameServerManager : NetworkBehaviour
 
     public static bool IsMyTurn(NetworkConnection conn = null)
     {
-        if(_instance == null)
+        if (_instance == null)
         {
             UnityEngine.Debug.LogError("GameServerManager instance is not initialized.");
             return false;
         }
-
-        if (conn == null)
-        {
-            UnityEngine.Debug.LogError("NetworkConnection is null.");
-            return false;
-        }
-
-        if (_instance._playerIsMyTurn == null)
-        {
-            UnityEngine.Debug.LogError("Player turn status dictionary is not initialized.");
-            return false;
-        }
-        return _instance._playerIsMyTurn.TryGetValue(conn, out bool isTurn) && isTurn;
+        _instance._playerIsMyTurn.TryGetValue(conn, out bool isTurn);
+        return isTurn;
     }
     public static string GetPlayerHand(NetworkConnection conn)
     {
@@ -240,17 +221,18 @@ public class GameServerManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void HitCardServer(NetworkConnection sender = null)
     {
-        string cardToAdd = _instance.PullCard();
-        _playerHands[sender] += ", " + cardToAdd;
+        string cardToAdd = PullCard();
+        _instance._playerHands[sender] += ", " + cardToAdd;
         string newPlayerHand = _playerHands[sender];
 
         // If the host hits, he shouldnt pass the turn
-        if (/*sender.IsHost && */!sender.IsLocalClient)
+        if (_playersIndexes[sender] == 1)
         {
             UpdateBroadcast msg = new()
             {
                 NewRound = false,
-                UpdateCards = true
+                UpdateCards = false,
+                DealerTurn = true
             };
             InstanceFinder.ServerManager.Broadcast(msg);
         }
@@ -265,7 +247,9 @@ public class GameServerManager : NetworkBehaviour
             UpdateBroadcast msg = new()
             {
                 NewRound = false,
-                UpdateCards = true
+                UpdateCards = true,
+                DealerTurn = false,
+                NewCard = cardToAdd
             };
             InstanceFinder.ServerManager.Broadcast(msg);
         }
@@ -308,6 +292,8 @@ public class GameServerManager : NetworkBehaviour
     {
         public bool NewRound;
         public bool UpdateCards;
+        public bool DealerTurn;
+        public string NewCard;
     }
 
     public struct TurnPassBroadcast : IBroadcast
