@@ -53,12 +53,7 @@ MonoBehaviour:
   _componentIndexCache: 0
   _addedNetworkObject: {fileID: 8368901007945291662}
   _networkObjectCache: {fileID: 8368901007945291662}
-  _playerSpots:
-  - {fileID: 2193714837297826528, guid: 06512a197f3a242b3971413ff8c4ab5c, type: 3}
-  - {fileID: 8255967963138556278, guid: ec5293c9736f349e2b3e8a0a4ec95013, type: 3}
-  - {fileID: 5317753564044027787, guid: af29c4319dc3d4774922f15cd4a41f87, type: 3}
-  - {fileID: 5044224609491465420, guid: c196151fb78484d5da6c7e72e165d534, type: 3}
-  - {fileID: 2916396254185186211, guid: db86394dc02954b4f98216874be1a645, type: 3}
+  _playerSpots: []
   cardsText: {fileID: 0}
   hitButton: {fileID: 0}
   checkButton: {fileID: 0}
@@ -93,7 +88,7 @@ MonoBehaviour:
   _initializeOrder: 0
   _defaultDespawnType: 1
   NetworkObserver: {fileID: 0}
-  <PrefabId>k__BackingField: 0
+  <PrefabId>k__BackingField: 13
   <SpawnableCollectionId>k__BackingField: 0
   _scenePathHash: 952082934
   <SceneId>k__BackingField: 0

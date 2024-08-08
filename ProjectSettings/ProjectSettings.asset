@@ -135,8 +135,7 @@ PlayerSettings:
     16:9: 1
     Others: 1
   bundleVersion: 1.0.2
-  preloadedAssets:
-  - {fileID: 5903060638800393934, guid: 973bad3ab3355cb40854a747504c61a3, type: 2}
+  preloadedAssets: []
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -145,7 +144,7 @@ PlayerSettings:
   vrSettings:
     enable360StereoCapture: 0
   isWsaHolographicRemotingEnabled: 0
-  enableFrameTimingStats: 0
+  enableFrameTimingStats: 1
   enableOpenGLProfilerGPURecorders: 1
   useHDRDisplay: 0
   D3DHDRBitDepth: 0
@@ -805,7 +804,7 @@ PlayerSettings:
   webGLDecompressionFallback: 0
   webGLPowerPreference: 2
   scriptingDefineSymbols:
-    Server: 
+    Server: FISHNET;FISHNET_V3
     Standalone: FISHNET;FISHNET_V3
     WebGL: FISHNET;FISHNET_V3
   additionalCompilerArguments: {}
@@ -903,11 +902,11 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
-  cloudProjectId: ee9731e3-968e-4441-9b19-5a6b26813451
+  cloudProjectId: 02d953d1-bba8-46c2-a733-aef4a9b01d83
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: 2D-mobile-template
-  organizationId: ohadbad098
+  projectName: Connect&Bet
+  organizationId: snirben
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   playerDataPath: 

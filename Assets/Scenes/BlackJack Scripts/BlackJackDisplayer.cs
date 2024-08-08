@@ -33,6 +33,7 @@ public class BlackJackDisplayer : NetworkBehaviour
     private bool dealerRevealAllCards = false;
 
     //////////////////////////////////
+    
     private void Start()
     {
         GameServerManager.OnInitialized += OnBlackJackServerStarted;
@@ -41,6 +42,7 @@ public class BlackJackDisplayer : NetworkBehaviour
             OnBlackJackServerStarted();
         }
     }
+    
 
     private void OnBlackJackServerStarted()
     {
@@ -53,19 +55,18 @@ public class BlackJackDisplayer : NetworkBehaviour
         {
             if (InstanceFinder.IsServer)
             {
-                int amountOfActivePlayers = GameServerManager.GetAmoutOfActivePlayers();
+                int amountOfActivePlayers = GetAmoutOfActivePlayers();
                 DisplayPlayerCharacterForServer(amountOfActivePlayers);
-                //List<string> cards = GetAllPlayerHands(base.Owner);
-                //cardsText.text = "Players cards:\n" + string.Join("\n", cards);
-                //DisplayCardsServer(cards);
+            }
+            else if(base.Owner.IsHost)
+            {
+                int amountOfActivePlayers = GetAmoutOfActivePlayers();
+                DisplayPlayerCharacterForServer(amountOfActivePlayers);
             }
             else if (base.Owner.IsLocalClient)
             {
                 int playerIndex = GameServerManager.GetPlayerIndex(base.Owner);
                 DisplayPlayerCharacterForClient(playerIndex);
-                //string cards = GameServerManager.GetPlayerHand(base.Owner);
-                //   int playerIndex = GameServerManager.GetPlayerIndex(base.Owner);
-                //DisplayCardsOnBoard(cards);
             }
         }
     }
@@ -80,6 +81,9 @@ public class BlackJackDisplayer : NetworkBehaviour
         for(int i = 0; i < amountOfActivePlayers; i++)
         {
             GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>(playerDir), _playerSpots[i]);
+            //
+            Debug.LogWarning($"instantiatedPlayer is {instantiatedPlayer.name}");
+            //
             if (instantiatedPlayer == null)
             {
                 Debug.LogWarning("No player object found in Resources");
@@ -90,63 +94,39 @@ public class BlackJackDisplayer : NetworkBehaviour
             ServerManager.Spawn(instantiatedPlayer);
 
         }
-        /*
-        float cardSpacing = 300f;
-
-        string[] dealerCardsNames = cards[0].Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
-
-        for (int i = 0; i < dealerCardsNames.Length; i++)
-        {
-            string cardName = dealerCardsNames[i].Trim();
-
-            string cardDir = "Cards/" + cardName;
-            GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir), cardParent);
-            instantiatedCard.transform.localScale = new Vector3(2000f, 1900f, 1f);
-            instantiatedCard.transform.rotation = Quaternion.identity;
-            instantiatedCard.transform.localPosition = new Vector3((i * cardSpacing) + 537, 288, 15);
-            instantiatedCard.transform.rotation = Quaternion.Euler(0f, 181f, 0f);
-            if (instantiatedCard == null)
-            {
-                Debug.LogWarning("No card object found in Resources");
-                return;
-            }
-            //   ServerManager.Spawn(instantiatedCard);
-            spawnedCards.Add(instantiatedCard);
-
-            if (!dealerRevealAllCards)
-                break;
-        }
-        */
     }
 
     void DisplayPlayerCharacterForClient(int playerIndex)
     {
-        //string playerDir = "Player/PlayerInstruments";
-        //string playerCameraDir = "PlayerPlayerViewCamera";
         string playerDir = "Player/PlayerWithCamera";
-
-
-        //GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>(playerDir), _playerSpots[playerIndex]);
-        //GameObject instatiatedPlayerCamera = Instantiate(Resources.Load<GameObject>(playerCameraDir), _playerSpots[playerIndex]);
-        GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>(playerDir), _playerSpots[playerIndex]);
-
-        /*
-        if (instantiatedPlayer == null)
+        GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>(playerDir), _playerSpots[1]);
+        instantiatedPlayer.transform.localScale = new Vector3(1f, 1f, 1f);
+        instantiatedPlayer.transform.rotation = Quaternion.identity;
+        if(playerIndex == 0)
         {
-            Debug.LogWarning("No player object found in Resources");
-            return;
+            instantiatedPlayer.transform.localPosition = new Vector3(0, 0, 0);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
         }
-
-        if (instatiatedPlayerCamera == null)
+        else if(playerIndex == 1)
         {
-            Debug.LogWarning("No player camera object found in Resources");
-            return;
+            instantiatedPlayer.transform.localPosition = new Vector3(27f, 0, 22.31f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -69.77f, 0f);
         }
-        ServerManager.Spawn(instantiatedPlayer);
-        ServerManager.Spawn(instatiatedPlayerCamera);
-        spawnedPlayers.Add(instantiatedPlayer);
-        spawnedPlayers.Add(instatiatedPlayerCamera);
-        */
+        else if (playerIndex == 2)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(29.2486f, 0, 40.15456f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -103.669f, 0f);
+        }
+        else if (playerIndex == 3)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(18.38f, 0, 57.11f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -144.912f, 0f);
+        }
+        else if (playerIndex == 4)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(-18.76f, 0, 52.46f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, 140.332f, 0f);
+        }
         if (instantiatedPlayer == null)
         {
             Debug.LogWarning("No player object found in Resources");
@@ -156,19 +136,6 @@ public class BlackJackDisplayer : NetworkBehaviour
         spawnedPlayers.Add(instantiatedPlayer);
 
     }
-
-    //public void InitGame()
-    //{
-    //DisplayPlayer();
-    //  StartCoroutine(StartRoundInDelay());
-    /*
-    InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
-    InstanceFinder.ClientManager.RegisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
-    InstanceFinder.ClientManager.RegisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);
-    */
-    //}
-
-    //////////////////////////////////
 
 
     private void OnEnable()
