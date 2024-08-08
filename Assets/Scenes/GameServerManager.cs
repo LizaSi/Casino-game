@@ -40,6 +40,7 @@ public class GameServerManager : NetworkBehaviour
             _instance = this;
             OnInitialized?.Invoke();
         }
+        _instance._playerHands.OnChange += playerHands_OnChange;
         AssignPlayersIndex();
         NewRoundInit();
     }
@@ -81,6 +82,16 @@ public class GameServerManager : NetworkBehaviour
         UpdateBroadcast msg = new()
         {
             NewRound = true,
+            UpdateCards = true
+        };
+        InstanceFinder.ServerManager.Broadcast(msg);
+    }
+
+    private void playerHands_OnChange(SyncDictionaryOperation op, NetworkConnection key, string value, bool asServer)
+    {
+        UpdateBroadcast msg = new()
+        {
+            NewRound = false,
             UpdateCards = true
         };
         InstanceFinder.ServerManager.Broadcast(msg);

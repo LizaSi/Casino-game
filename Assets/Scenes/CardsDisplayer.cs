@@ -72,7 +72,8 @@ public class CardsDisplayer : NetworkBehaviour
             }
             else if(InstanceFinder.IsServer)
             {
-                StartCoroutine(UpdateCardsInDelay());
+                UpdateCardsDisplay();
+        //        StartCoroutine(UpdateCardsInDelay());
             }
         }
         if (msg.IsNewRoundMessage)
@@ -129,13 +130,13 @@ public class CardsDisplayer : NetworkBehaviour
         else if (msg.UpdateCards && !InstanceFinder.IsServer && base.Owner.IsLocalClient)
         {
             handleClientTurn();
-            StartCoroutine(UpdateCardsInDelay()); //Because of the bug that broadcasting reaches before the actual value is changed on network.
+     //       StartCoroutine(UpdateCardsInDelay()); //Because of the bug that broadcasting reaches before the actual value is changed on network.
         }
         else if (msg.DealerTurn) // only server reaches this part
         {
             handleDealerTurn();
             UpdateCardsDisplay();
-            StartCoroutine(UpdateCardsInDelay());
+       //     StartCoroutine(UpdateCardsInDelay());
         }
     }   
 
@@ -239,15 +240,15 @@ public class CardsDisplayer : NetworkBehaviour
         }
     }
 
-    private IEnumerator UpdateCardsInDelay() 
+   /* private IEnumerator UpdateCardsInDelay() 
     {
-        yield return new WaitForSeconds(0.2f);
+        yield return new WaitForSeconds(0.1f);
         UpdateCardsDisplay();
         yield return new WaitForSeconds(1f);
         UpdateCardsDisplay();
 
         Debug.LogWarning("Updating cards in delay");
-    }
+    }*/
 
     private void UpdateCardsDisplay()
     {
