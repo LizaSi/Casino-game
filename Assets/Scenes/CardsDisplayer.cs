@@ -259,7 +259,14 @@ public class CardsDisplayer : NetworkBehaviour
 
     void DisplayCardsServer(List<string> cards)
     {
-        float cardSpacing = 300f;
+        //float cardSpacing = 300f;
+
+        float card2Spacing_X = 0.07f;
+        float card2Spacing_Y = 0.03f;
+        float card2Spacing_Z = -0.1f;
+        float cardSpacing_X = -0.03f;
+        float cardSpacing_Y = 0.02f;
+        float cardSpacing_Z = -0.1f;
 
         string[] dealerCardsNames = cards[0].Split(new char[] { ',' }, System.StringSplitOptions.RemoveEmptyEntries);
 
@@ -269,8 +276,10 @@ public class CardsDisplayer : NetworkBehaviour
 
             string cardDir = "Cards/" + cardName;
             GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir), cardParent);
-            instantiatedCard.transform.localScale = new Vector3(2000f, 1900f, 1f);
+            //instantiatedCard.transform.localScale = new Vector3(2000f, 1900f, 1f);
+            instantiatedCard.transform.localScale = new Vector3(2.2816f, 2.2816f, 2.2816f);
             instantiatedCard.transform.rotation = Quaternion.identity;
+<<<<<<< Updated upstream
             instantiatedCard.transform.localPosition = new Vector3((i * cardSpacing) + 537, 288, 15);
             instantiatedCard.transform.rotation = Quaternion.Euler(0f, 181f, 0f);
             if (instantiatedCard == null)
@@ -305,6 +314,22 @@ public class CardsDisplayer : NetworkBehaviour
             instantiatedCard.transform.localPosition = new Vector3((i * cardSpacing)+537, 288, 15);
             instantiatedCard.transform.rotation = Quaternion.Euler(0f, 181f, 0f);
             if(instantiatedCard == null)
+=======
+            //instantiatedCard.transform.localPosition = new Vector3((cardIndex * cardSpacing)+537, 288, 15);
+            //instantiatedCard.transform.rotation = Quaternion.Euler(0f, 181f, 0f);
+            Debug.LogWarning($"Dealing card no. {cardIndex} : {cardName}");
+            if (cardIndex < 2)
+            {
+                instantiatedCard.transform.localPosition = new Vector3((cardIndex * card2Spacing_X) - 4.05f, (cardIndex * card2Spacing_Y) + 2.48f, (cardIndex * card2Spacing_Z) + 31.42f);
+            }
+            else
+            {
+                instantiatedCard.transform.localPosition = new Vector3(((cardIndex - 2) * cardSpacing_X) - 3.47f, ((cardIndex - 2) * cardSpacing_Y) + 2.48f, ((cardIndex - 2) * cardSpacing_Z) + 31.45f);
+            }
+            instantiatedCard.transform.rotation = Quaternion.Euler(270f, 0f, -69.864f);
+            //////
+            if (instantiatedCard == null)
+>>>>>>> Stashed changes
             {
                 Debug.LogWarning("No card object found in Resources");
                 return;

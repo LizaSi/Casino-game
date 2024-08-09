@@ -1,6 +1,10 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
+<<<<<<< Updated upstream
 --- !u!114 &-8900919614713851113
+=======
+--- !u!114 &-2875634482773722207
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
@@ -10,7 +14,26 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 536372c49e1ca914d822849d36de938c, type: 3}
+<<<<<<< Updated upstream
   m_Name: Android Providers
+=======
+  m_Name: tvOS Providers
+  m_EditorClassIdentifier: 
+  m_AutomaticLoading: 0
+  m_AutomaticRunning: 0
+  m_Loaders: []
+--- !u!114 &-2607630248312991105
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 536372c49e1ca914d822849d36de938c, type: 3}
+  m_Name: iPhone Providers
+>>>>>>> Stashed changes
   m_EditorClassIdentifier: 
   m_AutomaticLoading: 0
   m_AutomaticRunning: 0
@@ -45,6 +68,7 @@ MonoBehaviour:
   Values:
   - {fileID: 5903060638800393934}
   - {fileID: -2021895440114344598}
+<<<<<<< Updated upstream
   - {fileID: 1054099761231736706}
   - {fileID: 5935421576244035939}
   - {fileID: 8006910035460361745}
@@ -62,6 +86,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_LoaderManagerInstance: {fileID: -8900919614713851113}
   m_InitManagerOnStart: 1
+=======
+  - {fileID: 3157255981214543981}
+  - {fileID: 8531116037086195443}
+  - {fileID: 7842575762254783755}
+>>>>>>> Stashed changes
 --- !u!114 &2169704993131185611
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -78,7 +107,11 @@ MonoBehaviour:
   m_AutomaticRunning: 0
   m_Loaders:
   - {fileID: 11400000, guid: cc55be88237ff904d97644e0de550ea4, type: 2}
+<<<<<<< Updated upstream
 --- !u!114 &2621722181948173115
+=======
+--- !u!114 &3157255981214543981
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
@@ -87,12 +120,20 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
+<<<<<<< Updated upstream
   m_Script: {fileID: 11500000, guid: 536372c49e1ca914d822849d36de938c, type: 3}
   m_Name: iPhone Providers
   m_EditorClassIdentifier: 
   m_AutomaticLoading: 0
   m_AutomaticRunning: 0
   m_Loaders: []
+=======
+  m_Script: {fileID: 11500000, guid: 179fc3111e144bc4688dca4038b3265d, type: 3}
+  m_Name: Android Settings
+  m_EditorClassIdentifier: 
+  m_LoaderManagerInstance: {fileID: 8096829745969070941}
+  m_InitManagerOnStart: 1
+>>>>>>> Stashed changes
 --- !u!114 &5810045015915002473
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -122,6 +163,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_LoaderManagerInstance: {fileID: 2169704993131185611}
   m_InitManagerOnStart: 1
+<<<<<<< Updated upstream
 --- !u!114 &5935421576244035939
 MonoBehaviour:
   m_ObjectHideFlags: 2
@@ -137,6 +179,9 @@ MonoBehaviour:
   m_LoaderManagerInstance: {fileID: 2621722181948173115}
   m_InitManagerOnStart: 1
 --- !u!114 &8006910035460361745
+=======
+--- !u!114 &7842575762254783755
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
@@ -148,9 +193,15 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 179fc3111e144bc4688dca4038b3265d, type: 3}
   m_Name: tvOS Settings
   m_EditorClassIdentifier: 
+<<<<<<< Updated upstream
   m_LoaderManagerInstance: {fileID: 8566841327562817837}
   m_InitManagerOnStart: 1
 --- !u!114 &8566841327562817837
+=======
+  m_LoaderManagerInstance: {fileID: -2875634482773722207}
+  m_InitManagerOnStart: 1
+--- !u!114 &8096829745969070941
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 2
   m_CorrespondingSourceObject: {fileID: 0}
@@ -160,8 +211,29 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 536372c49e1ca914d822849d36de938c, type: 3}
+<<<<<<< Updated upstream
   m_Name: tvOS Providers
+=======
+  m_Name: Android Providers
+>>>>>>> Stashed changes
   m_EditorClassIdentifier: 
   m_AutomaticLoading: 0
   m_AutomaticRunning: 0
   m_Loaders: []
+<<<<<<< Updated upstream
+=======
+--- !u!114 &8531116037086195443
+MonoBehaviour:
+  m_ObjectHideFlags: 2
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 179fc3111e144bc4688dca4038b3265d, type: 3}
+  m_Name: iPhone Settings
+  m_EditorClassIdentifier: 
+  m_LoaderManagerInstance: {fileID: -2607630248312991105}
+  m_InitManagerOnStart: 1
+>>>>>>> Stashed changes

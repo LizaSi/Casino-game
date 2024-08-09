@@ -95,6 +95,14 @@ public class GameServerManager : NetworkBehaviour
         foreach (NetworkConnection conn in base.NetworkManager.ServerManager.Clients.Values)
         {
             _playersIndexes[conn] = GenerateNewPlayerIndex();
+            ClientIndexSetBroadcast msg = new()
+            {
+                StartDisplay = true,
+                client = conn,
+                playerIndex = _playersIndexes[conn]
+            };
+            InstanceFinder.ServerManager.Broadcast(msg);
+
         }
 
         if (base.NetworkManager.ServerManager.Clients.Count == 0)
@@ -320,6 +328,13 @@ public class GameServerManager : NetworkBehaviour
     {
         public bool HostTurn;
       //  public NetworkConnection TurnOwner;
+    }
+
+    public struct ClientIndexSetBroadcast : IBroadcast
+    {
+        public bool StartDisplay;
+        public NetworkConnection client;
+        public int playerIndex;
     }
 
     public enum GameResult

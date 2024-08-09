@@ -288,7 +288,11 @@ GameObject:
   - component: {fileID: 7661383226115728781}
   - component: {fileID: 238562043921381814}
   - component: {fileID: 238562043921381815}
+<<<<<<< Updated upstream
   - component: {fileID: -5623016232567631013}
+=======
+  - component: {fileID: 179381723942722543}
+>>>>>>> Stashed changes
   m_Layer: 5
   m_Name: CanvasGame
   m_TagString: Untagged
@@ -460,8 +464,11 @@ MonoBehaviour:
   _networkBehaviours:
   - {fileID: 4094985504187360634}
   - {fileID: 7661383226115728781}
+<<<<<<< Updated upstream
   - {fileID: 238562043921381814}
   - {fileID: -5623016232567631013}
+=======
+>>>>>>> Stashed changes
   <ParentNetworkObject>k__BackingField: {fileID: 0}
   <ChildNetworkObjects>k__BackingField: []
   SerializedTransformProperties:
@@ -478,7 +485,11 @@ MonoBehaviour:
   _scenePathHash: 0
   <SceneId>k__BackingField: 0
   <AssetPathHash>k__BackingField: 8450685366989422023
+<<<<<<< Updated upstream
 --- !u!114 &-5623016232567631013
+=======
+--- !u!114 &179381723942722543
+>>>>>>> Stashed changes
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -487,6 +498,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 238562043921381800}
   m_Enabled: 1
   m_EditorHideFlags: 0
+<<<<<<< Updated upstream
   m_Script: {fileID: 11500000, guid: d86974c5a3cd4485e84693033ff8ac28, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
@@ -505,6 +517,14 @@ MonoBehaviour:
   winText: {fileID: 8632804720635569263}
   newRoundButton: {fileID: 110692520356709970}
   cardParent: {fileID: 0}
+=======
+  m_Script: {fileID: 11500000, guid: 554c922eb45a841bfaad2859e6357f36, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _componentIndexCache: 255
+  _addedNetworkObject: {fileID: 238562043921381815}
+  _networkObjectCache: {fileID: 0}
+>>>>>>> Stashed changes
 --- !u!1 &264837409462167341
 GameObject:
   m_ObjectHideFlags: 0
