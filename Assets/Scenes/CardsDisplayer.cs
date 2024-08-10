@@ -23,7 +23,7 @@ public class CardsDisplayer : NetworkBehaviour
     private int cardIndex = 0;
     private List<string> spawnedCardsNames = new();
     private bool dealerRevealAllCards = false;
-
+    
     private void OnEnable()
     {
         InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
@@ -281,7 +281,84 @@ public class CardsDisplayer : NetworkBehaviour
 
     void SpawnCardOnBoard(string cards)
     {
-        float cardSpacing = 300f;
+        int playerIndex = GameServerManager.GetPlayerIndex(base.Owner);
+        //float cardSpacing = 300f;
+        CardInitialPosition[] cardInitialPositions = new CardInitialPosition[6];
+        cardInitialPositions[0] = new()
+        {
+            xDealedCardPosition = 0.37f,
+            yDealedCardPosition = 2.48f,
+            zDealedCardPosition = 31.81f,
+            xHitCardPosition = 0.57f,
+            yHitCardPosition = 2.48f,
+            zHitCardPosition = 31.27f,
+            xRotation = 270,
+            yRotation = 0,
+            zRotation = 0
+        };
+        cardInitialPositions[1] = new()
+        {
+            xDealedCardPosition = -4.05f,
+            yDealedCardPosition = 2.48f,
+            zDealedCardPosition = 31.42f,
+            xHitCardPosition = -3.47f,
+            yHitCardPosition = 2.48f,
+            zHitCardPosition = 31.45f,
+            xRotation = 270,
+            yRotation = 0,
+            zRotation = -69.864f
+        };
+        cardInitialPositions[2] = new()
+        {
+            xDealedCardPosition = -3.84f,
+            yDealedCardPosition = 2.48f,
+            zDealedCardPosition = 29.39f,
+            xHitCardPosition = -3.58f,
+            yHitCardPosition = 2.48f,
+            zHitCardPosition = 29.9f,
+            xRotation = 270,
+            yRotation = 0,
+            zRotation = 224.227f
+        };
+        cardInitialPositions[3] = new()
+        {
+            xDealedCardPosition = -0.3f,
+            yDealedCardPosition = 2.48f,
+            zDealedCardPosition = 28.83f,
+            xHitCardPosition = -0.49f,
+            yHitCardPosition = 2.48f,
+            zHitCardPosition = 29.37f,
+            xRotation = 270,
+            yRotation = 0,
+            zRotation = 180
+
+        };
+        cardInitialPositions[4] = new()
+        {
+            xDealedCardPosition = 3.63f,
+            yDealedCardPosition = 2.48f,
+            zDealedCardPosition = 29.07f,
+            xHitCardPosition = 3.13f,
+            yHitCardPosition = 2.48f,
+            zHitCardPosition = 29.37f,
+            xRotation = 270,
+            yRotation = 0,
+            zRotation = 138.62f
+
+        };
+        cardInitialPositions[5] = new()
+        {
+            xDealedCardPosition = 4.35f,
+            yDealedCardPosition = 2.48f,
+            zDealedCardPosition = 30.91f,
+            xHitCardPosition = 3.9f,
+            yHitCardPosition = 2.48f,
+            zHitCardPosition = 30.58f,
+            xRotation = 270,
+            yRotation = 0,
+            zRotation = 72.893f
+
+        };
         float card2Spacing_X = 0.07f;
         float card2Spacing_Y = 0.03f;
         float card2Spacing_Z = -0.1f;
@@ -296,20 +373,25 @@ public class CardsDisplayer : NetworkBehaviour
 
             string cardDir = "Cards/" + cardName;
             GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir), cardParent);
-            instantiatedCard.transform.localScale = new Vector3(2000f, 1900f, 1f);
+            instantiatedCard.transform.localScale = new Vector3(2.2816f, 2.2816f, 2.2816f);
             instantiatedCard.transform.rotation = Quaternion.identity;
             //instantiatedCard.transform.localPosition = new Vector3((cardIndex * cardSpacing)+537, 288, 15);
             //instantiatedCard.transform.rotation = Quaternion.Euler(0f, 181f, 0f);
             Debug.LogWarning($"Dealing card no. {cardIndex} : {cardName}");
             if (cardIndex < 2)
             {
-                instantiatedCard.transform.localPosition = new Vector3((cardIndex * card2Spacing_X) - 4.05f, (cardIndex * card2Spacing_Y) + 2.48f, (cardIndex * card2Spacing_Z) + 31.42f);
+                //instantiatedCard.transform.localPosition = new Vector3((cardIndex * card2Spacing_X) - 4.05f, (cardIndex * card2Spacing_Y) + 2.48f, (cardIndex * card2Spacing_Z) + 31.42f);
+                instantiatedCard.transform.localPosition = new Vector3((cardIndex * card2Spacing_X) + cardInitialPositions[playerIndex - 1].xDealedCardPosition, (cardIndex * card2Spacing_Y) + cardInitialPositions[playerIndex - 1].yDealedCardPosition, (cardIndex * card2Spacing_Z) + cardInitialPositions[playerIndex - 1].zDealedCardPosition);
+
             }
             else
             {
-                instantiatedCard.transform.localPosition = new Vector3(((cardIndex - 2) * cardSpacing_X) - 3.47f, ((cardIndex - 2) * cardSpacing_Y) + 2.48f, ((cardIndex - 2) * cardSpacing_Z) + 31.45f);
+                //instantiatedCard.transform.localPosition = new Vector3(((cardIndex - 2) * cardSpacing_X) - 3.47f, ((cardIndex - 2) * cardSpacing_Y) + 2.48f, ((cardIndex - 2) * cardSpacing_Z) + 31.45f);
+                instantiatedCard.transform.localPosition = new Vector3(((cardIndex - 2) * cardSpacing_X) + cardInitialPositions[playerIndex - 1].xHitCardPosition, ((cardIndex - 2) * cardSpacing_Y) + cardInitialPositions[playerIndex - 1].yHitCardPosition, ((cardIndex - 2) * cardSpacing_Z) + cardInitialPositions[playerIndex - 1].zHitCardPosition);
             }
-            instantiatedCard.transform.rotation = Quaternion.Euler(270f, 0f, -69.864f);
+            //instantiatedCard.transform.rotation = Quaternion.Euler(270f, 0f, -69.864f);
+            instantiatedCard.transform.rotation = Quaternion.Euler(270f, 0f, cardInitialPositions[playerIndex - 1].zRotation);
+
             if (instantiatedCard == null)
             {
                 Debug.LogWarning("No card object found in Resources");
@@ -336,5 +418,18 @@ public class CardsDisplayer : NetworkBehaviour
     {
         public bool IsWinMessage;
         public bool IsNewRoundMessage;
+    }
+
+    public struct CardInitialPosition
+    {
+        public float xDealedCardPosition;
+        public float yDealedCardPosition;
+        public float zDealedCardPosition;
+        public float xHitCardPosition;
+        public float yHitCardPosition;
+        public float zHitCardPosition;
+        public float xRotation;
+        public float yRotation;
+        public float zRotation;
     }
 }
