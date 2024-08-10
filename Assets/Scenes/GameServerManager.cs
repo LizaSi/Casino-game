@@ -58,8 +58,8 @@ public class GameServerManager : NetworkBehaviour
         _instance._deck.Shuffle();
         _instance.DealInitialCards();
 
-  //      _instance.DespawnDealerCards();
-     //   _instance.DisplayCardAsDealer(_instance.PullCard());
+        //      _instance.DespawnDealerCards();
+        //   _instance.DisplayCardAsDealer(_instance.PullCard());
     }
 
     public static bool IsInitialized()
@@ -299,7 +299,7 @@ public class GameServerManager : NetworkBehaviour
         return _deck.DrawCard();
     }
 
-    public struct UpdateBroadcast: IBroadcast
+    public struct UpdateBroadcast : IBroadcast
     {
         public bool NewRound;
         public bool UpdateCards;
@@ -310,7 +310,7 @@ public class GameServerManager : NetworkBehaviour
     public struct TurnPassBroadcast : IBroadcast
     {
         public bool HostTurn;
-      //  public NetworkConnection TurnOwner;
+        //  public NetworkConnection TurnOwner;
     }
 
     public enum GameResult
