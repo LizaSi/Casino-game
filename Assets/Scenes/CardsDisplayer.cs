@@ -65,7 +65,6 @@ public class CardsDisplayer : NetworkBehaviour
             if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
             {
                 ShowWinMessage();
-               // handleClientTurn();
                 hitButton.gameObject.SetActive(false);
                 checkButton.gameObject.SetActive(false);
                 StartCoroutine(FetchCoinsInDelay());
@@ -73,7 +72,6 @@ public class CardsDisplayer : NetworkBehaviour
             else if(InstanceFinder.IsServer)
             {
                 UpdateCardsDisplay();
-        //        StartCoroutine(UpdateCardsInDelay());
             }
         }
         if (msg.IsNewRoundMessage)
@@ -239,16 +237,6 @@ public class CardsDisplayer : NetworkBehaviour
             checkButton.gameObject.SetActive(false);
         }
     }
-
-   /* private IEnumerator UpdateCardsInDelay() 
-    {
-        yield return new WaitForSeconds(0.1f);
-        UpdateCardsDisplay();
-        yield return new WaitForSeconds(1f);
-        UpdateCardsDisplay();
-
-        Debug.LogWarning("Updating cards in delay");
-    }*/
 
     private void UpdateCardsDisplay()
     {

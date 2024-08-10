@@ -181,11 +181,11 @@ public class PokerDisplayer : NetworkBehaviour
 
     private void handleClientTurn()
     {
-        if (InstanceFinder.IsServer || !base.Owner.IsLocalClient) // If we want all client cards on table delete this line
+        Debug.LogWarning("Handling clients turn");
+        if (!base.Owner.IsLocalClient)
         { 
             return;
         }
-        Debug.LogWarning("Handling clients turn");
         DisplayCardsClient();
 
         if (PokerServerManager.IsMyTurn(base.Owner))
