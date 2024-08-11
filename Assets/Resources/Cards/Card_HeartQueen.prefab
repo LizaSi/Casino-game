@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 2325197378792987250}
   m_Layer: 0
   m_Name: Card_HeartQueen
-  m_TagString: Untagged
+  m_TagString: Card
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

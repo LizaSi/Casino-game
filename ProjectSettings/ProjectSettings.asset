@@ -135,8 +135,8 @@ PlayerSettings:
     16:9: 1
     Others: 1
   bundleVersion: 1.0.2
-  preloadedAssets: [{fileID: 5903060638800393934, guid: 973bad3ab3355cb40854a747504c61a3,
-      type: 2}]
+  preloadedAssets:
+  - {fileID: 5903060638800393934, guid: 973bad3ab3355cb40854a747504c61a3, type: 2}
   metroInputSource: 0
   wsaTransparentSwapchain: 0
   m_HolographicPauseOnTrackingLoss: 1
@@ -846,8 +846,7 @@ PlayerSettings:
   metroDefaultTileSize: 1
   metroTileForegroundText: 2
   metroTileBackgroundColor: {r: 0.13333334, g: 0.17254902, b: 0.21568628, a: 0}
-  metroSplashScreenBackgroundColor: {r: 0.12941177, g: 0.17254902, b: 0.21568628,
-    a: 1}
+  metroSplashScreenBackgroundColor: {r: 0.12941177, g: 0.17254902, b: 0.21568628, a: 1}
   metroSplashScreenUseBackgroundColor: 0
   platformCapabilities: {}
   metroTargetDeviceFamilies: {}
@@ -904,11 +903,11 @@ PlayerSettings:
   apiCompatibilityLevel: 6
   activeInputHandler: 0
   windowsGamepadBackendHint: 0
-  cloudProjectId: 02d953d1-bba8-46c2-a733-aef4a9b01d83
+  cloudProjectId: ee9731e3-968e-4441-9b19-5a6b26813451
   framebufferDepthMemorylessMode: 0
   qualitySettingsNames: []
-  projectName: Connect&Bet
-  organizationId: snirben
+  projectName: 2D-mobile-template
+  organizationId: ohadbad098
   cloudEnabled: 0
   legacyClampBlendShapeWeights: 0
   playerDataPath: 

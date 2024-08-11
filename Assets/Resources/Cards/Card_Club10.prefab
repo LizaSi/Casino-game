@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 8462292016058560859}
   m_Layer: 0
   m_Name: Card_Club10
-  m_TagString: Untagged
+  m_TagString: Card
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

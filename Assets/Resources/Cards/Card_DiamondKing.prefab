@@ -15,7 +15,7 @@ GameObject:
   - component: {fileID: 5975022014083850931}
   m_Layer: 0
   m_Name: Card_DiamondKing
-  m_TagString: Untagged
+  m_TagString: Card
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0

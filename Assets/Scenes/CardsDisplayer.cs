@@ -16,10 +16,10 @@ public class CardsDisplayer : NetworkBehaviour
     public Button checkButton;
     public TMP_Text winText;
     public Button newRoundButton;
-    public Transform cardParent; // to do: try to delete
+  //  public Transform cardParent; // to do: try to delete
 
     private bool dealerChecked = false;
-    private List<GameObject> spawnedCards = new();
+  //  private List<GameObject> spawnedCards = new();
     private int cardIndex = 0;
     private List<string> spawnedCardsNames = new();
     private bool dealerRevealAllCards = false;
@@ -97,7 +97,6 @@ public class CardsDisplayer : NetworkBehaviour
         if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
         {
             handleClientTurn();
-         //   StartCoroutine(ClientTurnInDelay());
         }
         else if (msg.HostTurn && base.Owner.IsHost && InstanceFinder.IsServer)
         {
@@ -108,7 +107,7 @@ public class CardsDisplayer : NetworkBehaviour
 
     private IEnumerator ClientTurnInDelay()
     {
-        yield return new WaitForSeconds(0.65f);
+        yield return new WaitForSeconds(0.75f);
         handleClientTurn();
     }
 
@@ -128,15 +127,15 @@ public class CardsDisplayer : NetworkBehaviour
         else if (msg.UpdateCards && !InstanceFinder.IsServer && base.Owner.IsLocalClient)
         {
             handleClientTurn();
-     //       StartCoroutine(UpdateCardsInDelay()); //Because of the bug that broadcasting reaches before the actual value is changed on network.
         }
         else if (msg.DealerTurn) // only server reaches this part
         {
             handleDealerTurn();
             UpdateCardsDisplay();
-       //     StartCoroutine(UpdateCardsInDelay());
         }
-    }   
+        if (msg.UpdateCards)
+            UpdateCardsDisplay();
+    }
 
     public void Check_OnClick()
     {
@@ -219,7 +218,7 @@ public class CardsDisplayer : NetworkBehaviour
     {
         Debug.LogWarning("Server checked");
         dealerChecked = true;
-        yield return new WaitForSeconds(0.2f); // Wait for client to get up before broadcasting it. 
+        yield return new WaitForSeconds(0.5f); // Wait for client to get up before broadcasting it. 
         ClientCheck();
     }
 
@@ -261,6 +260,20 @@ public class CardsDisplayer : NetworkBehaviour
                     i++;
                 }
             }
+            else if (InstanceFinder.IsServer) // To spawn clients cards.
+            {
+                string cards = GameServerManager.GetPlayerHand(base.Owner);
+                int i = 0;
+                foreach (string card in cards.Split(','))
+                {
+                    if (!spawnedCardsNames.Contains(card))
+                    {
+                        SpawnCardOnBoard(card);
+                        spawnedCardsNames.Add(card);
+                    }
+                    i++;
+                }
+            }
         }
         else
         {
@@ -271,7 +284,6 @@ public class CardsDisplayer : NetworkBehaviour
     void SpawnCardOnBoard(string cards)
     {
         int playerIndex = GameServerManager.GetPlayerIndex(base.Owner);
-        //float cardSpacing = 300f;
         CardInitialPosition[] cardInitialPositions = new CardInitialPosition[6];
         cardInitialPositions[0] = new()
         {
@@ -361,7 +373,7 @@ public class CardsDisplayer : NetworkBehaviour
             string cardName = cardNames[i].Trim();
 
             string cardDir = "Cards/" + cardName;
-            GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir), cardParent);
+            GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir));
             instantiatedCard.transform.localScale = new Vector3(2.2816f, 2.2816f, 2.2816f);
             instantiatedCard.transform.rotation = Quaternion.identity;
             //instantiatedCard.transform.localPosition = new Vector3((cardIndex * cardSpacing)+537, 288, 15);
@@ -387,19 +399,21 @@ public class CardsDisplayer : NetworkBehaviour
                 return;
             }
         //    ServerManager.Spawn(instantiatedCard);
-            spawnedCards.Add(instantiatedCard);
+          //  spawnedCards.Add(instantiatedCard);
             cardIndex++;
         }
     }
 
     private void DespawnAllCards()
     {
-        foreach (GameObject cardObject in spawnedCards)
+        GameObject[] cards = GameObject.FindGameObjectsWithTag("Card");
+
+        // Iterate through the array and destroy each card
+        foreach (GameObject card in cards)
         {
-           Destroy(cardObject);
+            Destroy(card);
         }
-        Debug.Log("Despawning all cards");
-        spawnedCards.Clear();
+
         spawnedCardsNames.Clear();
     }
 
