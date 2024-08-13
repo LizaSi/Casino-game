@@ -12,14 +12,11 @@ using static GameServerManager;
 public class CardsDisplayer : NetworkBehaviour
 {
     public TMP_Text cardsText;
-    public Button hitButton;
-    public Button checkButton;
+    public GameObject ButtonsParent;
     public TMP_Text winText;
     public Button newRoundButton;
-  //  public Transform cardParent; // to do: try to delete
 
     private bool dealerChecked = false;
-  //  private List<GameObject> spawnedCards = new();
     private int cardIndex = 0;
     private List<string> spawnedCardsNames = new();
     private bool dealerRevealAllCards = false;
@@ -29,6 +26,7 @@ public class CardsDisplayer : NetworkBehaviour
         InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
         InstanceFinder.ClientManager.RegisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
         InstanceFinder.ClientManager.RegisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);
+        GameServerManager.OnInitialized += GameServerManager_OnInitialized;
     }
 
     private void OnDisable()
@@ -37,6 +35,15 @@ public class CardsDisplayer : NetworkBehaviour
         InstanceFinder.ClientManager.UnregisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
         InstanceFinder.ClientManager.UnregisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);
     }
+
+    private void GameServerManager_OnInitialized()
+    {
+        if (base.Owner.IsLocalClient && !InstanceFinder.IsServer)
+        {
+            PlayerDisplayer.SetCamera(GetPlayerIndex(base.Owner) - 1); // -1 cuz index 1 is the host    }
+        }
+    }
+
     private void NewRoundInit()
     {
         DespawnAllCards();
@@ -65,8 +72,7 @@ public class CardsDisplayer : NetworkBehaviour
             if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
             {
                 ShowWinMessage();
-                hitButton.gameObject.SetActive(false);
-                checkButton.gameObject.SetActive(false);
+                ButtonsParent.SetActive(false);
                 StartCoroutine(FetchCoinsInDelay());
             }
             else if(InstanceFinder.IsServer)
@@ -107,7 +113,7 @@ public class CardsDisplayer : NetworkBehaviour
 
     private IEnumerator ClientTurnInDelay()
     {
-        yield return new WaitForSeconds(0.75f);
+        yield return new WaitForSeconds(0.65f);
         handleClientTurn();
     }
 
@@ -147,6 +153,13 @@ public class CardsDisplayer : NetworkBehaviour
         HitCard();
     }
 
+    public void Double_OnClick()
+    {
+        HitCard();
+        ClientCheck();
+    }
+
+
     private async void ShowWinMessage()
     {
         if (InstanceFinder.IsServer || !base.Owner.IsLocalClient)
@@ -177,8 +190,12 @@ public class CardsDisplayer : NetworkBehaviour
         {
             if (InstanceFinder.IsServer)
                 handleDealerTurn();
-            else
+            else 
+            {
                 handleClientTurn();
+                if (base.Owner.IsLocalClient)
+                    PlayerDisplayer.SetCamera(GetPlayerIndex(base.Owner) - 1); // -1 cuz index 1 is the host
+            }
             UpdateCardsDisplay();
         }
     }    
@@ -227,13 +244,11 @@ public class CardsDisplayer : NetworkBehaviour
         UpdateCardsDisplay();
         if (IsMyTurn(base.Owner) && base.Owner.IsLocalClient)
         {
-            hitButton.gameObject.SetActive(true);
-            checkButton.gameObject.SetActive(true);
+            ButtonsParent.SetActive(true);
         }
         else
         {
-            hitButton.gameObject.SetActive(false);
-            checkButton.gameObject.SetActive(false);
+            ButtonsParent.SetActive(false);
         }
     }
 

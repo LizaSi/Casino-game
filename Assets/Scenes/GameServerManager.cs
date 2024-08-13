@@ -24,13 +24,14 @@ public class GameServerManager : NetworkBehaviour
     [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playersIndexes = new();
 
     private static GameServerManager _instance;
+    private static int cameraIndex = 0;
 
     private void Awake()
     {
         if (_instance == null)
         {
             _instance = this;
-            OnInitialized?.Invoke();
+          //  OnInitialized?.Invoke();
         }
     }
     private void Start()
@@ -38,11 +39,11 @@ public class GameServerManager : NetworkBehaviour
         if (_instance == null)
         {
             _instance = this;
-            OnInitialized?.Invoke();
         }
         _instance._playerHands.OnChange += playerHands_OnChange;
         AssignPlayersIndex();
         NewRoundInit();
+        OnInitialized?.Invoke();
     }
 
     public static void NewRoundInit()
@@ -105,10 +106,10 @@ public class GameServerManager : NetworkBehaviour
             _playersIndexes[conn] = GenerateNewPlayerIndex();
         }
     }
-
+  
     public static int GetPlayerIndex(NetworkConnection conn)
     {
-        return _instance._playersIndexes.TryGetValue(conn, out int index) ? index : 0; ;
+        return _instance._playersIndexes.TryGetValue(conn, out int index) ? index : 0;
     }
 
     public static bool IsMyTurn(NetworkConnection conn = null)
@@ -280,12 +281,26 @@ public class GameServerManager : NetworkBehaviour
         return _playersIndexes.FirstOrDefault(x => x.Value == nextUserIndex).Key;
     }
 
+    public static int GetIndexForCamera()
+    {
+        return GenerateCameraIndex();
+    }
+
+
     [Server]
     private int GenerateNewPlayerIndex()
     {
         playerIndex++;
         return playerIndex;
     }
+
+    [Server]
+    private static int GenerateCameraIndex()
+    {
+        cameraIndex++;
+        return cameraIndex;
+    }
+        
 
     [Server]
     private string PullCard()

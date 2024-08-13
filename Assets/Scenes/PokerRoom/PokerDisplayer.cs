@@ -146,20 +146,23 @@ public class PokerDisplayer : NetworkBehaviour
     public void Fold_OnClick()
     {
         PokerServerManager.ClientCheck();
-        PokerServerManager.ClientFold(base.Owner);
+        PokerServerManager.ClientFold();
         pokerComponentsParent.SetActive(false);
     }
 
     public void Check_OnClick()
     {
         PokerServerManager.ClientCheck();
-     //   pokerComponentsParent.SetActive(false);
     }
 
     public void Bet_OnClick()
     {
         if(int.TryParse(betInput.text, out int amountFromUi))
             PokerServerManager.ClientBet(base.Owner, amountFromUi);
+        else
+        {
+            Debug.LogError("Cant find input field coins");
+        }
     }
 
     private void ShowWinMessage()

@@ -95,6 +95,7 @@ public class PokerServerManager : NetworkBehaviour
 
     public static int HowManyCoinsToCall(NetworkConnection conn)
     {
+        Debug.LogWarning("Current bet is " + Instance._currentBet);
         return Instance._currentBet - Instance._playerBets[conn];
     }
 
@@ -180,20 +181,36 @@ public class PokerServerManager : NetworkBehaviour
     }
 
     [Client]
-    public static void ClientFold(NetworkConnection conn)
+    public static void ClientFold()
     {
-        Instance._playerHands.Remove(conn);
-        Instance._playerIsMyTurn.Remove(conn);
-        Instance._playersIndexes.Remove(conn);
+        Instance.FoldServer();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void FoldServer(NetworkConnection sender = null)
+    {
+        _playerHands.Remove(sender);
+        _playerIsMyTurn.Remove(sender);
+        _playersIndexes.Remove(sender);
     }
 
     [Client]
     public static void ClientBet(NetworkConnection conn, int coinAmount)
     {
-        Instance.Pot += coinAmount;
-        int callAmount = Instance._currentBet - Instance._playerBets[conn];
-        Instance._playerBets[conn] += coinAmount + callAmount;
-        Instance._currentBet = Instance._playerBets[conn];
+        Instance.RaiseBetServer(conn, coinAmount);
+        Instance.CheckAndPassServer();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void RaiseBetServer(NetworkConnection conn, int coinAmount)
+    {
+        checkCounter = 1; // So round will begin again, without the raiser
+        int palyersBet = _playerBets[conn];
+        int callAmount = _currentBet - palyersBet;
+        Pot += coinAmount;
+        _playerBets[conn] = palyersBet + coinAmount + callAmount;
+        _currentBet = _playerBets[conn];
+        Debug.LogWarning("Bet is raised to " + _currentBet);
     }
 
     [Client]
@@ -216,9 +233,14 @@ public class PokerServerManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void CheckAndPassServer(NetworkConnection sender = null)
     {
-        checkCounter ++;
-        if (checkCounter >= _playersIndexes.Count) // Change to check if each player checked..
+        checkCounter++;
+        ClientCall(sender);
+        if(checkCounter >= _playersIndexes.Count)
         {
+            /*if (!EveryOneCalledOrSetTurn(sender))
+            {
+                return;
+            }*/
             if (!flopRevealed)
             {
                 flopRevealed = true;
@@ -228,8 +250,29 @@ public class PokerServerManager : NetworkBehaviour
             RevealNewCardOnTable();
             checkCounter = 0;
         }
+       
         PassTurnToNextClient(sender);
-        ClientCall(sender);
+    }
+
+    private bool EveryOneCalledOrSetTurn(NetworkConnection sender) 
+    {
+        foreach (var player in _playerBets)
+        {
+            if (player.Value < _currentBet)
+            {
+                _playerIsMyTurn[sender] = false;
+                {
+                    _playerIsMyTurn[player.Key] = true;
+                    TurnPassBroadcast msg = new()
+                    {
+                        HostTurn = InstanceFinder.IsServer
+                    };
+                    InstanceFinder.ServerManager.Broadcast(msg);
+                }
+                return false;
+            }
+        }
+        return true;
     }
 
     private void PassTurnToNextClient(NetworkConnection sender = null)
