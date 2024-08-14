@@ -262,11 +262,13 @@ public class CardsDisplayer : NetworkBehaviour
                 int i = 0;
                 foreach (string card in cards.Split(','))
                 {
+                    
                     if (InstanceFinder.IsServer && !dealerRevealAllCards && i == 0)
                     {
                         i++;
                         continue; // Hide first card
                     }
+                    
                     if (!spawnedCardsNames.Contains(card))
                     {
                         SpawnCardOnBoard(card);
@@ -396,6 +398,13 @@ public class CardsDisplayer : NetworkBehaviour
             Debug.LogWarning($"Dealing card no. {cardIndex} : {cardName}");
             if (cardIndex < 2)
             {
+                //////
+                if(playerIndex == 2)
+                {
+                    Debug.LogWarning($"Dealing dealer card {cardIndex} : {cardName} To problematic client ");
+
+                }
+                /////
                 //instantiatedCard.transform.localPosition = new Vector3((cardIndex * card2Spacing_X) - 4.05f, (cardIndex * card2Spacing_Y) + 2.48f, (cardIndex * card2Spacing_Z) + 31.42f);
                 instantiatedCard.transform.localPosition = new Vector3((cardIndex * card2Spacing_X) + cardInitialPositions[playerIndex - 1].xDealedCardPosition, (cardIndex * card2Spacing_Y) + cardInitialPositions[playerIndex - 1].yDealedCardPosition, (cardIndex * card2Spacing_Z) + cardInitialPositions[playerIndex - 1].zDealedCardPosition);
 
