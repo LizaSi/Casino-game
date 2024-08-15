@@ -46,7 +46,7 @@ public class PokerDisplayer : NetworkBehaviour
     }
 
     public void InitGame()
-    {        
+    {
         StartCoroutine(ClientTurnInDelay());
         PokerServerManager.JoinWithName(base.Owner, LoggedUser.Username);
         InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
@@ -101,8 +101,8 @@ public class PokerDisplayer : NetworkBehaviour
         }
         if (msg.UpdateCards && !InstanceFinder.IsServer && base.Owner.IsLocalClient)
         {
-           // handleClientTurn();
-        //    StartCoroutine(ClientTurnInDelay());
+            // handleClientTurn();
+            //    StartCoroutine(ClientTurnInDelay());
         }
     }
 
@@ -112,7 +112,7 @@ public class PokerDisplayer : NetworkBehaviour
             return;
         GameObject CardViewer = GameObject.Find("CardViewer");
 
-     //   Debug.LogWarning("Displaying card " + cardToAdd);
+        //   Debug.LogWarning("Displaying card " + cardToAdd);
 
         string cardDir = "Cards/" + cardToAdd;
         GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir));
@@ -134,7 +134,7 @@ public class PokerDisplayer : NetworkBehaviour
         DespawnAllCards();
         newRoundButton.gameObject.SetActive(false);
         int givenAmount = await GiveBlindCoins(base.Owner);
-        if(base.Owner.IsLocalClient)
+        if (base.Owner.IsLocalClient)
             betCoinsText.text = "Gave " + givenAmount.ToString();
     }
 
@@ -146,25 +146,28 @@ public class PokerDisplayer : NetworkBehaviour
     public void Fold_OnClick()
     {
         PokerServerManager.ClientCheck();
-        PokerServerManager.ClientFold(base.Owner);
+        PokerServerManager.ClientFold();
         pokerComponentsParent.SetActive(false);
     }
 
     public void Check_OnClick()
     {
         PokerServerManager.ClientCheck();
-     //   pokerComponentsParent.SetActive(false);
     }
 
     public void Bet_OnClick()
     {
-        if(int.TryParse(betInput.text, out int amountFromUi))
+        if (int.TryParse(betInput.text, out int amountFromUi))
             PokerServerManager.ClientBet(base.Owner, amountFromUi);
+        else
+        {
+            Debug.LogError("Cant find input field coins");
+        }
     }
 
     private void ShowWinMessage()
     {
-        
+
     }
 
     void Update()
@@ -173,7 +176,7 @@ public class PokerDisplayer : NetworkBehaviour
         {
             if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
             {
-             //   DisplayCardsClient();
+                //   DisplayCardsClient();
                 handleClientTurn();
             }
         }
@@ -181,11 +184,11 @@ public class PokerDisplayer : NetworkBehaviour
 
     private void handleClientTurn()
     {
-        if (InstanceFinder.IsServer || !base.Owner.IsLocalClient) // If we want all client cards on table delete this line
-        { 
+        Debug.LogWarning("Handling clients turn");
+        if (!base.Owner.IsLocalClient)
+        {
             return;
         }
-        Debug.LogWarning("Handling clients turn");
         DisplayCardsClient();
 
         if (PokerServerManager.IsMyTurn(base.Owner))
@@ -249,17 +252,17 @@ public class PokerDisplayer : NetworkBehaviour
     {
         if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
         {
-           // handleClientTurn();
+            // handleClientTurn();
             StartCoroutine(ClientTurnInDelay());
         }
     }
 
     private IEnumerator ClientTurnInDelay()
     {
-      //  handleClientTurn();
+        //  handleClientTurn();
         yield return new WaitForSeconds(0.8f);
         handleClientTurn();
-       // yield return new WaitForSeconds(1.8f);
+        // yield return new WaitForSeconds(1.8f);
     }
 
     private void DespawnAllCards()
@@ -278,4 +281,23 @@ public class PokerDisplayer : NetworkBehaviour
         public bool IsWinMessage;
         public bool IsNewRoundMessage;
     }
+
+    //private void OnClientMsgBroadcast(ClientMsgBroadcast msg)
+    //{
+    //    if (msg.IsWinMessage)
+    //    {
+    //        if (base.Owner.IsLocalClient)
+    //        {
+    //            ShowWinMessage(msg.WinnerName, msg.WinningHand);
+    //            handleClientTurn();
+    //            StartCoroutine(FetchCoinsInDelay());
+    //        }
+    //    }
+    //    // Handle other messages...
+    //}
+
+    //private void ShowWinMessage(string winnerName, string winningHand)
+    //{
+    //    winText.text = $"{winnerName} wins with {winningHand}!";
+    //}
 }

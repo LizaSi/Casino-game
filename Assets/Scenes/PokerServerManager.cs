@@ -59,7 +59,7 @@ public class PokerServerManager : NetworkBehaviour
         {
             Instance = this;
         }
-        
+
         OnInitialized?.Invoke();
     }
 
@@ -72,14 +72,14 @@ public class PokerServerManager : NetworkBehaviour
     {
         Instance._playerNames.Add(conn, username);
     }
-    
+
     public static string GetMyHand(NetworkConnection conn)
     {
         return Instance._playerHands.TryGetValue(conn, out string hand) ? hand : string.Empty;
     }
 
     public static void NewRoundInit()
-    {     
+    {
         if (Instance._deck == null || Instance._deck.Count < 5)
         {
             Instance._deck = new Deck(1);
@@ -90,11 +90,12 @@ public class PokerServerManager : NetworkBehaviour
         Instance.AssignPlayersIndexAndTurns();
         Instance.DealInitialCards();
         Instance._currentBet = Instance._bigBlind;
-      //   Instance._blindIndex = Instance.getNextIndexTurn(Instance._playersIndexes.Count, Instance._blindIndex);
+        //   Instance._blindIndex = Instance.getNextIndexTurn(Instance._playersIndexes.Count, Instance._blindIndex);
     }
 
     public static int HowManyCoinsToCall(NetworkConnection conn)
     {
+        Debug.LogWarning("Current bet is " + Instance._currentBet);
         return Instance._currentBet - Instance._playerBets[conn];
     }
 
@@ -149,7 +150,7 @@ public class PokerServerManager : NetworkBehaviour
         };
         InstanceFinder.ServerManager.Broadcast(msg);
 
-        Debug.LogWarning("New table hand: " + string.Join("",_tableCards));
+        Debug.LogWarning("New table hand: " + string.Join("", _tableCards));
     }
 
     [Server]
@@ -180,20 +181,36 @@ public class PokerServerManager : NetworkBehaviour
     }
 
     [Client]
-    public static void ClientFold(NetworkConnection conn)
+    public static void ClientFold()
     {
-        Instance._playerHands.Remove(conn);
-        Instance._playerIsMyTurn.Remove(conn);
-        Instance._playersIndexes.Remove(conn);
+        Instance.FoldServer();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void FoldServer(NetworkConnection sender = null)
+    {
+        _playerHands.Remove(sender);
+        _playerIsMyTurn.Remove(sender);
+        _playersIndexes.Remove(sender);
     }
 
     [Client]
     public static void ClientBet(NetworkConnection conn, int coinAmount)
     {
-        Instance.Pot += coinAmount;
-        int callAmount = Instance._currentBet - Instance._playerBets[conn];
-        Instance._playerBets[conn] += coinAmount + callAmount;
-        Instance._currentBet = Instance._playerBets[conn];
+        Instance.RaiseBetServer(conn, coinAmount);
+        Instance.CheckAndPassServer();
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void RaiseBetServer(NetworkConnection conn, int coinAmount)
+    {
+        checkCounter = 1; // So round will begin again, without the raiser
+        int palyersBet = _playerBets[conn];
+        int callAmount = _currentBet - palyersBet;
+        Pot += coinAmount;
+        _playerBets[conn] = palyersBet + coinAmount + callAmount;
+        _currentBet = _playerBets[conn];
+        Debug.LogWarning("Bet is raised to " + _currentBet);
     }
 
     [Client]
@@ -216,9 +233,14 @@ public class PokerServerManager : NetworkBehaviour
     [ServerRpc(RequireOwnership = false)]
     private void CheckAndPassServer(NetworkConnection sender = null)
     {
-        checkCounter ++;
-        if (checkCounter >= _playersIndexes.Count) // Change to check if each player checked..
+        checkCounter++;
+        ClientCall(sender);
+        if (checkCounter >= _playersIndexes.Count)
         {
+            /*if (!EveryOneCalledOrSetTurn(sender))
+            {
+                return;
+            }*/
             if (!flopRevealed)
             {
                 flopRevealed = true;
@@ -228,8 +250,29 @@ public class PokerServerManager : NetworkBehaviour
             RevealNewCardOnTable();
             checkCounter = 0;
         }
+
         PassTurnToNextClient(sender);
-        ClientCall(sender);
+    }
+
+    private bool EveryOneCalledOrSetTurn(NetworkConnection sender)
+    {
+        foreach (var player in _playerBets)
+        {
+            if (player.Value < _currentBet)
+            {
+                _playerIsMyTurn[sender] = false;
+                {
+                    _playerIsMyTurn[player.Key] = true;
+                    TurnPassBroadcast msg = new()
+                    {
+                        HostTurn = InstanceFinder.IsServer
+                    };
+                    InstanceFinder.ServerManager.Broadcast(msg);
+                }
+                return false;
+            }
+        }
+        return true;
     }
 
     private void PassTurnToNextClient(NetworkConnection sender = null)
@@ -251,7 +294,7 @@ public class PokerServerManager : NetworkBehaviour
         {
             UnityEngine.Debug.LogWarning("Cant find next client");
         }
-    }    
+    }
 
     private NetworkConnection GetNextPlayersTurn(NetworkConnection sender)
     {
@@ -285,8 +328,8 @@ public class PokerServerManager : NetworkBehaviour
 
     public static bool IsMyTurn(NetworkConnection conn)
     {
-        if(!Instance._playerIsMyTurn.TryGetValue(conn, out bool isTurn))
-        {            
+        if (!Instance._playerIsMyTurn.TryGetValue(conn, out bool isTurn))
+        {
             Debug.LogError("No network connection in PlayerIsMyTurn");
             return false;
         }
@@ -310,7 +353,7 @@ public class PokerServerManager : NetworkBehaviour
                 if (i == 1)
                 {
                     _playerIsMyTurn[conn] = true;
-                   // Instance._bigBlindConn = conn;
+                    // Instance._bigBlindConn = conn;
                 }
                 else
                 {
@@ -362,5 +405,50 @@ public class PokerServerManager : NetworkBehaviour
         Win,
         Lose,
         Tie
+    }
+
+    public void DetermineWinner()
+    {
+        Dictionary<NetworkConnection, HandValue> playerHandValues = new();
+
+        foreach (var player in _playerHands)
+        {
+            // Parse player's hand and table cards into Card objects
+            var handCards = Deck.ParseHandString(player.Value);
+            var communityCards = Deck.ParseHandString(string.Join(", ", _tableCards));
+
+            // Combine hand cards and community cards into one list
+            List<Card> allCards = handCards.Concat(communityCards).ToList();
+
+            // Evaluate the best hand
+            var bestHand = PokerHandEvaluator.EvaluateBestHand(allCards);
+
+            playerHandValues[player.Key] = bestHand;
+        }
+
+        // Determine the player with the highest hand value
+        var winningPlayer = playerHandValues.Aggregate((l, r) => l.Value.CompareTo(r.Value) > 0 ? l : r).Key;
+
+        // Broadcast the result to all players
+        BroadcastWinner(winningPlayer, playerHandValues[winningPlayer]);
+    }
+
+    [Server]
+    private void BroadcastWinner(NetworkConnection winner, HandValue winningHand)
+    {
+        ClientMsgBroadcast msg = new()
+        {
+            IsWinMessage = true,
+            WinningHand = winningHand.ToString(),
+            WinnerName = _playerNames[winner]
+        };
+        InstanceFinder.ServerManager.Broadcast(msg);
+    }
+
+    public struct ClientMsgBroadcast : IBroadcast
+    {
+        public bool IsWinMessage;
+        public string WinningHand;
+        public string WinnerName;
     }
 }

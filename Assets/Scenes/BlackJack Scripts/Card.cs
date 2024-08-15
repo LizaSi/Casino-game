@@ -415,36 +415,16 @@ public class Card
                 return value.ToString();
         }
     }
+
+    public bool IsSameSuit(Card other)
+    {
+        return this.GetSuit() == other.GetSuit();
+    }
+
+    public int CompareRank(Card other)
+    {
+        int thisRank = (int)this.CardType % 13 + 1;
+        int otherRank = (int)other.CardType % 13 + 1;
+        return thisRank.CompareTo(otherRank);
+    }
 }
-
-//public class Card
-//{
-
-//    public enum Suit { Hearts, Diamonds, Clubs, Spades }
-//    public enum Rank { Two = 2, Three, Four, Five, Six, Seven, Eight, Nine, Ten, Jack, Queen, King, Ace }
-
-//    public Suit CardSuit { get; private set; }
-//    public Rank CardRank { get; private set; }
-
-//    public Card(Suit suit, Rank rank)
-//    {
-//        CardSuit = suit;
-//        CardRank = rank;
-//    }
-
-//    public int GetValue()
-//    {
-//        if (CardRank <= Rank.Ten)
-//        {
-//            return (int)CardRank;
-//        }
-//        else if (CardRank <= Rank.King)
-//        {
-//            return 10;
-//        }
-//        else // Ace
-//        {
-//            return 11;
-//        }
-//    }
-//}
