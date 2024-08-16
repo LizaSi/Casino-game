@@ -161,7 +161,7 @@ public class GameServerManager : NetworkBehaviour
         {
             result = GameResult.Win;
         }
-        else if (dealerValue == clientValue)
+        else if (dealerValue == clientValue && clientValue <= 21)
         {
             result = GameResult.Tie;
         }
@@ -222,6 +222,10 @@ public class GameServerManager : NetworkBehaviour
     {
         _playerIsMyTurn[sender] = false;
         NetworkConnection nextClient = GetNextPlayersTurn(sender);
+        while (nextClient != null && Deck.GetHandValue(_instance._playerHands[nextClient]) == 21)
+        {
+            nextClient = GetNextPlayersTurn(nextClient);
+        }
         if (nextClient != null && !sender.Equals(nextClient))
         {
             _playerIsMyTurn[nextClient] = true;        
