@@ -20,7 +20,6 @@ public class CardsDisplayer : NetworkBehaviour
     private int cardIndex = 0;
     private List<string> spawnedCardsNames = new();
     private List<string> spawnedCardsServer = new();
-   // private List<string> spawnedCardsNamesServer = new();
     private bool dealerRevealAllCards = false;
     
     private void OnEnable()
@@ -42,7 +41,7 @@ public class CardsDisplayer : NetworkBehaviour
     {
         if (base.Owner.IsLocalClient && !InstanceFinder.IsServer)
         {
-            PlayerDisplayer.SetCamera(GetPlayerIndex(base.Owner) - 1); // -1 cuz index 1 is the host    }
+            PlayerDisplayer.SetCamera(GetPlayerIndex(base.Owner) - 1); // -1 cuz index 1 is the host
             StartCoroutine(ClientTurnInDelay());
         }
     }
@@ -92,7 +91,6 @@ public class CardsDisplayer : NetworkBehaviour
                 NewRoundInitAsClient();
                 StartCoroutine(ClientTurnInDelay());
             }
-           // UpdateCardsDisplay();            
         }
     }
 
@@ -133,7 +131,6 @@ public class CardsDisplayer : NetworkBehaviour
                 IsWinMessage = false
             };
             InstanceFinder.ServerManager.Broadcast(msgForClients);
-           // UpdateCardsDisplay();
         }
         else if (msg.UpdateCards && !InstanceFinder.IsServer && base.Owner.IsLocalClient)
         {
