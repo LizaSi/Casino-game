@@ -33,6 +33,7 @@ public class PokerServerManager : NetworkBehaviour
     [SyncObject] private readonly SyncDictionary<NetworkConnection, string> _playerHands = new();
     [SyncObject] private readonly SyncDictionary<NetworkConnection, bool> _playerIsMyTurn = new();
     [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playersIndexes = new(); //starting from 0
+    [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playersJoiningIndexes = new(); //starting from 0
     [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playerBets = new();
     private readonly Dictionary<NetworkConnection, string> _playerNames = new();
     public int Pot
@@ -71,8 +72,26 @@ public class PokerServerManager : NetworkBehaviour
     public static void JoinWithName(NetworkConnection conn, string username)
     {
         Instance._playerNames.Add(conn, username);
+        Instance._playersJoiningIndexes.Add(conn, Instance._playersJoiningIndexes.Count + 1);
     }
-    
+
+    public static int GetPlayerIndex(NetworkConnection conn)
+    {
+        /*
+        int index = 1;
+        foreach (NetworkConnection netConn in Instance._playerNames.Keys)
+        {
+            if (conn.ClientId == netConn.ClientId)
+            {
+                return index;
+            }
+            index++;
+        }
+        */
+        return Instance._playersJoiningIndexes.TryGetValue(conn, out int index) ? index : -1;
+
+    }
+
     public static string GetMyHand(NetworkConnection conn)
     {
         return Instance._playerHands.TryGetValue(conn, out string hand) ? hand : string.Empty;

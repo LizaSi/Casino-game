@@ -12,6 +12,7 @@ using System;
 using FishNet.Connection;
 using System.Linq;
 using Unity.VisualScripting;
+using System.Reflection;
 
 public class PokerDisplayer : NetworkBehaviour
 {
@@ -42,7 +43,18 @@ public class PokerDisplayer : NetworkBehaviour
 
     private void OnPokerServerStarted()
     {
+        setPlayerCamera();
         InitGame();
+    }
+
+    private void setPlayerCamera()
+    {
+        if (base.Owner.IsLocalClient && !InstanceFinder.IsServer)
+        {
+            int playerIndex = GetPlayerIndex(base.Owner);
+            Debug.LogWarning($"client index is {playerIndex}");
+            PlayerDisplayer.SetCameraPoker(playerIndex - 1); // -1 cuz index 1 is the host    }
+        }
     }
 
     public void InitGame()
@@ -79,13 +91,79 @@ public class PokerDisplayer : NetworkBehaviour
 
             string cardDir = "Cards/" + cardName;
             GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir));
-            Vector3 newPosition = CardTransform.position + new Vector3(spaceIndex * cardSpacing, 0, 0);
+            //Vector3 newPosition = CardTransform.position + new Vector3(spaceIndex * cardSpacing, 0, 0);
 
-            instantiatedCard.transform.SetPositionAndRotation(newPosition, CardTransform.rotation);
-            instantiatedCard.transform.localScale = CardTransform.localScale;
+            //instantiatedCard.transform.SetPositionAndRotation(newPosition, CardTransform.rotation);
+            //instantiatedCard.transform.localScale = CardTransform.localScale;
+
+            ///////
+            int playerIndex = PokerServerManager.GetPlayerIndex(base.Owner);
+            instantiatedCard.transform.localScale = new Vector3(3f, 3f, 3f);
+            instantiatedCard.transform.rotation = Quaternion.identity;
+            if (playerIndex == 2)///V
+            {
+                if (j == 0)
+                {
+                    instantiatedCard.transform.localPosition = new Vector3(-4.98f, 2.36f, 31.41f);
+                }
+                else if (j == 1)
+                {
+                    instantiatedCard.transform.localPosition = new Vector3(-5.098367f, 2.36f, 30.92167f);
+                }
+                instantiatedCard.transform.rotation = Quaternion.Euler(270f, 0f, -76.942f);
+            }
+            else if (playerIndex == 3)///V
+            {
+                if (j == 0)
+                {
+                    instantiatedCard.transform.localPosition = new Vector3(-4.57f, 2.36f, 28.96f);
+                }
+                else if (j == 1)
+                {
+                    instantiatedCard.transform.localPosition = new Vector3(-4.125763f, 2.36f, 28.69727f);
+                }
+                instantiatedCard.transform.rotation = Quaternion.Euler(270f, 0f, -149.03f);
+            }
+            else if (playerIndex == 4)///V
+            {
+                if (j == 0)
+                {
+                    instantiatedCard.transform.localPosition = new Vector3(-0.42f, 2.36f, 28.5f);
+                }
+                else if (j == 1)
+                {
+                    instantiatedCard.transform.localPosition = new Vector3(0.046f, 2.36f, 28.51398f);
+                }
+                instantiatedCard.transform.rotation = Quaternion.Euler(270f, 0f, -181.876f);
+            }
+            else if (playerIndex == 5)///V
+            {
+                if (j == 0)
+                {
+                    instantiatedCard.transform.localPosition = new Vector3(4.413039f, 2.36f, 28.68334f);
+                }
+                else if (j == 1)
+                {
+                    instantiatedCard.transform.localPosition = new Vector3(3.955261f, 2.36f, 28.48266f);
+                }
+                instantiatedCard.transform.rotation = Quaternion.Euler(270f, 0f, -204.059f);
+            }
+            else if (playerIndex == 6)///V
+            {
+                if (j == 0)
+                {
+                    instantiatedCard.transform.localPosition = new Vector3(5.359648f, 2.36f, 31.00982f);
+                }
+                else if (j == 1)
+                {
+                    instantiatedCard.transform.localPosition = new Vector3(5.515435f, 2.36f, 30.53488f);
+                }
+                instantiatedCard.transform.rotation = Quaternion.Euler(270f, 0f, -288.549f);
+            }
+            ///////
 
             // Set the parent of the instantiated card to CardViewer
-            instantiatedCard.transform.SetParent(CardViewer.transform, false);
+            //instantiatedCard.transform.SetParent(CardViewer.transform, false);
 
             spawnedCardNames.Add(cardName);
             spawnedCards.Add(instantiatedCard);
