@@ -41,10 +41,12 @@ public class GameServerManager : NetworkBehaviour
             _instance = this;
         }
         _instance._playerHands.OnChange += playerHands_OnChange;
+      //  _instance._playerIsMyTurn.OnChange += PlayerIsMyTurn_OnChange;
         AssignPlayersIndex();
         NewRoundInit();
         OnInitialized?.Invoke();
     }
+
 
     public static void NewRoundInit()
     {
@@ -57,6 +59,14 @@ public class GameServerManager : NetworkBehaviour
             _instance._deck = new Deck(5);
         }
         _instance._deck.Shuffle();
+
+        UpdateBroadcast msg = new() // So clients can despawn all cards
+        {
+            NewRound = true,
+            UpdateCards = false
+        };
+        InstanceFinder.ServerManager.Broadcast(msg);
+
         _instance.DealInitialCards();
 
         //      _instance.DespawnDealerCards();
@@ -72,6 +82,7 @@ public class GameServerManager : NetworkBehaviour
     private void DealInitialCards()
     {
         bool isFirstTurnSet = false;
+
         foreach (NetworkConnection conn in NetworkManager.ServerManager.Clients.Values)
         {
             _instance._playerIsMyTurn[conn] = !isFirstTurnSet;
@@ -79,13 +90,6 @@ public class GameServerManager : NetworkBehaviour
 
             _instance._playerHands[conn] = PullCard() + ", " + PullCard();
         }
-
-        UpdateBroadcast msg = new()
-        {
-            NewRound = true,
-            UpdateCards = true
-        };
-        InstanceFinder.ServerManager.Broadcast(msg);
     }
 
     private void playerHands_OnChange(SyncDictionaryOperation op, NetworkConnection key, string value, bool asServer)
@@ -97,6 +101,15 @@ public class GameServerManager : NetworkBehaviour
         };
         InstanceFinder.ServerManager.Broadcast(msg);
     }
+
+    /*private void PlayerIsMyTurn_OnChange(SyncDictionaryOperation op, NetworkConnection key, bool isTurn, bool asServer)
+    {
+        TurnPassBroadcast msg = new()
+        {            
+            HostTurn = _playersIndexes[key] == 0 && isTurn
+        };
+        InstanceFinder.ServerManager.Broadcast(msg);
+    }*/
 
     [Server]
     private void AssignPlayersIndex()
@@ -211,7 +224,7 @@ public class GameServerManager : NetworkBehaviour
         NetworkConnection nextClient = GetNextPlayersTurn(sender);
         if (nextClient != null && !sender.Equals(nextClient))
         {
-            _playerIsMyTurn[nextClient] = true;
+            _playerIsMyTurn[nextClient] = true;        
             TurnPassBroadcast msg = new()
             {
                 HostTurn = nextClient.IsLocalClient
@@ -281,26 +294,12 @@ public class GameServerManager : NetworkBehaviour
         return _playersIndexes.FirstOrDefault(x => x.Value == nextUserIndex).Key;
     }
 
-    public static int GetIndexForCamera()
-    {
-        return GenerateCameraIndex();
-    }
-
-
     [Server]
     private int GenerateNewPlayerIndex()
     {
         playerIndex++;
         return playerIndex;
     }
-
-    [Server]
-    private static int GenerateCameraIndex()
-    {
-        cameraIndex++;
-        return cameraIndex;
-    }
-        
 
     [Server]
     private string PullCard()

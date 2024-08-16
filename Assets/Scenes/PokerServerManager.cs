@@ -371,6 +371,11 @@ public class PokerServerManager : NetworkBehaviour
         }
     }
 
+    public static int GetPlayerIndex(NetworkConnection conn)
+    {
+        return Instance._playersIndexes.TryGetValue(conn, out int index) ? index : 0;
+    }
+
     [Server]
     private int GenerateNewPlayerIndex()
     {
