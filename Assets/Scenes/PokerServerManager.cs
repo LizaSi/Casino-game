@@ -73,6 +73,7 @@ public class PokerServerManager : NetworkBehaviour
     {
         Instance._playerNames.Add(conn, username);
         Instance._playersJoiningIndexes.Add(conn, Instance._playersJoiningIndexes.Count + 1);
+        
     }
 
     public static int GetPlayerIndex(NetworkConnection conn)
@@ -390,10 +391,12 @@ public class PokerServerManager : NetworkBehaviour
         }
     }
 
+    /*
     public static int GetPlayerIndex(NetworkConnection conn)
     {
         return Instance._playersIndexes.TryGetValue(conn, out int index) ? index : 0;
     }
+    */
 
     [Server]
     private int GenerateNewPlayerIndex()

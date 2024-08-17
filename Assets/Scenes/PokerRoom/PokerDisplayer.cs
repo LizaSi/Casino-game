@@ -43,7 +43,7 @@ public class PokerDisplayer : NetworkBehaviour
 
     private void OnPokerServerStarted()
     {
-        setPlayerCamera();
+        //setPlayerCamera();
         InitGame();
     }
 
@@ -60,15 +60,18 @@ public class PokerDisplayer : NetworkBehaviour
     public void InitGame()
     {        
         StartCoroutine(ClientTurnInDelay());
-        PokerServerManager.JoinWithName(base.Owner, LoggedUser.Username);        
+        PokerServerManager.JoinWithName(base.Owner, LoggedUser.Username);
+        setPlayerCamera();
         InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
         InstanceFinder.ClientManager.RegisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
         InstanceFinder.ClientManager.RegisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);
         NewRoundInit();
+        /*
         if (base.Owner.IsLocalClient && !InstanceFinder.IsServer)
         {
-            PlayerDisplayer.SetCamera(PokerServerManager.GetPlayerIndex(base.Owner)); // -1? cuz index 1 is the host    }
+            PlayerDisplayer.SetCameraPoker(PokerServerManager.GetPlayerIndex(base.Owner)); // -1? cuz index 1 is the host    }
         }
+        */
     }
 
     private void OnDisable()
