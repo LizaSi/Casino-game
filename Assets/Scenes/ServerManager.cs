@@ -110,7 +110,7 @@ public class ServerManager : MonoBehaviour
         {
             networkDiscovery = FindObjectOfType<NetworkDiscovery>();
             _networkManager = FindObjectOfType<NetworkManager>();
-            networkDiscovery.StopAllCoroutines();
+           // networkDiscovery.StopAllCoroutines();
             _networkManager.StopAllCoroutines();
             _networkManager.ClientManager.StopConnection();
             _networkManager.ServerManager.StopConnection(false);
