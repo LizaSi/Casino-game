@@ -58,7 +58,7 @@ public class NameDisplayer : NetworkBehaviour
             members = MemberList.GetMembers(base.Owner);
         }
         if(InstanceFinder.IsServer)
-            displayText.text = members;
+            displayText.text = "Lobby members:\n" + members;
         else
         {
             displayText.fontSize = 19f;

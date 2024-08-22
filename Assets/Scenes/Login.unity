@@ -1775,6 +1775,7 @@ GameObject:
   m_Component:
   - component: {fileID: 635313437}
   - component: {fileID: 635313438}
+  - component: {fileID: 635313439}
   m_Layer: 0
   m_Name: LoginManager
   m_TagString: Untagged
@@ -1810,9 +1811,21 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   m_UsernameText: {fileID: 1727658855}
-  m_PasswordText: {fileID: 0}
   m_Label: {fileID: 1322453707}
   m_SignInButton: {fileID: 864114069}
+--- !u!114 &635313439
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 635313436}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c1362eb957190e247b08c90e2f28ca61, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  outputText: {fileID: 1322453707}
 --- !u!1 &682930489
 GameObject:
   m_ObjectHideFlags: 0
@@ -3843,7 +3856,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 1}
   m_AnchorMax: {x: 0.5, y: 1}
-  m_AnchoredPosition: {x: 8.50001, y: -399.75}
+  m_AnchoredPosition: {x: 8.50001, y: -254}
   m_SizeDelta: {x: 160, y: 30}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1322453707

@@ -18,13 +18,9 @@ public class FirebaseInit : MonoBehaviour
                 // Firebase is initialized successfully
                 FirebaseApp app = FirebaseApp.DefaultInstance;
                 Debug.Log("Firebase Initialized");
-
-                // Now you can start using Firebase services
-                // Example: Authenticate user, access Firestore, etc.
             }
             else
             {
-                // Handle initialization failure
                 Debug.LogError("Failed to initialize Firebase: " + task.Exception);
             }
         });

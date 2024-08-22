@@ -4,12 +4,13 @@ using FishNet.Object.Synchronizing;
 using FishNet.Transporting;
 using System.Text;
 using UnityEngine;
-using Unity.Services.Authentication.PlayerAccounts;
+using PlayerData;
 using FishNet.Managing.Scened;
 using FishNet;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
+using System.Collections.Generic;
 
 public class MemberList : NetworkBehaviour
 {
@@ -27,6 +28,17 @@ public class MemberList : NetworkBehaviour
         SetName(LoggedUser.Username);
     }
 
+    public static void SetLobbyList(SyncDictionary<NetworkConnection, string> playerNamesDict)
+    {
+        StringBuilder sb = new();
+        foreach (var user in playerNamesDict)
+        {
+            _instance._playerNames[user.Key] = user.Value;
+        }
+        UpdateLobbyList();
+    }
+
+
     public static void UpdateLobbyList()
     {
         StringBuilder sb = new();
@@ -35,20 +47,6 @@ public class MemberList : NetworkBehaviour
             sb.AppendLine(username);
         }
         _instance.displayText.text = sb.ToString();
-
-        /* GameObject canvasGame = GameObject.Find("CanvasGame(Clone)");
-         if (canvasGame != null)
-         {
-             if (canvasGame.TryGetComponent(out NameDisplayer nameDisplayerScript))
-             {
-                 if (toSet)
-                     nameDisplayerScript.SetName();
-                 else
-                 {
-                     nameDisplayerScript.RemoveText();
-                 }
-             }
-         }*/
     }
 
     public static string GetMembers(NetworkConnection conn)

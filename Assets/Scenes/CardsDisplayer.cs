@@ -4,7 +4,7 @@ using FishNet.Object;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using Unity.Services.Authentication.PlayerAccounts;
+using PlayerData;
 using UnityEngine;
 using UnityEngine.UI;
 using static GameServerManager;
@@ -41,7 +41,7 @@ public class CardsDisplayer : NetworkBehaviour
     {
         if (base.Owner.IsLocalClient && !InstanceFinder.IsServer)
         {
-            PlayerDisplayer.SetCamera(GetPlayerIndex(base.Owner) - 1); // -1 cuz index 1 is the host
+            PlayerDisplayer.SetCameraBlackJack(GetPlayerIndex(base.Owner) - 1); // -1 cuz index 1 is the host
             StartCoroutine(ClientTurnInDelay());
         }
     }
@@ -53,12 +53,14 @@ public class CardsDisplayer : NetworkBehaviour
         dealerChecked = false;
         dealerRevealAllCards = false;
         newRoundButton.gameObject.SetActive(false);
+        CountdownTimer.StartCountdown(this);
     }
 
     private void NewRoundInitAsClient()
     {
         DespawnAllCards();
         cardIndex = 0;
+        CountdownTimer.StartCountdown(this);
     }
 
     public void NewRound_OnClick()

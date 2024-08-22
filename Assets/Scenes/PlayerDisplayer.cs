@@ -47,25 +47,25 @@ public class PlayerDisplayer : MonoBehaviour
         GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
         instantiatedPlayer.transform.localScale = new Vector3(1f, 1f, 1f);
         instantiatedPlayer.transform.rotation = Quaternion.identity;
-        if (playerIndex == 1)
+        if (playerIndex == 0)
         {
             instantiatedPlayer.transform.localPosition = new Vector3(-1.11f, 0f, -0.09f);
             instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
             Debug.LogWarning("Displaying 1st player's camera");
         }
-        else if (playerIndex == 2)
+        else if (playerIndex == 1)
         {
             instantiatedPlayer.transform.localPosition = new Vector3(26.77f, 0f, 24.1f);
             instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -74.1f, 0f);
             Debug.LogWarning("Displaying 2nd player's camera");
 
         }
-        else if (playerIndex == 3)
+        else if (playerIndex == 2)
         {
             instantiatedPlayer.transform.localPosition = new Vector3(28.49612f, 0f, 41.40894f);
             instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -106.946f, 0f);
         }
-        else if (playerIndex == 4)
+        else if (playerIndex == 3)
         {
             instantiatedPlayer.transform.localPosition = new Vector3(26.65f, 0f, 50.72f);
             instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -127.374f, 0f);

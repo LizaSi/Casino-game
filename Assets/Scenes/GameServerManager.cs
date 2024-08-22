@@ -6,7 +6,7 @@ using System.Collections.Generic;
 using System.Linq;
 using FishNet.Broadcast;
 using FishNet;
-using Firebase.Database;
+//using Firebase.Database;
 using System.Threading.Tasks;
 using Unity.Services.Authentication.PlayerAccounts;
 using UnityEngine;
@@ -68,9 +68,6 @@ public class GameServerManager : NetworkBehaviour
         InstanceFinder.ServerManager.Broadcast(msg);
 
         _instance.DealInitialCards();
-
-        //      _instance.DespawnDealerCards();
-        //   _instance.DisplayCardAsDealer(_instance.PullCard());
     }
 
     public static bool IsInitialized()
@@ -174,38 +171,6 @@ public class GameServerManager : NetworkBehaviour
         return result;
     }
 
-    private static async Task UpdateCoinsBasedOnResult(string username, GameResult result)
-    {
-        DatabaseReference userRef = FirebaseDatabase.DefaultInstance.GetReference("users").Child(username);
-
-        // Get the current coins
-        DataSnapshot dataSnapshot = await userRef.GetValueAsync();
-        int currentCoins = 0;
-
-        if (dataSnapshot.Exists && dataSnapshot.Child("coins").Value != null)
-        {
-            int.TryParse(dataSnapshot.Child("coins").Value.ToString(), out currentCoins);
-        }
-
-        // Update coins based on the game result
-        int updatedCoins = currentCoins;
-        switch (result)
-        {
-            case GameResult.Win:
-                updatedCoins += 100; // example coin reward for win
-                break;
-            case GameResult.Tie:
-                // No coin change for tie
-                break;
-            case GameResult.Lose:
-                updatedCoins -= 100; // example coin penalty for loss
-                break;
-        }
-
-        // Set the updated coin value back to Firebase
-        await userRef.Child("coins").SetValueAsync(updatedCoins);
-    }
-
     [Client]
     public static void ClientCheck()
     {
@@ -222,13 +187,10 @@ public class GameServerManager : NetworkBehaviour
     {
         _playerIsMyTurn[sender] = false;
         NetworkConnection nextClient = GetNextPlayersTurn(sender);
-        while (nextClient != null && Deck.GetHandValue(_instance._playerHands[nextClient]) == 21)
-        {
-            nextClient = GetNextPlayersTurn(nextClient);
-        }
         if (nextClient != null && !sender.Equals(nextClient))
         {
-            _playerIsMyTurn[nextClient] = true;        
+            _playerIsMyTurn[nextClient] = true;
+            _playerIsMyTurn[nextClient] = true;
             TurnPassBroadcast msg = new()
             {
                 HostTurn = nextClient.IsLocalClient
@@ -315,6 +277,38 @@ public class GameServerManager : NetworkBehaviour
         _deck.Shuffle();
         UnityEngine.Debug.Log("There are " + _deck.GetCards().Count + " cards in deck");
         return _deck.DrawCard();
+    }
+
+    private static async Task UpdateCoinsBasedOnResult(string username, GameResult result)
+    {
+       /* DatabaseReference userRef = FirebaseDatabase.DefaultInstance.GetReference("users").Child(username);
+
+        // Get the current coins
+        DataSnapshot dataSnapshot = await userRef.GetValueAsync();
+        int currentCoins = 0;
+
+        if (dataSnapshot.Exists && dataSnapshot.Child("coins").Value != null)
+        {
+            int.TryParse(dataSnapshot.Child("coins").Value.ToString(), out currentCoins);
+        }
+
+        // Update coins based on the game result
+        int updatedCoins = currentCoins;
+        switch (result)
+        {
+            case GameResult.Win:
+                updatedCoins += 100; // example coin reward for win
+                break;
+            case GameResult.Tie:
+                // No coin change for tie
+                break;
+            case GameResult.Lose:
+                updatedCoins -= 100; // example coin penalty for loss
+                break;
+        }
+
+        // Set the updated coin value back to Firebase
+        await userRef.Child("coins").SetValueAsync(updatedCoins); */
     }
 
     public struct UpdateBroadcast : IBroadcast

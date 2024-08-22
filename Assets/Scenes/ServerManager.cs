@@ -9,6 +9,7 @@ using FishNet.Managing;
 using FishNet.Managing.Scened;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
+using FishNet.Transporting.Tugboat;
 
 public class ServerManager : MonoBehaviour
 {
@@ -88,7 +89,10 @@ public class ServerManager : MonoBehaviour
         yield return new WaitForSeconds(1f);
 
         EventSystem[] eventSystems = FindObjectsOfType<EventSystem>();
-        Destroy(eventSystems[0].gameObject);
+        if (eventSystems.Length > 0)
+        {
+            Destroy(eventSystems[0].gameObject);
+        }
 
         _networkManager.ServerManager.StartConnection();
         networkDiscovery.AdvertiseServer();
@@ -110,8 +114,8 @@ public class ServerManager : MonoBehaviour
         {
             networkDiscovery = FindObjectOfType<NetworkDiscovery>();
             _networkManager = FindObjectOfType<NetworkManager>();
-           // networkDiscovery.StopAllCoroutines();
-            _networkManager.StopAllCoroutines();
+            networkDiscovery.StopAllCoroutines();
+           _networkManager.StopAllCoroutines();
             _networkManager.ClientManager.StopConnection();
             _networkManager.ServerManager.StopConnection(false);
             _networkManager.ClientManager.StartConnection();
@@ -123,13 +127,23 @@ public class ServerManager : MonoBehaviour
     private IEnumerator DelayedServerCheck()
     {
         int i = 0;
+        if(!TryGetComponent<Tugboat>(out var tugboat))
+        {
+            Debug.LogWarning("Cant load tugbaot (fishnet for web)");
+        }
+        else
+        {
+            tugboat.SetClientAddress(_address);
+        }
         string[] dots = { ".", "..", "..."};
+
         hostsText.text = "Searching" + dots[i];
         yield return new WaitForSeconds(1f);
 
         // Check if any servers were found
         while (serverFound.Count == 0 || !serverFound[0])
         {
+           // tugboat.SetClientAddress(_address);
             i++;
             hostsText.text = "Searching" + dots[i % 3];
             yield return new WaitForSeconds(0.5f);

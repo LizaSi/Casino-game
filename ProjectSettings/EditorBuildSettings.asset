@@ -24,7 +24,7 @@ EditorBuildSettings:
     path: Assets/Scenes/Lobby.unity
     guid: 9d248b5a6bad2e546bafe9ed889e38c7
   - enabled: 1
-    path: Assets/Scenes/PokerRoom.unity
+    path: Assets/Scenes/PokerRoom/PokerRoom.unity
     guid: cb3c602dcab1e4f7c9001a7839378069
   m_configObjects:
     com.unity.adaptiveperformance.loader_settings: {fileID: 11400000, guid: 973bad3ab3355cb40854a747504c61a3, type: 2}

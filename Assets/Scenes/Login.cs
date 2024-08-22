@@ -2,43 +2,42 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
-using Firebase.Extensions;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
-using Unity.Services.Authentication.PlayerAccounts;
+using PlayerData;
+
+//using Unity.Services.Authentication.PlayerAccounts;
+#if !UNITY_WEBGL
+using Firebase.Extensions;
 using Firebase.Auth;
 using Firebase.Database;
-using UnityEngine.UIElements;
-//using UnityEditor.MemoryProfiler;
+#endif
 
 
 public class Login : MonoBehaviour
 {
+    #if !UNITY_WEBGL
     protected Firebase.Auth.FirebaseAuth auth;
     protected Firebase.Auth.FirebaseAuth otherAuth;
-    private bool signInAndFetchProfile = false;
-    protected string displayName = "";
-    private bool fetchingToken = false;
-    private string m_UserName;
- //   private DatabaseReference databaseReference;
-
-
     Firebase.DependencyStatus dependencyStatus = Firebase.DependencyStatus.UnavailableOther;
-    protected Dictionary<string, Firebase.Auth.FirebaseUser> userByAuth =
-  new Dictionary<string, Firebase.Auth.FirebaseUser>();
-
+    protected Dictionary<string, Firebase.Auth.FirebaseUser> userByAuth = new();
     private Firebase.AppOptions otherAuthOptions = new Firebase.AppOptions
     {
         ApiKey = "",
         AppId = "",
         ProjectId = ""
     };
+    #endif
+
+    private bool signInAndFetchProfile = false;
+    protected string displayName = "";
+    private bool fetchingToken = false;
+    private string m_UserName;
+ //   private DatabaseReference databaseReference;
 
     [SerializeField]
     TMP_InputField m_UsernameText;
-    [SerializeField]
-    TMP_InputField m_PasswordText;
     [SerializeField]
     Text m_Label;
     [SerializeField]
@@ -47,9 +46,13 @@ public class Login : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        m_UsernameText.onEndEdit.AddListener(delegate { OnEndEditUsername(); });
-
-        Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task => {
+        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        {
+            return;
+        }
+        #if !UNITY_WEBGL
+        Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
+        {
             dependencyStatus = task.Result;
             if (dependencyStatus == Firebase.DependencyStatus.Available)
             {
@@ -61,20 +64,59 @@ public class Login : MonoBehaviour
                   "Could not resolve all Firebase dependencies: " + dependencyStatus);
             }
         });
+        #endif
     }
-
-    private void OnEndEditUsername()
+    public async void Login_ButtonClick()
     {
-        //  m_PasswordText.Select();
+        await SigninWithEmailAsync();
     }
 
+    private async Task SigninWithEmailAsync()
+    {
+        string email, password;
+
+        if (!m_UsernameText.text.Contains('@'))
+            email = m_UsernameText.text + "@gmail.com";
+        else
+            email = m_UsernameText.text;
+
+        password = "123456";
+
+#if UNITY_WEBGL
+        LoginWeb loginWeb = GetComponent<LoginWeb>();
+        loginWeb.SignIn(email);
+#else
+        if (signInAndFetchProfile)
+        {
+            await auth.SignInAndRetrieveDataWithCredentialAsync(
+              EmailAuthProvider.GetCredential(email, password)).ContinueWithOnMainThread(
+                HandleSignInWithAuthResult);
+        }
+        else
+        {
+            m_Label.text = "Connecting...";
+            try
+            {
+                await auth.SignInWithEmailAndPasswordAsync(email, password)
+                .ContinueWithOnMainThread(HandleSignInWithAuthResult);
+            }
+            catch (Exception e)
+            {
+                m_Label.text = "Error login: " + e;
+                return;
+            }
+        }
+#endif
+    }
+
+#if !UNITY_WEBGL
     protected void InitializeFirebase()
     {
-        //  DebugLog("Setting up Firebase Auth");
         auth = FirebaseAuth.DefaultInstance;
         auth.StateChanged += AuthStateChanged;
         auth.IdTokenChanged += IdTokenChanged;
      //   databaseReference = FirebaseDatabase.DefaultInstance.RootReference;
+
         // Specify valid options to construct a secondary authentication object.
         if (otherAuthOptions != null &&
             !(string.IsNullOrEmpty(otherAuthOptions.ApiKey) ||
@@ -90,11 +132,12 @@ public class Login : MonoBehaviour
             }
             catch (Exception)
             {
-                //  DebugLog("ERROR: Failed to initialize secondary authentication object.");
+                  Debug.LogWarning("ERROR: Failed to initialize secondary authentication object.");
             }
         }
         AuthStateChanged(this, null);
-    }
+    } 
+    
 
     // Track ID token changes.
     void IdTokenChanged(object sender, System.EventArgs eventArgs)
@@ -105,6 +148,7 @@ public class Login : MonoBehaviour
             senderAuth.CurrentUser.TokenAsync(false);
         }
     }
+    
 
     void AuthStateChanged(object sender, EventArgs eventArgs)
     {
@@ -114,101 +158,18 @@ public class Login : MonoBehaviour
         if (senderAuth == auth && senderAuth.CurrentUser != user)
         {
             bool signedIn = user != senderAuth.CurrentUser && senderAuth.CurrentUser != null;
-            if (!signedIn && user != null)
-            {
-                // DebugLog("Signed out " + user.UserId);
-            }
+
             user = senderAuth.CurrentUser;
             userByAuth[senderAuth.App.Name] = user;
             if (signedIn)
             {
                 //  DebugLog("AuthStateChanged Signed in " + user.UserId);
                 displayName = user.DisplayName ?? "";
-                DisplayDetailedUserInfo(user, 1);
+               // DisplayDetailedUserInfo(user, 1);
             }
         }
     }
-
-    // Display a more detailed view of a FirebaseUser.
-    protected void DisplayDetailedUserInfo(Firebase.Auth.FirebaseUser user, int indentLevel)
-    {
-        string indent = new String(' ', indentLevel * 2);
-        DisplayUserInfo(user, indentLevel);
-        /* DebugLog(String.Format("{0}Anonymous: {1}", indent, user.IsAnonymous));
-         DebugLog(String.Format("{0}Email Verified: {1}", indent, user.IsEmailVerified));
-         DebugLog(String.Format("{0}Phone Number: {1}", indent, user.PhoneNumber));*/
-        var providerDataList = new List<Firebase.Auth.IUserInfo>(user.ProviderData);
-        var numberOfProviders = providerDataList.Count;
-        if (numberOfProviders > 0)
-        {
-            for (int i = 0; i < numberOfProviders; ++i)
-            {
-                //  DebugLog(String.Format("{0}Provider Data: {1}", indent, i));
-                DisplayUserInfo(providerDataList[i], indentLevel + 2);
-            }
-        }
-    }
-
-    protected void DisplayUserInfo(Firebase.Auth.IUserInfo userInfo, int indentLevel)
-    {
-        string indent = new String(' ', indentLevel * 2);
-        var userProperties = new Dictionary<string, string> {
-        {"Display Name", userInfo.DisplayName},
-        {"Email", userInfo.Email},
-        {"Photo URL", userInfo.PhotoUrl != null ? userInfo.PhotoUrl.ToString() : null},
-        {"Provider ID", userInfo.ProviderId},
-        {"User ID", userInfo.UserId}
-      };
-        foreach (var property in userProperties)
-        {
-            if (!String.IsNullOrEmpty(property.Value))
-            {
-                //  DebugLog(String.Format("{0}{1}: {2}", indent, property.Key, property.Value));
-            }
-        }
-    }
-
-    public void SignUp_ButtonClick()
-    {
-        SceneManager.LoadScene("RoomSelection");
-        //   LoggedUser.SetUser(m_UserName, "");
-        /*if (m_UserName != null)
-            signInFishnetScript.HandleLogin(m_UserName, "");*/
-        // signInFishnet.HandleLogin(m_UserName,"");
-    }
-
-    public async void Login_ButtonClick()
-    {
-        await SigninWithEmailAsync();
-    }
-
-    private async Task SigninWithEmailAsync()
-    {
-        string email, password;
-
-        if (!m_UsernameText.text.Contains('@'))
-            email = m_UsernameText.text + "@gmail.com";
-        else
-            email = m_UsernameText.text;
-
-        if (m_PasswordText == null || string.IsNullOrEmpty(m_PasswordText.text))
-            password = "123456";
-        else
-            password = m_PasswordText.text;
-
-        if (signInAndFetchProfile)
-        {
-            await auth.SignInAndRetrieveDataWithCredentialAsync(
-              EmailAuthProvider.GetCredential(email, password)).ContinueWithOnMainThread(
-                HandleSignInWithAuthResult);
-        }
-        else
-        {
-            m_Label.text = "Connecting...";
-            await auth.SignInWithEmailAndPasswordAsync(email, password)
-            .ContinueWithOnMainThread(HandleSignInWithAuthResult);
-        }
-    }
+    
 
     private async void HandleSignInWithAuthResult(Task<AuthResult> task)
     {
@@ -311,7 +272,7 @@ public class Login : MonoBehaviour
               if (LogTaskCompletion(task, "User Creation"))
               {
                   var user = task.Result.User;
-                  DisplayDetailedUserInfo(user, 1);
+              //    DisplayDetailedUserInfo(user, 1);
 
                   if (user != null)
                   {
@@ -337,6 +298,7 @@ public class Login : MonoBehaviour
               return task;
           }).Unwrap();
     }
+#endif
 
     // Update is called once per frame
     void Update()
@@ -348,4 +310,3 @@ public class Login : MonoBehaviour
         }
     }
 }
-
