@@ -1,6 +1,7 @@
 using System.Collections;
 using UnityEngine;
 using TMPro;
+using FishNet.Connection;
 
 public class CountdownTimer : MonoBehaviour
 {
@@ -8,25 +9,87 @@ public class CountdownTimer : MonoBehaviour
     private TMP_Text m_countDownText;  // Reference to the TMP_Text component
 
     private int countdownTime = 30;    // Countdown start time in seconds
-    private static CountdownTimer instance;  // Singleton instance to access from other scripts
     private static bool m_Started = false;
+    private NetworkConnection m_turnOwner;
+
+    private static CountdownTimer instance;  // Singleton instance to access from other scripts
 
     private void Awake()
     {
         instance = this;  // Set the instance to this script
     }
 
-    public static void StartCountdown(CardsDisplayer cardsDisplayer)
+    public static void StartBlackjackCountdown(CardsDisplayer cardsDisplayer, NetworkConnection turnOwner)
     {
         if (!m_Started)
         {
             m_Started = true;
             instance.countdownTime = 30;
-            instance.StartCoroutine(instance.CountdownRoutine(cardsDisplayer));
+            instance.m_turnOwner = turnOwner;
+            instance.StartCoroutine(instance.CountdownBlackjack(cardsDisplayer));
+            Debug.LogWarning("Starting countdown");
+        }
+        else
+        {
+            instance.countdownTime = 30;
+            instance.m_turnOwner = turnOwner;
         }
     }
 
-    private IEnumerator CountdownRoutine(CardsDisplayer cardsDisplayer)
+    public static void StartPokerCountdown(PokerDisplayer pokerDisplayer, NetworkConnection turnOwner)
+    {
+        if (!m_Started)
+        {
+            m_Started = true;
+            instance.countdownTime = 30;
+            instance.m_turnOwner = turnOwner;
+            instance.StartCoroutine(instance.CountdownPoker(pokerDisplayer));
+        }
+        else
+        {
+            instance.countdownTime = 30;
+            instance.m_turnOwner = turnOwner;
+          //  instance.StopCoroutine(instance.CountdownRoutine(pokerDisplayer));
+          //  instance.StartCoroutine(instance.CountdownRoutine(pokerDisplayer));
+        }
+    }
+
+    public static void StopCountDown()
+    {
+        m_Started = false;
+        instance.StopAllCoroutines();
+    }
+
+    private IEnumerator CountdownPoker(PokerDisplayer pokerDisplayer)
+    {
+
+        while (countdownTime > 0)
+        {
+            m_countDownText.text = countdownTime.ToString();
+                         
+            if(countdownTime > 5)
+            {
+                m_countDownText.color = Color.white;
+            }
+            else if (countdownTime == 5)
+            {
+                m_countDownText.color = Color.red;
+            }
+            yield return new WaitForSeconds(1f);
+            countdownTime--;
+        }
+        m_Started = false;
+        if (PokerServerManager.IsMyTurn(m_turnOwner))
+        {
+            if (PokerServerManager.HowManyCoinsToCall(m_turnOwner) > 0)
+                pokerDisplayer.Fold_OnClick();
+            else
+                pokerDisplayer.Check_OnClick();
+        }
+        m_countDownText.text = "0";
+    }
+
+    private IEnumerator CountdownBlackjack(CardsDisplayer cardsDisplayer)
     {
         m_countDownText.color = Color.white;
 
@@ -41,7 +104,10 @@ public class CountdownTimer : MonoBehaviour
             countdownTime--; 
         }
         m_Started = false;
-        cardsDisplayer.Check_OnClick();
+        if (GameServerManager.IsMyTurn(m_turnOwner))
+        {
+            cardsDisplayer.Check_OnClick();
+        }
         m_countDownText.text = "0";
     }
 }

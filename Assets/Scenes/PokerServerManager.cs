@@ -14,7 +14,6 @@ using Firebase.Database;
 using FishNet.Demo.AdditiveScenes;
 using Unity.VisualScripting;
 
-
 public class PokerServerManager : NetworkBehaviour
 {
     private static PokerServerManager Instance;
@@ -104,6 +103,7 @@ public class PokerServerManager : NetworkBehaviour
         checkCounter = 0;
         flopRevealed = false;
         _currentBet = _bigBlind;
+        _pot = 0;
         PlayersNewRoundInit();
        // DealInitialCards();
         UpdateBroadcast msg = new()
@@ -116,8 +116,10 @@ public class PokerServerManager : NetworkBehaviour
         //   Instance._blindIndex = Instance.getNextIndexTurn(Instance._playersIndexes.Count, Instance._blindIndex);
     }
 
-    public static void JoinWithName(NetworkConnection conn, string username)
+    [Client]
+    public static void JoinWithName(string username, NetworkConnection conn=null)
     {
+        Debug.LogWarning(username +" Signed into game");
         Instance._playerNames[conn] = username;
       //  Instance._playersJoiningIndexes.Add(conn, Instance._playersJoiningIndexes.Count + 1);
     }
@@ -278,6 +280,11 @@ public class PokerServerManager : NetworkBehaviour
         cardsOnBoardCounter = 0;
         DetermineWinner();
         NewRoundButton.gameObject.SetActive(true);
+        UpdateBroadcast msg = new()
+        {
+            IsWinMessage = true 
+        };
+        InstanceFinder.ServerManager.Broadcast(msg);
     }
 
     /*private bool EveryOneCalledOrSetTurn(NetworkConnection sender) 

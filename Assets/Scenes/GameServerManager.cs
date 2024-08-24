@@ -42,7 +42,6 @@ public class GameServerManager : NetworkBehaviour
         }
         _instance._playerHands.OnChange += playerHands_OnChange;
       //  _instance._playerIsMyTurn.OnChange += PlayerIsMyTurn_OnChange;
-        AssignPlayersIndex();
         NewRoundInit();
         OnInitialized?.Invoke();
     }
@@ -59,6 +58,8 @@ public class GameServerManager : NetworkBehaviour
             _instance._deck = new Deck(5);
         }
         _instance._deck.Shuffle();
+        _instance.AssignPlayersIndex();
+
 
         UpdateBroadcast msg = new() // So clients can despawn all cards
         {
@@ -111,6 +112,7 @@ public class GameServerManager : NetworkBehaviour
     [Server]
     private void AssignPlayersIndex()
     {
+        playerIndex = 0;
         foreach (NetworkConnection conn in base.NetworkManager.ServerManager.Clients.Values)
         {
             _playersIndexes[conn] = GenerateNewPlayerIndex();

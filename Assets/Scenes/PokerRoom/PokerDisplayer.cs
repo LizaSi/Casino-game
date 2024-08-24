@@ -13,12 +13,12 @@ public class PokerDisplayer : NetworkBehaviour
 {
     [SerializeField] private TMP_Text winText;
     [SerializeField] private Button newRoundButton;
-    [SerializeField] private GameObject pokerComponentsParent;
     [SerializeField] private Transform CardTransform;
     [SerializeField] private Transform TableCardTransform;
     [SerializeField] private TMP_Text checkButtonText;
     [SerializeField] private TMP_Text betCoinsText;
     [SerializeField] private TMP_InputField betInput;
+    [SerializeField] public GameObject PokerComponentsParent;
 
    // private float cardSpacing = 2.8f;
     private float tableCardSpacing = 1.5f;
@@ -47,7 +47,6 @@ public class PokerDisplayer : NetworkBehaviour
         PokerServerManager.OnTurnChange += OnTurnChange;
         InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
         InstanceFinder.ClientManager.RegisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
-        InstanceFinder.ClientManager.RegisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);       
         NewRoundInit();
     }
 
@@ -62,13 +61,10 @@ public class PokerDisplayer : NetworkBehaviour
         newRoundButton.gameObject.SetActive(false);
         if (base.Owner.IsLocalClient && !InstanceFinder.IsServer)
         {
-            PokerServerManager.JoinWithName(base.Owner, LoggedUser.Username);
+            PokerServerManager.JoinWithName(LoggedUser.Username);
             int playerIndex = GetPlayerIndex(base.Owner);
-            PlayerDisplayer.SetCameraPoker(playerIndex);
-            //  int givenAmount = await GiveBlindCoins(base.Owner);
+            PlayerDisplayer.SetCameraPoker(playerIndex);            
             // betCoinsText.text = "Gave " + givenAmount.ToString();
-
-            Debug.LogWarning($"client index is {playerIndex}");
         }
     }
 
@@ -79,10 +75,9 @@ public class PokerDisplayer : NetworkBehaviour
 
     private void OnDisable()
     {
-        pokerComponentsParent.SetActive(false);
+        PokerComponentsParent.SetActive(false);
         InstanceFinder.ClientManager.UnregisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
         InstanceFinder.ClientManager.UnregisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
-        InstanceFinder.ClientManager.UnregisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);
     }
     
     private void OnUpdateFromServer(UpdateBroadcast msg)
@@ -93,11 +88,13 @@ public class PokerDisplayer : NetworkBehaviour
         }
         if (msg.IsWinMessage) 
         {
-            pokerComponentsParent.SetActive(false);
+            PokerComponentsParent.SetActive(false);
+            CountdownTimer.StopCountDown();
         }
         if (msg.NewRound)
         {
             DespawnAllCards();
+            NewRoundInit();
         }
     }
 
@@ -130,7 +127,7 @@ public class PokerDisplayer : NetworkBehaviour
     {
         PokerServerManager.ClientCheck();
         PokerServerManager.ClientFold();
-        pokerComponentsParent.SetActive(false);
+        PokerComponentsParent.SetActive(false);
     }
 
     public void Check_OnClick()
@@ -185,11 +182,11 @@ public class PokerDisplayer : NetworkBehaviour
             {
                 SetCheckButton(true);
             }
-            pokerComponentsParent.SetActive(true);
+            PokerComponentsParent.SetActive(true);
         }
         else
         {
-            pokerComponentsParent.SetActive(false);
+            PokerComponentsParent.SetActive(false);
         }
     }
 
@@ -201,7 +198,7 @@ public class PokerDisplayer : NetworkBehaviour
             checkButtonText.text = "Call " + callAmount;
     }
 
-    private void OnClientMsgBroadcast(ClientMsgBroadcast msg)
+    /*private void OnClientMsgBroadcast(ClientMsgBroadcast msg)
     {
         if (msg.IsWinMessage)
         {
@@ -224,7 +221,7 @@ public class PokerDisplayer : NetworkBehaviour
             DespawnAllCards();
             handleClientTurn();
         }
-    }
+    }*/
 
     private IEnumerator FetchCoinsInDelay()
     {
@@ -237,7 +234,8 @@ public class PokerDisplayer : NetworkBehaviour
         if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
         {
             handleClientTurn();
-            StartCoroutine(ClientTurnInDelay());
+           // StartCoroutine(ClientTurnInDelay());
+            CountdownTimer.StartPokerCountdown(this, base.Owner);
         }
     }
 

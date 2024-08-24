@@ -24,7 +24,14 @@ public class CardsDisplayer : NetworkBehaviour
     
     private void OnEnable()
     {        
-        GameServerManager.OnInitialized += GameServerManager_OnInitialized;
+        if (GameServerManager.IsInitialized())
+        {
+            GameServerManager_OnInitialized();
+        }
+        else
+        {
+            GameServerManager.OnInitialized += GameServerManager_OnInitialized;
+        }
         InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
         InstanceFinder.ClientManager.RegisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
         InstanceFinder.ClientManager.RegisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);
@@ -53,14 +60,14 @@ public class CardsDisplayer : NetworkBehaviour
         dealerChecked = false;
         dealerRevealAllCards = false;
         newRoundButton.gameObject.SetActive(false);
-        CountdownTimer.StartCountdown(this);
+       // CountdownTimer.StartBlackjackCountdown(this, base.Owner);
     }
 
     private void NewRoundInitAsClient()
     {
         DespawnAllCards();
         cardIndex = 0;
-        CountdownTimer.StartCountdown(this);
+        //CountdownTimer.StartBlackjackCountdown(this, base.Owner);
     }
 
     public void NewRound_OnClick()
@@ -73,6 +80,7 @@ public class CardsDisplayer : NetworkBehaviour
     {
         if (msg.IsWinMessage)
         {
+            CountdownTimer.StopCountDown();
             if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
             {
                 ShowWinMessage();
@@ -108,6 +116,7 @@ public class CardsDisplayer : NetworkBehaviour
         {
             handleClientTurn();
             StartCoroutine(ClientTurnInDelay());
+            CountdownTimer.StartBlackjackCountdown(this, base.Owner);
         }
         else if (msg.HostTurn && base.Owner.IsHost && InstanceFinder.IsServer)
         {

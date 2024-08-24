@@ -23,16 +23,11 @@ public class ReturnToLobby : MonoBehaviour
 
         }
         else
+        {
+            GameObject canvasGame = GameObject.Find("CanvasGame(Clone)");
+            PokerDisplayer pokerDisplayer = canvasGame.GetComponent<PokerDisplayer>();
+            pokerDisplayer.PokerComponentsParent.SetActive(false);
             SceneManager.LoadScene("RoomSelection");
-    }
-    void Start()
-    {
-        
-    }
-
-    // Update is called once per frame
-    void Update()
-    {
-        
-    }
+        }
+    }    
 }

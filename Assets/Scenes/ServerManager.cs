@@ -10,27 +10,33 @@ using FishNet.Managing.Scened;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using FishNet.Transporting.Tugboat;
+using System.Linq;
+using FishNet.Object;
+using PlayerData;
+using System.Net.Sockets;
+using System;
+using System.Collections.Generic;
 
 public class ServerManager : MonoBehaviour
 {
     public NetworkDiscovery networkDiscovery;
     [SerializeField] private Text hostsText;
+    [SerializeField] private List<Button> serverButtons; // Assign these buttons in the Inspector
 
-
-    // Declare serverFound as a synchronized list
-    [SyncObject] private readonly SyncList<bool> serverFound = new();
+    [SyncObject] private readonly SyncDictionary<string,string> serversFound = new();
+   // [SyncObject] private readonly SyncDictionary<string,string> serverHosts = new();
 
     private NetworkManager _networkManager;
-    private string _address;
+
+   // private string _address;
 
     //  public GameObject _networkHudCanvas;
 
     private void Awake()
     {
-        // Listening to SyncList callbacks
         //      serverFound.OnChange += ServerFound_OnChange;
-        networkDiscovery.ServerFoundCallback += endPoint => _address = (endPoint.Address.ToString());
-
+        // Founder runs it
+        networkDiscovery.ServerFoundCallback += (endPoint, username) => serversFound[endPoint.Address.ToString()] = username;
     }
 
     private void Start()
@@ -41,7 +47,7 @@ public class ServerManager : MonoBehaviour
         if (_networkManager == null)
             _networkManager = FindObjectOfType<NetworkManager>();
 
-        networkDiscovery.ServerFoundCallback += OnServerAdvertising;
+     //   networkDiscovery.ServerFoundCallback += OnServerAdvertising;
     }
 
     private void ServerFound_OnChange(SyncListOperation op, int index, bool oldItem, bool newItem, bool asServer)
@@ -54,7 +60,7 @@ public class ServerManager : MonoBehaviour
     {
         if (hostsText != null)
         {
-            if (serverFound.Count == 0 || !serverFound[0])
+            if (serversFound.Count == 0 /*|| !serversFound[0]*/)
             {
                 hostsText.text = "No Hosts found";
             }
@@ -85,6 +91,11 @@ public class ServerManager : MonoBehaviour
     private IEnumerator DelayedSceneLoad()
     {
         hostsText.text = "Creating room...";
+
+        //string hostAddress = GetLocalIPAddress();
+       // Hosts.AddHost(hostAddress, LoggedUser.Username);
+        //serverHosts[hostAddress] = LoggedUser.Username;
+
         // Start the client and server connections
         yield return new WaitForSeconds(1f);
 
@@ -127,35 +138,48 @@ public class ServerManager : MonoBehaviour
     private IEnumerator DelayedServerCheck()
     {
         int i = 0;
-        if(!TryGetComponent<Tugboat>(out var tugboat))
-        {
-            Debug.LogWarning("Cant load tugbaot (fishnet for web)");
-        }
-        else
-        {
-            tugboat.SetClientAddress(_address);
-        }
-        string[] dots = { ".", "..", "..."};
+
+        string[] dots = { ".", "..", "..." };
 
         hostsText.text = "Searching" + dots[i];
         yield return new WaitForSeconds(1f);
 
         // Check if any servers were found
-        while (serverFound.Count == 0 || !serverFound[0])
+        while (serversFound.Count == 0 /*|| !serversFound[0]*/)
         {
-           // tugboat.SetClientAddress(_address);
+            // tugboat.SetClientAddress(_address);
             i++;
             hostsText.text = "Searching" + dots[i % 3];
             yield return new WaitForSeconds(0.5f);
         }
 
-        InstanceFinder.ClientManager.StartConnection(_address);
+        hostsText.text = "Found!";
+        int index = 0; // To track which button to use
+        foreach (var address in serversFound)
+        {
+            if (index < serverButtons.Count)
+            {
+                var button = serverButtons[index];
+                button.gameObject.SetActive(true);
+                button.GetComponentInChildren<Text>().text = $"{address.Value}'s Room";
+
+                button.onClick.RemoveAllListeners();
+                button.onClick.AddListener(() => StartCoroutine(ServerFound_OnClick(address.Key)));
+
+                index++; 
+            }
+        }
+    }
+
+    public IEnumerator ServerFound_OnClick(string address)
+    {
+        InstanceFinder.ClientManager.StartConnection(address);
 
         hostsText.text = "Connected!";
         EventSystem[] eventSystems = FindObjectsOfType<EventSystem>();
         Destroy(eventSystems[0].gameObject);
 
-        yield return new WaitForSeconds(2f); //Maybe not needed, tlet the event system time to be deleted
+        yield return new WaitForSeconds(2f); //Maybe not needed, to let the event system time to be deleted
 
         if (!LoadScene("CreateRoom"))
         {
@@ -165,19 +189,16 @@ public class ServerManager : MonoBehaviour
         UnloadScene("RoomSelection");
     }
 
-    private void OnServerAdvertising(EndPoint endPoint)
-    {
-        // Update the synchronized list serverFound
-        if (serverFound.Count == 0)
-        {
-            serverFound.Add(true);
-            string newAddress = endPoint.ToString();
-            UnityEngine.Debug.LogWarning("Address published is " + newAddress);
-            UnityEngine.Debug.Log($"Server found at: {endPoint}");
-        }
+    [Server]
+    private void OnServerAdvertising(EndPoint endPoint, string username)
+    {        
+        // serversFound[endPoint.ToString()] = LoggedUser.Username;
+        string newAddress = endPoint.ToString();
+        Debug.LogWarning($"{LoggedUser.Username}'s Address published is " + newAddress);
+        Debug.Log($"Server found at: {endPoint}");
     }
 
-    bool LoadScene(string sceneName)
+    private bool LoadScene(string sceneName)
     {
        /* if (!InstanceFinder.IsServer)
         {
@@ -189,7 +210,7 @@ public class ServerManager : MonoBehaviour
         return true;
     }
 
-    void UnloadScene(string sceneName)
+    private void UnloadScene(string sceneName)
     {
         if (!InstanceFinder.IsServer)
         {
@@ -203,6 +224,7 @@ public class ServerManager : MonoBehaviour
     private void OnDestroy()
     {
         networkDiscovery.ServerFoundCallback -= OnServerAdvertising;
+        MemberList.UpdateLobbyList();
    //     UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
