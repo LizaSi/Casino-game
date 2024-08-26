@@ -21,11 +21,11 @@ public class PokerDisplayer : NetworkBehaviour
     [SerializeField] public GameObject PokerComponentsParent;
 
    // private float cardSpacing = 2.8f;
-    private float tableCardSpacing = 1.5f;
+    private const float tableCardSpacing = 1.5f;
     private int tableSpaceIndex = 0;
-    private List<GameObject> spawnedCards = new();
-    private List<string> spawnedCardNames = new();
-    private List<Card> cardsOnTable = new();
+    private readonly List<GameObject> spawnedCards = new();
+    private readonly List<string> spawnedCardNames = new();
+    private readonly List<Card> cardsOnTable = new();
 
     private void Start()
     {
@@ -59,12 +59,15 @@ public class PokerDisplayer : NetworkBehaviour
         tableSpaceIndex = 0;
         DespawnAllCards();
         newRoundButton.gameObject.SetActive(false);
-        if (base.Owner.IsLocalClient && !InstanceFinder.IsServer)
+        if (!InstanceFinder.IsServer)
         {
             PokerServerManager.JoinWithName(LoggedUser.Username);
-            int playerIndex = GetPlayerIndex(base.Owner);
-            PlayerDisplayer.SetCameraPoker(playerIndex);            
-            // betCoinsText.text = "Gave " + givenAmount.ToString();
+            if (base.Owner.IsLocalClient)
+            {
+                int playerIndex = GetPlayerIndex(base.Owner);
+                PlayerDisplayer.SetCameraPoker(playerIndex);
+                //betCoinsText.text = "Gave " + givenAmount.ToString();
+            }
         }
     }
 
@@ -90,6 +93,10 @@ public class PokerDisplayer : NetworkBehaviour
         {
             PokerComponentsParent.SetActive(false);
             CountdownTimer.StopCountDown();
+            if(msg.WinnerName == LoggedUser.Username)
+            {
+                winText.text = "You won!";
+            }
         }
         if (msg.NewRound)
         {
@@ -106,6 +113,7 @@ public class PokerDisplayer : NetworkBehaviour
 
         string cardDir = "Cards/" + cardToAdd;
         GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir));
+        Debug.LogWarning("Index card on board is " + tableSpaceIndex);
         Vector3 newPosition = TableCardTransform.position + new Vector3(tableSpaceIndex * tableCardSpacing, 0, 0);
 
         instantiatedCard.transform.SetPositionAndRotation(newPosition, TableCardTransform.rotation);
@@ -125,14 +133,13 @@ public class PokerDisplayer : NetworkBehaviour
 
     public void Fold_OnClick()
     {
-        PokerServerManager.ClientCheck();
+        PokerServerManager.ClientCheck(true);
         PokerServerManager.ClientFold();
-        PokerComponentsParent.SetActive(false);
     }
 
     public void Check_OnClick()
     {
-        PokerServerManager.ClientCheck();
+        PokerServerManager.ClientCheck(false);
     }
 
     public void Bet_OnClick()
@@ -156,7 +163,6 @@ public class PokerDisplayer : NetworkBehaviour
         {
             if (!InstanceFinder.IsServer)
             {
-             //   DisplayCardsClient();
                 handleClientTurn();
             }
         }

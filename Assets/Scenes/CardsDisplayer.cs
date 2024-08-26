@@ -11,17 +11,19 @@ using static GameServerManager;
 
 public class CardsDisplayer : NetworkBehaviour
 {
-    public TMP_Text cardsText;
-    public GameObject ButtonsParent;
+    [SerializeField] public GameObject ClientComponentsParent;
+    [SerializeField] public Button newRoundButton;
+
     public TMP_Text winText;
-    public Button newRoundButton;
 
     private bool dealerChecked = false;
     private int cardIndex = 0;
     private List<string> spawnedCardsNames = new();
     private List<string> spawnedCardsServer = new();
     private bool dealerRevealAllCards = false;
-    
+    private bool waitForNextRound = false;
+
+
     private void OnEnable()
     {        
         if (GameServerManager.IsInitialized())
@@ -46,9 +48,15 @@ public class CardsDisplayer : NetworkBehaviour
 
     private void GameServerManager_OnInitialized()
     {
+        int playerIndex = GetPlayerIndex(base.Owner);
+        if (playerIndex == 0)
+        {
+            waitForNextRound = true;
+            return;
+        }
         if (base.Owner.IsLocalClient && !InstanceFinder.IsServer)
         {
-            PlayerDisplayer.SetCameraBlackJack(GetPlayerIndex(base.Owner) - 1); // -1 cuz index 1 is the host
+            PlayerDisplayer.SetCameraBlackJack(playerIndex - 1); // -1 cuz index 1 is the host
             StartCoroutine(ClientTurnInDelay());
         }
     }
@@ -67,6 +75,11 @@ public class CardsDisplayer : NetworkBehaviour
     {
         DespawnAllCards();
         cardIndex = 0;
+        if (waitForNextRound)
+        {
+            waitForNextRound = false;
+            PlayerDisplayer.SetCameraBlackJack(GetPlayerIndex(base.Owner) - 1);
+        }
         //CountdownTimer.StartBlackjackCountdown(this, base.Owner);
     }
 
@@ -84,7 +97,7 @@ public class CardsDisplayer : NetworkBehaviour
             if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
             {
                 ShowWinMessage();
-                ButtonsParent.SetActive(false);
+                ClientComponentsParent.SetActive(false);
                 StartCoroutine(FetchCoinsInDelay());
             }
             else if(InstanceFinder.IsServer)
@@ -265,11 +278,11 @@ public class CardsDisplayer : NetworkBehaviour
         UpdateCardsDisplay();
         if (IsMyTurn(base.Owner) && base.Owner.IsLocalClient)
         {
-            ButtonsParent.SetActive(true);
+            ClientComponentsParent.SetActive(true);
         }
         else
         {
-            ButtonsParent.SetActive(false);
+            ClientComponentsParent.SetActive(false);
         }
     }
 
@@ -294,10 +307,7 @@ public class CardsDisplayer : NetworkBehaviour
                         SpawnCardOnBoard(card);
                         spawnedCardsNames.Add(card);
                     }
-                    else
-                    {
-                        cardsText.text = card + " Is already displayed";
-                    }
+                    
                     i++;
                 }
             }

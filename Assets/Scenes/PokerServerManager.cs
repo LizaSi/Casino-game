@@ -21,7 +21,7 @@ public class PokerServerManager : NetworkBehaviour
     [SerializeField] private PokerDisplayer PokerDisplayerScript;
     [SerializeField] private TMP_Text PotValue;
     [SerializeField] private TMP_Text WinText;
-    [SerializeField] private Button NewRoundButton ;
+    [SerializeField] private Button NewRoundButton;
 
     private Deck _deck;
     private int playerIndex = 0;
@@ -109,7 +109,7 @@ public class PokerServerManager : NetworkBehaviour
         UpdateBroadcast msg = new()
         {
             NewRound = true,
-            UpdateCards = true
+            UpdateCards = false
         };
         InstanceFinder.ServerManager.Broadcast(msg);
 
@@ -117,11 +117,15 @@ public class PokerServerManager : NetworkBehaviour
     }
 
     [Client]
-    public static void JoinWithName(string username, NetworkConnection conn=null)
+    public static void JoinWithName(string username)
     {
-        Debug.LogWarning(username +" Signed into game");
-        Instance._playerNames[conn] = username;
-      //  Instance._playersJoiningIndexes.Add(conn, Instance._playersJoiningIndexes.Count + 1);
+        Instance.AddPlayerName(username);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    private void AddPlayerName(string username, NetworkConnection sender = null)
+    {
+        _playerNames[sender] = username;
     }
 
     public static int GetPlayerIndex(NetworkConnection conn)
@@ -204,13 +208,19 @@ public class PokerServerManager : NetworkBehaviour
         _playerHands.Remove(sender);
         _playerIsMyTurn.Remove(sender);
         _playersIndexes.Remove(sender);
+        if (_playersIndexes.Count <= 1)
+        {
+            cardsOnBoardCounter = 0;
+            NewRoundButton.gameObject.SetActive(true);
+            BroadcastWinner(_playersIndexes.Keys.First());
+        }
     }
 
     [Client]
     public static void ClientBet(int coinAmount)
     {
         Instance.RaiseBetServer(coinAmount);
-        Instance.CheckAndPassServer();
+        Instance.CheckAndPassServer(false);
     }
 
     [ServerRpc(RequireOwnership = false)]
@@ -225,14 +235,13 @@ public class PokerServerManager : NetworkBehaviour
     }
 
     [Client]
-    public static void ClientCheck()
+    public static void ClientCheck(bool folding)
     {
-        Instance.CheckAndPassServer();
+        Instance.CheckAndPassServer(folding);
     }
 
     private async void ClientCall(NetworkConnection sender)
     {
-        Debug.LogWarning("Players bet is " + _playerBets[sender]); // Error ???
         int callAmount = _currentBet - _playerBets[sender];
         if (callAmount > 0)
         {
@@ -243,17 +252,16 @@ public class PokerServerManager : NetworkBehaviour
     }
 
     [ServerRpc(RequireOwnership = false)]
-    private void CheckAndPassServer(NetworkConnection sender = null)
+    private void CheckAndPassServer(bool isFolding, NetworkConnection sender = null)
     {
-        if(sender == null)
-        {
-            Debug.LogError("Sender to pass turn is null");
-        }
-        checkCounter++;
-        ClientCall(sender);
-        Debug.LogWarning("Check counter is " + checkCounter);
+        int numOfPlayers = _playersIndexes.Count;
 
-        if(checkCounter >= _playersIndexes.Count)
+        checkCounter++;
+
+        if(!isFolding)
+            ClientCall(sender);
+
+        if(checkCounter >= numOfPlayers)
         {
             if (cardsOnBoardCounter == 5)
             {
@@ -280,11 +288,6 @@ public class PokerServerManager : NetworkBehaviour
         cardsOnBoardCounter = 0;
         DetermineWinner();
         NewRoundButton.gameObject.SetActive(true);
-        UpdateBroadcast msg = new()
-        {
-            IsWinMessage = true 
-        };
-        InstanceFinder.ServerManager.Broadcast(msg);
     }
 
     /*private bool EveryOneCalledOrSetTurn(NetworkConnection sender) 
@@ -318,14 +321,10 @@ public class PokerServerManager : NetworkBehaviour
         if (nextClient != null && !sender.Equals(nextClient)) // To Add a not dealer check
         {
             _playerIsMyTurn[nextClient] = true;
-            /*TurnPassBroadcast msg = new()
-            {
-                HostTurn = nextClient.IsHost
-            };
-            InstanceFinder.ServerManager.Broadcast(msg);*/
         }
         else
-        {
+        {          
+
             UnityEngine.Debug.LogWarning("Cant find next client");
         }
     }
@@ -443,15 +442,16 @@ public class PokerServerManager : NetworkBehaviour
     private async void BroadcastWinner(NetworkConnection winner)
     {
         string winnerName = _playerNames[winner];
+        WinText.text = winnerName + " Won " + PotValue.text + " coins!";
+        await UpdateCoins(winner, -1 * int.Parse(PotValue.text));
+        NewRoundButton.gameObject.SetActive(true);
+
         UpdateBroadcast msg = new()
         {
             IsWinMessage = true,
             WinnerName = winnerName
         };
         InstanceFinder.ServerManager.Broadcast(msg);
-        WinText.text = winnerName + " Won " + PotValue.text + " coins!";
-        await UpdateCoins(winner, -1 * int.Parse(PotValue.text));
-        NewRoundButton.gameObject.SetActive(true);
     }
 
     public void NewRoundButton_OnClick()

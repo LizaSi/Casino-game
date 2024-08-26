@@ -128,7 +128,7 @@ public class MemberList : NetworkBehaviour
             if (canvasGame.TryGetComponent<NetworkObject>(out var nob))
             {
                // UpdateLobbyList(false);
-                LoadScene2(nob, "Lobby");
+                LoadSceneAllClientsAndFuture(nob, "Lobby");
                 UnloadScene("CreateRoom");
             }
         }
@@ -152,7 +152,7 @@ public class MemberList : NetworkBehaviour
            // UpdateLobbyList(false); 
             if (canvasGame.TryGetComponent<NetworkObject>(out var nob))
             {
-                LoadScene2(nob, "PokerRoom");
+                LoadSceneAllClientsAndFuture(nob, "PokerRoom");
                 UnloadScene("CreateRoom");
             }
         }
@@ -162,7 +162,7 @@ public class MemberList : NetworkBehaviour
         }
     }
 
-    private void LoadScene2(NetworkObject nob, string sceneName)
+    private void LoadSceneAllClientsAndFuture(NetworkObject nob, string sceneName)
     {
         if (!nob.Owner.IsActive)
         {
@@ -190,6 +190,7 @@ public class MemberList : NetworkBehaviour
         if(arg2.ConnectionState != RemoteConnectionState.Started)
         {
             _playerNames.Remove(arg1);
+            UpdateLobbyList();
         }
     }
 

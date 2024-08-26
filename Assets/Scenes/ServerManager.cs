@@ -16,27 +16,40 @@ using PlayerData;
 using System.Net.Sockets;
 using System;
 using System.Collections.Generic;
+using FishNet.Transporting;
+using System.Reflection;
 
 public class ServerManager : MonoBehaviour
 {
     public NetworkDiscovery networkDiscovery;
     [SerializeField] private Text hostsText;
-    [SerializeField] private List<Button> serverButtons; // Assign these buttons in the Inspector
+    [SerializeField] private List<Button> serverButtons;
 
     [SyncObject] private readonly SyncDictionary<string,string> serversFound = new();
-   // [SyncObject] private readonly SyncDictionary<string,string> serverHosts = new();
+    private Dictionary<string, float> serverLastSeenTimes = new Dictionary<string, float>();
+
 
     private NetworkManager _networkManager;
 
-   // private string _address;
-
-    //  public GameObject _networkHudCanvas;
-
     private void Awake()
     {
-        //      serverFound.OnChange += ServerFound_OnChange;
-        // Founder runs it
-        networkDiscovery.ServerFoundCallback += (endPoint, username) => serversFound[endPoint.Address.ToString()] = username;
+        serversFound.OnChange += ServerFound_OnChange;
+        networkDiscovery.ServerFoundCallback += OnServerFound;
+    }
+
+    private void OnServerFound(IPEndPoint endPoint, string username)
+    {
+        serversFound[endPoint.Address.ToString()] = username;
+        DisplayServerButtons();
+        serverLastSeenTimes[endPoint.Address.ToString()] = Time.time; // Update the last seen time
+    }
+
+    private void OnServerConnectionStateChanged(ServerConnectionStateArgs stateArgs)
+    {
+        if (stateArgs.ConnectionState == LocalConnectionState.Stopped)
+        {
+            Debug.LogWarning("A server stopped! ");
+        }
     }
 
     private void Start()
@@ -45,26 +58,38 @@ public class ServerManager : MonoBehaviour
             networkDiscovery = FindObjectOfType<NetworkDiscovery>();
 
         if (_networkManager == null)
-            _networkManager = FindObjectOfType<NetworkManager>();
-
-     //   networkDiscovery.ServerFoundCallback += OnServerAdvertising;
-    }
-
-    private void ServerFound_OnChange(SyncListOperation op, int index, bool oldItem, bool newItem, bool asServer)
-    {
-        // Handle changes in serverFound list
-        UpdateHostText();
-    }
-
-    private void UpdateHostText()
-    {
-        if (hostsText != null)
         {
-            if (serversFound.Count == 0 /*|| !serversFound[0]*/)
+            _networkManager = FindObjectOfType<NetworkManager>();
+        }
+        _networkManager.ServerManager.OnServerConnectionState += OnServerConnectionStateChanged;
+    }
+
+    private void CheckServerStatus()
+    {
+        List<string> serversToRemove = new();
+
+        foreach (var server in serversFound)
+        {
+            string address = server.Key;
+
+            if (Time.time - serverLastSeenTimes[address] > 2f) 
             {
-                hostsText.text = "No Hosts found";
+                serversToRemove.Add(address);
             }
         }
+
+        foreach (var address in serversToRemove)
+        {
+            serversFound.Remove(address);
+            serverLastSeenTimes.Remove(address);
+            RemoveAllButtons();
+            DisplayServerButtons();
+        }
+    }
+
+    private void ServerFound_OnChange(SyncDictionaryOperation op, string key, string value, bool asServer)
+    {
+            DisplayServerButtons();
     }
 
     public void Advertise_OnClick()
@@ -72,7 +97,6 @@ public class ServerManager : MonoBehaviour
         if (networkDiscovery != null && _networkManager != null)
         {
             _networkManager.ClientManager.StartConnection();
-            StopCoroutine(DelayedServerCheck());
             StartCoroutine(DelayedSceneLoad());
         }
         else
@@ -83,7 +107,6 @@ public class ServerManager : MonoBehaviour
             _networkManager.StopAllCoroutines();
             networkDiscovery.StopSearchingOrAdvertising();
             _networkManager.ClientManager.StartConnection();
-            StopCoroutine(DelayedServerCheck());
             StartCoroutine(DelayedSceneLoad());
         }
     }
@@ -92,11 +115,6 @@ public class ServerManager : MonoBehaviour
     {
         hostsText.text = "Creating room...";
 
-        //string hostAddress = GetLocalIPAddress();
-       // Hosts.AddHost(hostAddress, LoggedUser.Username);
-        //serverHosts[hostAddress] = LoggedUser.Username;
-
-        // Start the client and server connections
         yield return new WaitForSeconds(1f);
 
         EventSystem[] eventSystems = FindObjectsOfType<EventSystem>();
@@ -119,7 +137,11 @@ public class ServerManager : MonoBehaviour
         if (!networkDiscovery.IsSearching)
         {
             networkDiscovery.SearchForServers();
-            StartCoroutine(DelayedServerCheck());
+            InvokeRepeating(nameof(CheckServerStatus), 8f, 2f);
+            if (serversFound.Count > 0)
+            {
+                DisplayServerButtons();
+            }
         }
         else if (networkDiscovery == null || _networkManager == null)
         {
@@ -131,56 +153,47 @@ public class ServerManager : MonoBehaviour
             _networkManager.ServerManager.StopConnection(false);
             _networkManager.ClientManager.StartConnection();
             networkDiscovery.SearchForServers();
-            StartCoroutine(DelayedServerCheck());
+            if (serversFound.Count > 0)
+            {
+                DisplayServerButtons();
+            }
         }
     }
 
-    private IEnumerator DelayedServerCheck()
+    private void DisplayServerButtons()
     {
-        int i = 0;
-
-        string[] dots = { ".", "..", "..." };
-
-        hostsText.text = "Searching" + dots[i];
-        yield return new WaitForSeconds(1f);
-
-        // Check if any servers were found
-        while (serversFound.Count == 0 /*|| !serversFound[0]*/)
+       // hostsText.text = "Found!";
+        int index = 0;
+        foreach (var server in serversFound)
         {
-            // tugboat.SetClientAddress(_address);
-            i++;
-            hostsText.text = "Searching" + dots[i % 3];
-            yield return new WaitForSeconds(0.5f);
+            var button = serverButtons[index];
+            button.gameObject.SetActive(true);
+            button.GetComponentInChildren<Text>().text = $"{server.Value}'s Room";            
+
+            button.onClick.RemoveAllListeners();
+            button.onClick.AddListener(() => StartCoroutine(ServerFound_OnClick(server.Key)));
+            index++;
+        }
+    }
+
+    private void RemoveAllButtons()
+    {
+        for (int i = 0; i < serverButtons.Count; i++)
+        {
+            serverButtons[i].gameObject.SetActive(false);
         }
 
-        hostsText.text = "Found!";
-        int index = 0; // To track which button to use
-        foreach (var address in serversFound)
-        {
-            if (index < serverButtons.Count)
-            {
-                var button = serverButtons[index];
-                button.gameObject.SetActive(true);
-                button.GetComponentInChildren<Text>().text = $"{address.Value}'s Room";
-
-                button.onClick.RemoveAllListeners();
-                button.onClick.AddListener(() => StartCoroutine(ServerFound_OnClick(address.Key)));
-
-                index++; 
-            }
-        }
     }
 
     public IEnumerator ServerFound_OnClick(string address)
     {
         InstanceFinder.ClientManager.StartConnection(address);
-
-        hostsText.text = "Connected!";
         EventSystem[] eventSystems = FindObjectsOfType<EventSystem>();
         Destroy(eventSystems[0].gameObject);
 
         yield return new WaitForSeconds(2f); //Maybe not needed, to let the event system time to be deleted
 
+        hostsText.text = "Connected!";
         if (!LoadScene("CreateRoom"))
         {
             yield return new WaitForSeconds(3f);
@@ -192,7 +205,6 @@ public class ServerManager : MonoBehaviour
     [Server]
     private void OnServerAdvertising(EndPoint endPoint, string username)
     {        
-        // serversFound[endPoint.ToString()] = LoggedUser.Username;
         string newAddress = endPoint.ToString();
         Debug.LogWarning($"{LoggedUser.Username}'s Address published is " + newAddress);
         Debug.Log($"Server found at: {endPoint}");
@@ -224,6 +236,8 @@ public class ServerManager : MonoBehaviour
     private void OnDestroy()
     {
         networkDiscovery.ServerFoundCallback -= OnServerAdvertising;
+        networkDiscovery.ServerFoundCallback -= OnServerFound;
+
         MemberList.UpdateLobbyList();
    //     UnityEngine.SceneManagement.SceneManager.sceneLoaded -= OnSceneLoaded;
     }

@@ -153,7 +153,11 @@ public class GameServerManager : NetworkBehaviour
     public static async Task<GameResult> DidIWin(NetworkConnection conn, string username)
     {
         GameResult result;
-        int clientValue = Deck.GetHandValue(_instance._playerHands[conn]);
+        if (!_instance._playerHands.TryGetValue(conn, out string hand))
+        {
+            return GameResult.Tie;
+        }
+        int clientValue = Deck.GetHandValue(hand);
         int dealerValue = Deck.GetHandValue(GetAllPlayerHands(conn)[0]);
 
         if ((clientValue > dealerValue && clientValue <= 21) || (dealerValue > 21 && clientValue <= 21))
