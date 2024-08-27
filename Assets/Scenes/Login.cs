@@ -21,7 +21,10 @@ public class Login : MonoBehaviour
     protected string displayName = "";
     private bool fetchingToken = false;
     private string m_UserName;
- //   private DatabaseReference databaseReference;
+
+    public GameObject creatingTheAvatarObjects;
+    public GameObject loginCanvasAndCameraObjects;
+    //   private DatabaseReference databaseReference;
 
 
     Firebase.DependencyStatus dependencyStatus = Firebase.DependencyStatus.UnavailableOther;
@@ -346,6 +349,12 @@ public class Login : MonoBehaviour
         {
             m_SignInButton.onClick.Invoke();
         }
+    }
+
+    public void OnCreateYourAvatarClicked()
+    {
+        loginCanvasAndCameraObjects.SetActive(false);
+        creatingTheAvatarObjects.SetActive(true);
     }
 }
 
