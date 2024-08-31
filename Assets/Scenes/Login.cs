@@ -10,6 +10,10 @@ using Unity.Services.Authentication.PlayerAccounts;
 using Firebase.Auth;
 using Firebase.Database;
 using UnityEngine.UIElements;
+using UMA;
+using UMA.CharacterSystem;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Collections;
 //using UnityEditor.MemoryProfiler;
 
 
@@ -21,9 +25,31 @@ public class Login : MonoBehaviour
     protected string displayName = "";
     private bool fetchingToken = false;
     private string m_UserName;
+    private bool saveButtonClicked = false;
+
+    //public GameObject creatingTheAvatarObjects;
+    //public GameObject loginCanvasAndCameraObjects;
+    //public string avatarAsCompressedString;
 
     public GameObject creatingTheAvatarObjects;
     public GameObject loginCanvasAndCameraObjects;
+
+    public DynamicCharacterAvatar Avatar;
+
+    public bool useAvatarDefinition;
+    public bool useCompressedString;
+    public UMARandomAvatar Randomizer;
+    public UnityEngine.UI.Button LoadButton;
+
+    public string saveString;
+    public string avatarString;
+    public string compressedAvatarString;
+    public int saveStringSize;
+    public int avatarStringSize;
+    public int compressedStringSize;
+    public int asciiStringSize;
+    public int binarySize;
+
     //   private DatabaseReference databaseReference;
 
 
@@ -64,6 +90,7 @@ public class Login : MonoBehaviour
                   "Could not resolve all Firebase dependencies: " + dependencyStatus);
             }
         });
+        //GenerateANewAvatar();
     }
 
     private void OnEndEditUsername()
@@ -213,6 +240,7 @@ public class Login : MonoBehaviour
         }
     }
 
+    /*
     private async void HandleSignInWithAuthResult(Task<AuthResult> task)
     {
         if (LogTaskCompletion(task, "Sign-in"))
@@ -224,6 +252,7 @@ public class Login : MonoBehaviour
                 string username = task.Result.User.Email[..atIndex];
 
                 int coins = await FetchUserCoinsAsync(username);
+                string avatarCompressedString = await FetchUserAvatarAsync(username);
                 LoggedUser.SetUser(username, coins);
 
                 m_Label.text = string.Format("{0} signed in", LoggedUser.Username);
@@ -242,6 +271,45 @@ public class Login : MonoBehaviour
             await SigninWithEmailAsync();
         }
     }
+    */
+
+    private async void HandleSignInWithAuthResult(Task<AuthResult> task)
+    {
+        if (LogTaskCompletion(task, "Sign-in"))
+        {
+            if (task.Result.User != null && task.Result.User.IsValid())
+            {
+                string email = task.Result.User.Email;
+                int atIndex = email.IndexOf('@');
+                string username = task.Result.User.Email[..atIndex];
+
+                int coins = await FetchUserCoinsAsync(username);
+                /*
+                if(compressedAvatarString == null || compressedAvatarString == "")
+                {
+                    GenerateANewAvatar();
+                }
+                */
+                string avatarCompressedString = await FetchUserAvatarAsync(username);
+                LoggedUser.SetUser(username, coins, avatarCompressedString);
+
+                m_Label.text = string.Format("{0} signed in", LoggedUser.Username);
+
+                SceneManager.LoadScene("RoomSelection");
+            }
+            else
+            {
+                m_Label.text = "Signed in but User is either null or invalid";
+            }
+        }
+        else
+        {
+            m_Label.text = "Creating user";
+            await createUser();
+            await SigninWithEmailAsync();
+        }
+    }
+
 
     private async Task<int> FetchUserCoinsAsync(string username)
     {
@@ -264,6 +332,78 @@ public class Login : MonoBehaviour
         {
             Debug.LogError("Error fetching user coins: " + e);
             return 0;
+        }
+    }
+
+    private async Task<string> FetchUserAvatarAsync(string username)
+    {
+        DatabaseReference userRef = FirebaseDatabase.DefaultInstance.GetReference("users").Child(username).Child("avatar");
+
+        if (saveButtonClicked)
+        {
+            DatabaseReference userRefUserName = FirebaseDatabase.DefaultInstance.GetReference("users").Child(username);
+            Dictionary<string, object> userUpdates = new()
+                      {
+                        ////////////
+                        {"avatar", compressedAvatarString }
+                        ////////////
+
+                        // Add more fields as needed
+                    };
+            await userRefUserName.UpdateChildrenAsync(userUpdates).ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError("Failed to write user data: " + task.Exception);
+                }
+                else if (task.IsCompleted)
+                {
+                    Debug.Log("User data added to database successfully.");
+                }
+            });
+        }
+        try
+        {
+            DataSnapshot snapshot = await userRef.GetValueAsync();
+            if (snapshot.Exists)
+            {
+                string avatarCompressedString = snapshot.Value.ToString();
+                return avatarCompressedString;
+            }
+            else
+            {
+                Debug.LogWarning("User avatar not found in database.");
+                if (string.IsNullOrEmpty(compressedAvatarString))// compressedAvatarString == null || compressedAvatarString == "")
+                {
+                    GenerateANewAvatar();
+                }
+                DatabaseReference userRefUserName = FirebaseDatabase.DefaultInstance.GetReference("users").Child(username);
+                Dictionary<string, object> userUpdates = new()
+                      {
+                        ////////////
+                        {"avatar", compressedAvatarString }
+                        ////////////
+
+                        // Add more fields as needed
+                    };
+                await userRefUserName.UpdateChildrenAsync(userUpdates).ContinueWithOnMainThread(task =>
+                {
+                    if (task.IsFaulted)
+                    {
+                        Debug.LogError("Failed to write user data: " + task.Exception);
+                    }
+                    else if (task.IsCompleted)
+                    {
+                        Debug.Log("User data added to database successfully.");
+                    }
+                });
+                return compressedAvatarString;
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError("Error fetching user avatar: " + e);
+            return "";
         }
     }
 
@@ -318,10 +458,18 @@ public class Login : MonoBehaviour
 
                   if (user != null)
                   {
+                      if(string.IsNullOrEmpty(compressedAvatarString))// compressedAvatarString == null || compressedAvatarString == "")
+                      {
+                          GenerateANewAvatar();
+                      }
                       DatabaseReference userRef = FirebaseDatabase.DefaultInstance.GetReference("users").Child(username);
                       Dictionary<string, object> userUpdates = new()
                       {
-                        { "coins", 1000 }
+                        { "coins", 1000 },
+                        ////////////
+                        {"avatar", compressedAvatarString }
+                        ////////////
+
                         // Add more fields as needed
                     };
                       userRef.UpdateChildrenAsync(userUpdates).ContinueWithOnMainThread(task =>
@@ -355,6 +503,88 @@ public class Login : MonoBehaviour
     {
         loginCanvasAndCameraObjects.SetActive(false);
         creatingTheAvatarObjects.SetActive(true);
+        OnLoadClicked();
     }
+
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    public void GenerateANewAvatar()
+    {
+        Randomizer.Randomize(Avatar);
+        Avatar.BuildCharacter(false);
+        OnSaveClicked();
+        OnLoadClicked();
+    }
+
+    public void OnSaveClicked()
+    {
+        avatarString = Avatar.GetAvatarDefinitionString(true);
+        saveString = Avatar.GetCurrentRecipe();
+        compressedAvatarString = Avatar.GetAvatarDefinition(true).ToCompressedString("|");
+        asciiStringSize = Avatar.GetAvatarDefinition(true).ToASCIIString().Length;
+
+        binarySize = BinaryDefinition.ToBinary(new BinaryFormatter(), Avatar.GetAvatarDefinition(true)).Length;
+        saveStringSize = saveString.Length * 2;
+        avatarStringSize = avatarString.Length * 2;
+        compressedStringSize = compressedAvatarString.Length * 2; // utf-16
+
+        LoadButton.interactable = true;
+
+        creatingTheAvatarObjects.SetActive(false);
+        loginCanvasAndCameraObjects.SetActive(true);
+
+        saveButtonClicked = true;
+    }
+
+    public void OnLoadClicked()
+    {
+        if (string.IsNullOrEmpty(saveString))
+        {
+            return;
+        }
+
+        if (useCompressedString)
+        {
+            AvatarDefinition adf = AvatarDefinition.FromCompressedString(compressedAvatarString, '|');
+            Avatar.LoadAvatarDefinition(adf);
+            Avatar.BuildCharacter(false); // don't restore old DNA...
+        }
+        else if (useAvatarDefinition)
+        {
+            Avatar.LoadAvatarDefinition(avatarString);
+            Avatar.BuildCharacter(false); // We must not restore the old DNA
+        }
+        else
+        {
+            Avatar.LoadFromRecipeString(saveString);
+        }
+    }
+
+    public void OnBackClicked()
+    {
+        if (string.IsNullOrEmpty(saveString))
+        {
+            GenerateANewAvatar();
+
+            avatarString = Avatar.GetAvatarDefinitionString(true);
+            saveString = Avatar.GetCurrentRecipe();
+            compressedAvatarString = Avatar.GetAvatarDefinition(true).ToCompressedString("|");
+            asciiStringSize = Avatar.GetAvatarDefinition(true).ToASCIIString().Length;
+
+            binarySize = BinaryDefinition.ToBinary(new BinaryFormatter(), Avatar.GetAvatarDefinition(true)).Length;
+            saveStringSize = saveString.Length * 2;
+            avatarStringSize = avatarString.Length * 2;
+            compressedStringSize = compressedAvatarString.Length * 2; // utf-16
+
+            LoadButton.interactable = true;
+        }
+
+
+        creatingTheAvatarObjects.SetActive(false);
+        loginCanvasAndCameraObjects.SetActive(true);
+    }
+    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    
+    
 }
 

@@ -2293,8 +2293,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1171104946}
-        m_TargetAssemblyTypeName: AvatarData, Assembly-CSharp
+      - m_Target: {fileID: 635313438}
+        m_TargetAssemblyTypeName: Login, Assembly-CSharp
         m_MethodName: OnLoadClicked
         m_Mode: 1
         m_Arguments:
@@ -9425,6 +9425,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   creatingTheAvatarObjects: {fileID: 1902934922}
   loginCanvasAndCameraObjects: {fileID: 1285351155}
+  Avatar: {fileID: 1183649519}
+  useAvatarDefinition: 1
+  useCompressedString: 1
+  Randomizer: {fileID: 2129632}
+  LoadButton: {fileID: 118479100}
+  saveString: 
+  avatarString: 
+  compressedString: 
+  saveStringSize: 0
+  avatarStringSize: 0
+  compressedStringSize: 0
+  asciiStringSize: 0
+  binarySize: 0
   m_UsernameText: {fileID: 1727658855}
   m_PasswordText: {fileID: 0}
   m_Label: {fileID: 1322453707}
@@ -12993,7 +13006,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &903898569
 RectTransform:
   m_ObjectHideFlags: 0
@@ -13059,8 +13072,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1171104946}
-        m_TargetAssemblyTypeName: AvatarData, Assembly-CSharp
+      - m_Target: {fileID: 635313438}
+        m_TargetAssemblyTypeName: Login, Assembly-CSharp
         m_MethodName: OnBackClicked
         m_Mode: 1
         m_Arguments:
@@ -14722,7 +14735,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!224 &1015186343
 RectTransform:
   m_ObjectHideFlags: 0
@@ -17235,7 +17248,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1171104945}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: d7a7287738aff4999b5e76c1203fcb1d, type: 3}
   m_Name: 
@@ -17499,13 +17512,13 @@ MonoBehaviour:
       swapTag: 
       skinnedMeshRenderer: 0
       submeshIndex: 0
-      vertexOffset: 0
+      vertexOffset: 1400
       UVArea:
         serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1
-        height: 0.5
+        x: 0.25
+        y: 0.5
+        width: 0.25
+        height: 0.125
       tempHidden: 0
       isDisabled: 0
       UVSet: 0
@@ -17538,13 +17551,13 @@ MonoBehaviour:
       swapTag: 
       skinnedMeshRenderer: 0
       submeshIndex: 0
-      vertexOffset: 194
+      vertexOffset: 1024
       UVArea:
         serializedVersion: 2
         x: 0
         y: 0.5
-        width: 1
-        height: 0.5
+        width: 0.25
+        height: 0.125
       tempHidden: 0
       isDisabled: 0
       UVSet: 0
@@ -17575,7 +17588,7 @@ MonoBehaviour:
       swapTag: 
       skinnedMeshRenderer: 0
       submeshIndex: 1
-      vertexOffset: 570
+      vertexOffset: 1594
       UVArea:
         serializedVersion: 2
         x: 0
@@ -17585,44 +17598,7 @@ MonoBehaviour:
       tempHidden: 0
       isDisabled: 0
       UVSet: 0
-      altMaterial: {fileID: 0}
-      BlendshapeSlotNames: []
-      Suppressed: 0
-      dontSerialize: 0
-      rendererAsset: {fileID: 0}
-    - asset: {fileID: 11400000, guid: 88189b4b69536ab4ea34e6b2974baed7, type: 2}
-      overlayScale: 1
-      tags:
-      - Feet
-      Races: []
-      blendShapeTargetSlot: 
-      BlendshapeFoldout: 0
-      ClipPlaneFoldout: 0
-      isDeleted: 0
-      expandAlongNormal: 0
-      overSmoosh: 0
-      smooshDistance: 0
-      smooshInvertX: 0
-      smooshInvertY: 0
-      smooshInvertZ: 0
-      smooshInvertDist: 0
-      smooshTargetTag: 
-      smooshableTag: 
-      isSwapSlot: 0
-      swapTag: 
-      skinnedMeshRenderer: 0
-      submeshIndex: 1
-      vertexOffset: 1328
-      UVArea:
-        serializedVersion: 2
-        x: 0
-        y: 0
-        width: 1
-        height: 0.5
-      tempHidden: 0
-      isDisabled: 0
-      UVSet: 0
-      altMaterial: {fileID: 0}
+      altMaterial: {fileID: 11400000, guid: 9baec5f7e5dc828408f9350562791968, type: 2}
       BlendshapeSlotNames: []
       Suppressed: 0
       dontSerialize: 0
@@ -17649,7 +17625,7 @@ MonoBehaviour:
       swapTag: 
       skinnedMeshRenderer: 0
       submeshIndex: 1
-      vertexOffset: 1788
+      vertexOffset: 2352
       UVArea:
         serializedVersion: 2
         x: 0
@@ -17659,7 +17635,7 @@ MonoBehaviour:
       tempHidden: 0
       isDisabled: 0
       UVSet: 0
-      altMaterial: {fileID: 0}
+      altMaterial: {fileID: 11400000, guid: 9baec5f7e5dc828408f9350562791968, type: 2}
       BlendshapeSlotNames: []
       Suppressed: 0
       dontSerialize: 0
@@ -17686,7 +17662,7 @@ MonoBehaviour:
       swapTag: 
       skinnedMeshRenderer: 0
       submeshIndex: 1
-      vertexOffset: 2510
+      vertexOffset: 3074
       UVArea:
         serializedVersion: 2
         x: 0
@@ -17696,7 +17672,7 @@ MonoBehaviour:
       tempHidden: 0
       isDisabled: 0
       UVSet: 0
-      altMaterial: {fileID: 0}
+      altMaterial: {fileID: 11400000, guid: 9baec5f7e5dc828408f9350562791968, type: 2}
       BlendshapeSlotNames: []
       Suppressed: 0
       dontSerialize: 0
@@ -17725,7 +17701,7 @@ MonoBehaviour:
       swapTag: 
       skinnedMeshRenderer: 0
       submeshIndex: 1
-      vertexOffset: 3018
+      vertexOffset: 3582
       UVArea:
         serializedVersion: 2
         x: 0
@@ -17763,7 +17739,7 @@ MonoBehaviour:
       swapTag: 
       skinnedMeshRenderer: 0
       submeshIndex: 2
-      vertexOffset: 6248
+      vertexOffset: 6812
       UVArea:
         serializedVersion: 2
         x: 0.5
@@ -17800,7 +17776,7 @@ MonoBehaviour:
       swapTag: 
       skinnedMeshRenderer: 0
       submeshIndex: 2
-      vertexOffset: 6218
+      vertexOffset: 6782
       UVArea:
         serializedVersion: 2
         x: 0
@@ -17850,6 +17826,42 @@ MonoBehaviour:
       BlendshapeSlotNames: []
       Suppressed: 0
       dontSerialize: 1
+      rendererAsset: {fileID: 0}
+    - asset: {fileID: 11400000, guid: f552f5dd25919084fa1077b6df706c9d, type: 2}
+      overlayScale: 1
+      tags: []
+      Races: []
+      blendShapeTargetSlot: 
+      BlendshapeFoldout: 0
+      ClipPlaneFoldout: 0
+      isDeleted: 0
+      expandAlongNormal: 0
+      overSmoosh: 0
+      smooshDistance: 0
+      smooshInvertX: 0
+      smooshInvertY: 0
+      smooshInvertZ: 0
+      smooshInvertDist: 0
+      smooshTargetTag: 
+      smooshableTag: 
+      isSwapSlot: 0
+      swapTag: 
+      skinnedMeshRenderer: 0
+      submeshIndex: 0
+      vertexOffset: 0
+      UVArea:
+        serializedVersion: 2
+        x: 0
+        y: 0
+        width: 1
+        height: 0.5
+      tempHidden: 0
+      isDisabled: 0
+      UVSet: 0
+      altMaterial: {fileID: 0}
+      BlendshapeSlotNames: []
+      Suppressed: 0
+      dontSerialize: 0
       rendererAsset: {fileID: 0}
     sharedColors:
     - name: Skin
@@ -18008,6 +18020,96 @@ MonoBehaviour:
       foldout: 0
       showAdvanced: 0
       isBaseColor: 1
+      deleteThis: 0
+      displayColor: {r: 1, g: 1, b: 1, a: 1}
+    - name: Undies
+      channelMask:
+      - {r: 1, g: 1, b: 1, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      channelAdditiveMask:
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      PropertyBlock:
+        alwaysUpdate: 0
+        alwaysUpdateParms: 0
+        serializedProperties: []
+      foldout: 0
+      showAdvanced: 0
+      isBaseColor: 0
+      deleteThis: 0
+      displayColor: {r: 1, g: 1, b: 1, a: 1}
+    - name: Shirt1
+      channelMask:
+      - {r: 0.45490196, g: 0.11372549, b: 0.11372549, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      channelAdditiveMask:
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      PropertyBlock:
+        alwaysUpdate: 0
+        alwaysUpdateParms: 0
+        serializedProperties: []
+      foldout: 0
+      showAdvanced: 0
+      isBaseColor: 0
+      deleteThis: 0
+      displayColor: {r: 0, g: 0, b: 0, a: 0}
+    - name: Shirt2
+      channelMask:
+      - {r: 0.047058824, g: 0.58431375, b: 0.2509804, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      channelAdditiveMask:
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      PropertyBlock:
+        alwaysUpdate: 0
+        alwaysUpdateParms: 0
+        serializedProperties: []
+      foldout: 0
+      showAdvanced: 0
+      isBaseColor: 0
+      deleteThis: 0
+      displayColor: {r: 0, g: 0, b: 0, a: 0}
+    - name: Pants1
+      channelMask:
+      - {r: 0.3529412, g: 0.4156863, b: 0.6392157, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      channelAdditiveMask:
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      PropertyBlock:
+        alwaysUpdate: 0
+        alwaysUpdateParms: 0
+        serializedProperties: []
+      foldout: 0
+      showAdvanced: 0
+      isBaseColor: 0
+      deleteThis: 0
+      displayColor: {r: 1, g: 1, b: 1, a: 1}
+    - name: Shoes
+      channelMask:
+      - {r: 1, g: 1, b: 1, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      channelAdditiveMask:
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      PropertyBlock:
+        alwaysUpdate: 0
+        alwaysUpdateParms: 0
+        serializedProperties: []
+      foldout: 0
+      showAdvanced: 0
+      isBaseColor: 0
       deleteThis: 0
       displayColor: {r: 1, g: 1, b: 1, a: 1}
   animator: {fileID: 0}
@@ -18284,28 +18386,48 @@ MonoBehaviour:
       _enabledInDefaultWardrobe: 1
       _compatibleRaces:
       - HumanMale
-    - _recipeName: ToonFemaleUnderwear1
-      _enabledInDefaultWardrobe: 1
-      _compatibleRaces:
-      - ToonFemale
-    - _recipeName: ToonHair1
-      _enabledInDefaultWardrobe: 1
-      _compatibleRaces:
-      - ToonFemale
     - _recipeName: FemaleHair1
       _enabledInDefaultWardrobe: 1
       _compatibleRaces:
       - HumanFemale
-    - _recipeName: FemaleUndies2
+    - _recipeName: FemaleDefaultUnderwear
       _enabledInDefaultWardrobe: 1
       _compatibleRaces:
-      - HumanFemaleDCS
       - HumanFemale
-    - _recipeName: MaleUnderwear
+    - _recipeName: MaleDefaultUnderwear
       _enabledInDefaultWardrobe: 1
       _compatibleRaces:
       - HumanMale
-      - HumanMaleDCS
+    - _recipeName: FemaleHair2
+      _enabledInDefaultWardrobe: 1
+      _compatibleRaces:
+      - HumanFemale
+    - _recipeName: MaleShirt1
+      _enabledInDefaultWardrobe: 1
+      _compatibleRaces:
+      - HumanMale
+    - _recipeName: FemalePants1
+      _enabledInDefaultWardrobe: 1
+      _compatibleRaces:
+      - HumanFemale
+    - _recipeName: FemaleShirt1
+      _enabledInDefaultWardrobe: 1
+      _compatibleRaces:
+      - HumanFemale
+    - _recipeName: FemaleTallShoes_Black
+      _enabledInDefaultWardrobe: 1
+      _compatibleRaces:
+      - HumanFemale
+      - HumanFemaleHighPoly
+    - _recipeName: MaleJeans 1
+      _enabledInDefaultWardrobe: 1
+      _compatibleRaces:
+      - HumanMale
+    - _recipeName: TallShoes_Black_Recipe
+      _enabledInDefaultWardrobe: 1
+      _compatibleRaces:
+      - HumanMale
+      - HumanMaleHighPoly
   raceAnimationControllers:
     defaultAnimationController: {fileID: 9100000, guid: ae859d58fdf844b73863d3833f955cdf, type: 2}
     animators:
@@ -18537,6 +18659,75 @@ MonoBehaviour:
       _metallicGloss: {r: 0, g: 0, b: 0, a: 0}
       Raw: 0
       valuesConverted: 0
+    - name: Shirt1
+      channelMask:
+      - {r: 0.45490196, g: 0.11372549, b: 0.11372549, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      channelAdditiveMask:
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      PropertyBlock:
+        alwaysUpdate: 0
+        alwaysUpdateParms: 0
+        serializedProperties: []
+      foldout: 0
+      showAdvanced: 0
+      isBaseColor: 0
+      deleteThis: 0
+      displayColor: {r: 0, g: 0, b: 0, a: 0}
+      _name: 
+      _color: {r: 1, g: 1, b: 1, a: 1}
+      _metallicGloss: {r: 0, g: 0, b: 0, a: 0}
+      Raw: 0
+      valuesConverted: 0
+    - name: Shirt2
+      channelMask:
+      - {r: 0.047058824, g: 0.58431375, b: 0.2509804, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      channelAdditiveMask:
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      PropertyBlock:
+        alwaysUpdate: 0
+        alwaysUpdateParms: 0
+        serializedProperties: []
+      foldout: 0
+      showAdvanced: 0
+      isBaseColor: 0
+      deleteThis: 0
+      displayColor: {r: 0, g: 0, b: 0, a: 0}
+      _name: 
+      _color: {r: 1, g: 1, b: 1, a: 1}
+      _metallicGloss: {r: 0, g: 0, b: 0, a: 0}
+      Raw: 0
+      valuesConverted: 0
+    - name: Shoes
+      channelMask:
+      - {r: 1, g: 1, b: 1, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      - {r: 1, g: 1, b: 1, a: 1}
+      channelAdditiveMask:
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      - {r: 0, g: 0, b: 0, a: 0}
+      PropertyBlock:
+        alwaysUpdate: 0
+        alwaysUpdateParms: 0
+        serializedProperties: []
+      foldout: 0
+      showAdvanced: 0
+      isBaseColor: 0
+      deleteThis: 0
+      displayColor: {r: 1, g: 1, b: 1, a: 1}
+      _name: 
+      _color: {r: 1, g: 1, b: 1, a: 1}
+      _metallicGloss: {r: 0, g: 0, b: 0, a: 0}
+      Raw: 0
+      valuesConverted: 0
   predefinedDNA:
     PreloadValues: []
   loadPathType: 2
@@ -18698,7 +18889,7 @@ MonoBehaviour:
   m_HandleRect: {fileID: 1405763830}
   m_Direction: 2
   m_Value: 1
-  m_Size: 0.53763443
+  m_Size: 0.37634403
   m_NumberOfSteps: 0
   m_OnValueChanged:
     m_PersistentCalls:
@@ -24522,8 +24713,8 @@ MonoBehaviour:
   m_OnClick:
     m_PersistentCalls:
       m_Calls:
-      - m_Target: {fileID: 1171104946}
-        m_TargetAssemblyTypeName: AvatarData, Assembly-CSharp
+      - m_Target: {fileID: 635313438}
+        m_TargetAssemblyTypeName: Login, Assembly-CSharp
         m_MethodName: OnSaveClicked
         m_Mode: 1
         m_Arguments:

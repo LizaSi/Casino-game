@@ -13,14 +13,28 @@ namespace Unity.Services.Authentication.PlayerAccounts
     {
         public static string Username { get; private set; }
         public static int Coins { get; private set; }
+        public static string AvatarCompressedString { get; private set; }
+
 
         public static event Action OnUserLoggedIn;
         public static event Action OnCoinsChange;
 
+        /*
         public static void SetUser(string username, int coins)
         {
             Username = username;
             Coins = coins;
+
+            OnUserLoggedIn?.Invoke();
+        }
+        */
+
+        public static void SetUser(string username, int coins, string avatarCompressedString)
+        {
+            Username = username;
+            Coins = coins;
+            AvatarCompressedString = avatarCompressedString;
+
 
             OnUserLoggedIn?.Invoke();
         }
@@ -41,6 +55,31 @@ namespace Unity.Services.Authentication.PlayerAccounts
                 {
                     int coins = int.Parse(snapshot.Value.ToString());
                     Coins = coins;
+                    OnCoinsChange?.Invoke();
+                }
+                else
+                {
+                    Debug.LogError("User not found in database: " + Username);
+                }
+            });
+        }
+
+        public static void FetchAvatar()
+        {
+            var userRef = FirebaseDatabase.DefaultInstance.GetReference("users").Child(Username).Child("avatar");
+            userRef.GetValueAsync().ContinueWithOnMainThread(task =>
+            {
+                if (task.IsFaulted)
+                {
+                    Debug.LogError("Error fetching user avatar: " + task.Exception);
+                    return;
+                }
+
+                DataSnapshot snapshot = task.Result;
+                if (snapshot.Exists)
+                {
+                    string avatarCompressedString = snapshot.Value.ToString();
+                    AvatarCompressedString = avatarCompressedString;
                     OnCoinsChange?.Invoke();
                 }
                 else
@@ -82,7 +121,8 @@ namespace Unity.Services.Authentication.PlayerAccounts
 
         private void UpdateNameAndCoins()
         {
-            userNameText.text = LoggedUser.Username + "               " + LoggedUser.Coins;
+            //userNameText.text = LoggedUser.Username + "               " + LoggedUser.Coins;
+            userNameText.text = LoggedUser.Username + "               " + LoggedUser.Coins + "               " + LoggedUser.AvatarCompressedString;
         }
     }
 }

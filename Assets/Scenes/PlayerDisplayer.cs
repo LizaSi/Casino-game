@@ -1,10 +1,24 @@
+using UMA.CharacterSystem;
 using UnityEngine;
 
 public class PlayerDisplayer : MonoBehaviour
 { 
-    public static void SetCameraBlackJack(int playerIndex)
+    //public static void SetCameraBlackJack(int playerIndex)
+    public static void SetCameraBlackJack(int playerIndex, string avatarCompressedString)
     {
         GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
+        //////////////////////////
+        DynamicCharacterAvatar avatar = instantiatedPlayer.GetComponentInChildren<DynamicCharacterAvatar>();
+
+        if (avatar != null)
+        {
+            ModifyAvatar(avatar, avatarCompressedString);
+        }
+        else
+        {
+            Debug.LogError("DynamicCharacterAvatar not found in the children of the instantiated object.");
+        }
+        //////////////////////////
         instantiatedPlayer.transform.localScale = new Vector3(1f, 1f, 1f);
         instantiatedPlayer.transform.rotation = Quaternion.identity;
         if (playerIndex == 1)
@@ -42,9 +56,22 @@ public class PlayerDisplayer : MonoBehaviour
         }
     }
 
-    public static void SetCameraPoker(int playerIndex)
+    //public static void SetCameraPoker(int playerIndex)
+    public static void SetCameraPoker(int playerIndex, string avatarCompressedString)
     {
         GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
+        //////////////////////////
+        DynamicCharacterAvatar avatar = instantiatedPlayer.GetComponentInChildren<DynamicCharacterAvatar>();
+
+        if (avatar != null)
+        {
+            ModifyAvatar(avatar, avatarCompressedString);
+        }
+        else
+        {
+            Debug.LogError("DynamicCharacterAvatar not found in the children of the instantiated object.");
+        }
+        //////////////////////////
         instantiatedPlayer.transform.localScale = new Vector3(1f, 1f, 1f);
         instantiatedPlayer.transform.rotation = Quaternion.identity;
         if (playerIndex == 1)
@@ -81,6 +108,23 @@ public class PlayerDisplayer : MonoBehaviour
             return;
         }
     }
+
+    //////////////////////////
+
+    static void ModifyAvatar(DynamicCharacterAvatar avatar, string avatarCompressedString)
+    {
+        if (string.IsNullOrEmpty(avatarCompressedString))
+        {
+            return;
+        }
+
+        AvatarDefinition adf = AvatarDefinition.FromCompressedString(avatarCompressedString, '|');
+        avatar.LoadAvatarDefinition(adf);
+        avatar.BuildCharacter(false); // don't restore old DNA...
+    }
+
+    //////////////////////////
+
     // private bool isPlayerDisplayed = false;
     //private static int playerIndex;
     // Start is called before the first frame update

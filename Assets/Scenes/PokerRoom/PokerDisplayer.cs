@@ -53,7 +53,7 @@ public class PokerDisplayer : NetworkBehaviour
         {
             int playerIndex = GetPlayerIndex(base.Owner);
             Debug.LogWarning($"client index is {playerIndex}");
-            PlayerDisplayer.SetCameraPoker(playerIndex - 1); // -1 cuz index 1 is the host    }
+            PlayerDisplayer.SetCameraPoker(playerIndex - 1, LoggedUser.AvatarCompressedString); // -1 cuz index 1 is the host    }
         }
     }
 
