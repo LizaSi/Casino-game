@@ -10,7 +10,6 @@ using FishNet;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using TMPro;
-using System.Collections.Generic;
 
 public class MemberList : NetworkBehaviour
 {

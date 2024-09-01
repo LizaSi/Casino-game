@@ -11,7 +11,6 @@ using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
 using Firebase.Database;
-using FishNet.Demo.AdditiveScenes;
 using Unity.VisualScripting;
 
 public class PokerServerManager : NetworkBehaviour
@@ -39,7 +38,6 @@ public class PokerServerManager : NetworkBehaviour
     [SyncObject] private readonly SyncDictionary<NetworkConnection, string> _playerHands = new();
     [SyncObject] private readonly SyncDictionary<NetworkConnection, bool> _playerIsMyTurn = new();
     [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playersIndexes = new(); //starting from 0
-   // [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playersJoiningIndexes = new(); //starting from 0
     [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playerBets = new();
     [SyncObject] private readonly SyncDictionary<NetworkConnection, string> _playerNames = new();
     public int Pot
@@ -86,11 +84,6 @@ public class PokerServerManager : NetworkBehaviour
         return Instance != null;
     }
 
-   /* public static void NewRoundInit()
-    {
-        Instance.newRoundInit();
-    }*/
-
     private void newRoundInit()
     {
         NewRoundButton.gameObject.SetActive(false);
@@ -104,6 +97,7 @@ public class PokerServerManager : NetworkBehaviour
         flopRevealed = false;
         _currentBet = _bigBlind;
         _pot = 0;
+        WinText.text = "";
         PlayersNewRoundInit();
        // DealInitialCards();
         UpdateBroadcast msg = new()
@@ -192,7 +186,6 @@ public class PokerServerManager : NetworkBehaviour
         {
             _deck = new Deck(1);
         }
-        //_deck.Shuffle();
         return _deck.DrawCard();
     }
 

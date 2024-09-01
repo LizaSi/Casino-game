@@ -9,15 +9,10 @@ using FishNet.Managing;
 using FishNet.Managing.Scened;
 using UnityEngine.EventSystems;
 using UnityEngine.UI;
-using FishNet.Transporting.Tugboat;
-using System.Linq;
 using FishNet.Object;
 using PlayerData;
-using System.Net.Sockets;
-using System;
 using System.Collections.Generic;
 using FishNet.Transporting;
-using System.Reflection;
 
 public class ServerManager : MonoBehaviour
 {

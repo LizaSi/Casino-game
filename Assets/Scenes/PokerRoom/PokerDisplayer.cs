@@ -38,7 +38,7 @@ public class PokerDisplayer : NetworkBehaviour
 
     private void OnPokerServerStarted()
     {
-        InitGame();
+        InitGame() ;
     }
 
     public void InitGame()
@@ -57,6 +57,7 @@ public class PokerDisplayer : NetworkBehaviour
             //PokerServerManager.NewRoundInit();
         }
         tableSpaceIndex = 0;
+        winText.text = "";
         DespawnAllCards();
         newRoundButton.gameObject.SetActive(false);
         if (!InstanceFinder.IsServer)
@@ -95,7 +96,7 @@ public class PokerDisplayer : NetworkBehaviour
             CountdownTimer.StopCountDown();
             if(msg.WinnerName == LoggedUser.Username)
             {
-                winText.text = "You won!";
+                winText.text = "You win!";
             }
         }
         if (msg.NewRound)

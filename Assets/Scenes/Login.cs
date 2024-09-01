@@ -88,26 +88,97 @@ public class Login : MonoBehaviour
 #else
         if (signInAndFetchProfile)
         {
-            await auth.SignInAndRetrieveDataWithCredentialAsync(
-              EmailAuthProvider.GetCredential(email, password)).ContinueWithOnMainThread(
-                HandleSignInWithAuthResult);
-        }
-        else
-        {
-            m_Label.text = "Connecting...";
             try
             {
-                await auth.SignInWithEmailAndPasswordAsync(email, password)
-                .ContinueWithOnMainThread(HandleSignInWithAuthResult);
+                await auth.SignInAndRetrieveDataWithCredentialAsync(
+                              EmailAuthProvider.GetCredential(email, password)).ContinueWithOnMainThread(HandleSignInWithAuthResult);
             }
             catch (Exception e)
             {
-                m_Label.text = "Error login: " + e;
-                return;
+                m_Label.text = "Login error " + e.Message;
+            }
+        }
+        else
+        {
+            try
+            {
+                await auth.SignInWithEmailAndPasswordAsync(email, password)
+                    .ContinueWithOnMainThread(HandleSignInWithAuthResult);
+            }
+            catch (Exception e)
+            {
+                m_Label.text = "Error login " + e.Message;
             }
         }
 #endif
     }
+
+    private async void HandleSignInWithAuthResult(Task<AuthResult> task)
+    {
+        if (LogTaskCompletion(task, "Sign-in"))
+        {
+            if (task.Result.User != null && task.Result.User.IsValid())
+            {
+                string email = task.Result.User.Email;
+                int atIndex = email.IndexOf('@');
+                string username = task.Result.User.Email[..atIndex];
+
+                int coins = await FetchUserCoinsAsync(username);
+                LoggedUser.SetUser(username, coins);
+
+                m_Label.text = string.Format("{0} signed in", LoggedUser.Username);
+
+                SceneManager.LoadScene("RoomSelection");
+            }
+            else
+            {
+                m_Label.text = "Signed in but User is either null or invalid";
+            }
+        }
+        else
+        {
+            m_Label.text = "Creating user";
+            await createUser();
+            await SigninWithEmailAsync();
+        }
+    }
+
+    protected bool LogTaskCompletion(Task task, string operation)
+    {
+        bool complete = false;
+        if (task.IsCanceled)
+        {
+            m_Label.text = operation + " canceled.";
+            //   DebugLog(operation + " canceled.");
+        }
+        else if (task.IsFaulted)
+        {
+            m_Label.text = operation + " encounted an error.";
+            // DebugLog(operation + " encounted an error.");
+            foreach (Exception exception in task.Exception.Flatten().InnerExceptions)
+            {
+                string authErrorCode = "";
+                if (exception is Firebase.FirebaseException firebaseEx)
+                {
+                    authErrorCode = String.Format("AuthError.{0}: ",
+                      ((Firebase.Auth.AuthError)firebaseEx.ErrorCode).ToString());
+                }
+                m_Label.text = authErrorCode + exception.ToString();
+                Debug.LogError(authErrorCode + exception.ToString());
+            }
+        }
+        else if (task.IsCompleted)
+        {
+            m_Label.text = operation + " completed successfuly";
+            complete = true;
+        }
+        else
+        {
+            Debug.LogWarning($"{operation} {task.Status} {task.AsyncState}");
+        }
+        return complete;
+    }
+
 
 #if !UNITY_WEBGL
     protected void InitializeFirebase()
@@ -168,39 +239,8 @@ public class Login : MonoBehaviour
                // DisplayDetailedUserInfo(user, 1);
             }
         }
-    }
+    }  
     
-
-    private async void HandleSignInWithAuthResult(Task<AuthResult> task)
-    {
-        if (LogTaskCompletion(task, "Sign-in"))
-        {
-            if (task.Result.User != null && task.Result.User.IsValid())
-            {
-                string email = task.Result.User.Email;
-                int atIndex = email.IndexOf('@');
-                string username = task.Result.User.Email[..atIndex];
-
-                int coins = await FetchUserCoinsAsync(username);
-                LoggedUser.SetUser(username, coins);
-
-                m_Label.text = string.Format("{0} signed in", LoggedUser.Username);
-
-                SceneManager.LoadScene("RoomSelection");
-            }
-            else
-            {
-                m_Label.text = "Signed in but User is either null or invalid";
-            }
-        }
-        else
-        {
-            m_Label.text = "Creating user";
-            await createUser();
-            await SigninWithEmailAsync();
-        }
-    }
-
     private async Task<int> FetchUserCoinsAsync(string username)
     {
         DatabaseReference userRef = FirebaseDatabase.DefaultInstance.GetReference("users").Child(username).Child("coins");
@@ -227,37 +267,7 @@ public class Login : MonoBehaviour
 
     // Log the result of the specified task, returning true if the task
     // completed successfully, false otherwise.
-    protected bool LogTaskCompletion(Task task, string operation)
-    {
-        bool complete = false;
-        if (task.IsCanceled)
-        {
-            m_Label.text = operation + " canceled.";
-            //   DebugLog(operation + " canceled.");
-        }
-        else if (task.IsFaulted)
-        {
-            m_Label.text = operation + " encounted an error.";
-            // DebugLog(operation + " encounted an error.");
-            foreach (Exception exception in task.Exception.Flatten().InnerExceptions)
-            {
-                string authErrorCode = "";
-                if (exception is Firebase.FirebaseException firebaseEx)
-                {
-                    authErrorCode = String.Format("AuthError.{0}: ",
-                      ((Firebase.Auth.AuthError)firebaseEx.ErrorCode).ToString());
-                }
-                m_Label.text = authErrorCode + exception.ToString();
-                //     DebugLog(authErrorCode + exception.ToString());
-            }
-        }
-        else if (task.IsCompleted)
-        {
-            //  DebugLog(operation + " completed");
-            complete = true;
-        }
-        return complete;
-    }
+    
 
     private Task createUser()
     {

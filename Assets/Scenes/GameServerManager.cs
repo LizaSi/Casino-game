@@ -8,8 +8,8 @@ using FishNet.Broadcast;
 using FishNet;
 //using Firebase.Database;
 using System.Threading.Tasks;
-using Unity.Services.Authentication.PlayerAccounts;
 using UnityEngine;
+using Firebase.Database;
 
 public class GameServerManager : NetworkBehaviour
 {
@@ -34,6 +34,7 @@ public class GameServerManager : NetworkBehaviour
           //  OnInitialized?.Invoke();
         }
     }
+
     private void Start()
     {
         if (_instance == null)
@@ -287,9 +288,8 @@ public class GameServerManager : NetworkBehaviour
 
     private static async Task UpdateCoinsBasedOnResult(string username, GameResult result)
     {
-       /* DatabaseReference userRef = FirebaseDatabase.DefaultInstance.GetReference("users").Child(username);
+        DatabaseReference userRef = FirebaseDatabase.DefaultInstance.GetReference("users").Child(username);
 
-        // Get the current coins
         DataSnapshot dataSnapshot = await userRef.GetValueAsync();
         int currentCoins = 0;
 
@@ -303,18 +303,16 @@ public class GameServerManager : NetworkBehaviour
         switch (result)
         {
             case GameResult.Win:
-                updatedCoins += 100; // example coin reward for win
+                updatedCoins += 100; 
                 break;
             case GameResult.Tie:
-                // No coin change for tie
                 break;
             case GameResult.Lose:
-                updatedCoins -= 100; // example coin penalty for loss
+                updatedCoins -= 100;
                 break;
         }
 
-        // Set the updated coin value back to Firebase
-        await userRef.Child("coins").SetValueAsync(updatedCoins); */
+        await userRef.Child("coins").SetValueAsync(updatedCoins);
     }
 
     public struct UpdateBroadcast : IBroadcast

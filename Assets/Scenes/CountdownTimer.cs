@@ -6,17 +6,17 @@ using FishNet.Connection;
 public class CountdownTimer : MonoBehaviour
 {
     [SerializeField]
-    private TMP_Text m_countDownText;  // Reference to the TMP_Text component
+    private TMP_Text m_countDownText;
 
-    private int countdownTime = 30;    // Countdown start time in seconds
+    private int countdownTime = 30;   
     private static bool m_Started = false;
     private NetworkConnection m_turnOwner;
 
-    private static CountdownTimer instance;  // Singleton instance to access from other scripts
+    private static CountdownTimer instance; 
 
     private void Awake()
     {
-        instance = this;  // Set the instance to this script
+        instance = this; 
     }
 
     public static void StartBlackjackCountdown(CardsDisplayer cardsDisplayer, NetworkConnection turnOwner)
@@ -49,8 +49,6 @@ public class CountdownTimer : MonoBehaviour
         {
             instance.countdownTime = 30;
             instance.m_turnOwner = turnOwner;
-          //  instance.StopCoroutine(instance.CountdownRoutine(pokerDisplayer));
-          //  instance.StartCoroutine(instance.CountdownRoutine(pokerDisplayer));
         }
     }
 
