@@ -79,7 +79,7 @@ public class CardsDisplayer : NetworkBehaviour
         if (waitForNextRound)
         {
             waitForNextRound = false;
-            PlayerDisplayer.SetCameraBlackJack(GetPlayerIndex(base.Owner) - 1);
+            PlayerDisplayer.SetCameraBlackJack(GetPlayerIndex(base.Owner) - 1, LoggedUser.AvatarCompressedString);
         }
         //CountdownTimer.StartBlackjackCountdown(this, base.Owner);
     }

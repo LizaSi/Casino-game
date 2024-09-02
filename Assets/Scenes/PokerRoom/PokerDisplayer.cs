@@ -56,7 +56,7 @@ public class PokerDisplayer : NetworkBehaviour
     {        
         StartCoroutine(ClientTurnInDelay());
         PokerServerManager.OnTurnChange += OnTurnChange;
-        PokerServerManager.JoinWithName(base.Owner, LoggedUser.Username);
+        //PokerServerManager.JoinWithName(base.Owner, LoggedUser.Username);
         setPlayerCamera();
         InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
         InstanceFinder.ClientManager.RegisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);

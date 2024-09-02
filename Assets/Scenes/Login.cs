@@ -68,10 +68,10 @@ public class Login : MonoBehaviour
     };
     #endif
 
-    private bool signInAndFetchProfile = false;
-    protected string displayName = "";
-    private bool fetchingToken = false;
-    private string m_UserName;
+    //private bool signInAndFetchProfile = false;
+    //protected string displayName = "";
+    //private bool fetchingToken = false;
+    //private string m_UserName;
  //   private DatabaseReference databaseReference;
 
     [SerializeField]
@@ -567,3 +567,4 @@ public class Login : MonoBehaviour
     
     
 }
+#endif

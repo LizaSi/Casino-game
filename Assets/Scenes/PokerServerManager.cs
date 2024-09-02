@@ -121,6 +121,16 @@ public class PokerServerManager : NetworkBehaviour
         //   Instance._blindIndex = Instance.getNextIndexTurn(Instance._playersIndexes.Count, Instance._blindIndex);
     }
 
+    // snir file
+    /*
+    public static void JoinWithName(NetworkConnection conn, string username)
+    {
+        Instance._playerNames.Add(conn, username);
+        Instance._playersJoiningIndexes.Add(conn, Instance._playersJoiningIndexes.Count + 1);
+        
+    }
+    */
+
     [Client]
     public static void JoinWithName(string username)
     {
