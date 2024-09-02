@@ -415,6 +415,17 @@ public class Card
                 return value.ToString();
         }
     }
+    public bool IsSameSuit(Card other)
+    {
+        return this.GetSuit() == other.GetSuit();
+    }
+
+    public int CompareRank(Card other)
+    {
+        int thisRank = (int)this.CardType % 13 + 1;
+        int otherRank = (int)other.CardType % 13 + 1;
+        return thisRank.CompareTo(otherRank);
+    }
 }
 
 //public class Card

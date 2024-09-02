@@ -1,13 +1,10 @@
 using Firebase.Database;
 using Firebase.Extensions;
 using System;
-using System.Text;
-using System.Threading.Tasks;
 using TMPro;
-using Unity.Services.Core;
 using UnityEngine;
 
-namespace Unity.Services.Authentication.PlayerAccounts
+namespace PlayerData
 {
     public static class LoggedUser
     {
@@ -94,8 +91,6 @@ namespace Unity.Services.Authentication.PlayerAccounts
     {
         [SerializeField]
         TMP_Text userNameText;
-
-        // Start is called before the first frame update
 
         private void Start()
         {

@@ -57,7 +57,7 @@ public class Deck
         return CalculateHandValue(handCards);
     }
 
-    private static List<Card> ParseHandString(string hand)
+    public static List<Card> ParseHandString(string hand)
     {
         List<Card> handCards = new List<Card>();
         string[] cardStrings = hand.Split(", ");
@@ -95,6 +95,15 @@ public class Deck
         }
 
         return value;
+    }
+
+    public static HandValue EvaluateBestHand(List<Card> handCards, List<Card> communityCards)
+    {
+        // Combine player's hand and community cards
+        var allCards = handCards.Concat(communityCards).ToList();
+
+        // Logic to find the best hand from the combined 7 cards
+        return PokerHandEvaluator.EvaluateBestHand(allCards);
     }
 }
 

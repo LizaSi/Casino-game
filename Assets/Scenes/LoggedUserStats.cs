@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using TMPro;
 using UMA.CharacterSystem;
 using Unity.Services.Authentication.PlayerAccounts;
+using PlayerData;
 using UnityEngine;
 
 public class LoggedUserStats : MonoBehaviour
@@ -31,7 +32,7 @@ public class LoggedUserStats : MonoBehaviour
             LoggedUser.OnUserLoggedIn += UpdateNameAndCoins;
             LoggedUser.OnCoinsChange += UpdateNameAndCoins;
             DontDestroyOnLoad(ScriptHolderObject);
-            DontDestroyOnLoad(userNameText);
+           // DontDestroyOnLoad(userNameText);
             if (!string.IsNullOrEmpty(LoggedUser.Username))
             {
                 UpdateNameAndCoins();

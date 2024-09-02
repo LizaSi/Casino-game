@@ -4,27 +4,36 @@ using FishNet.Object;
 using System.Collections;
 using System.Collections.Generic;
 using TMPro;
-using Unity.Services.Authentication.PlayerAccounts;
+using PlayerData;
 using UnityEngine;
 using UnityEngine.UI;
 using static GameServerManager;
 
 public class CardsDisplayer : NetworkBehaviour
 {
-    public TMP_Text cardsText;
-    public GameObject ButtonsParent;
+    [SerializeField] public GameObject ClientComponentsParent;
+    [SerializeField] public Button newRoundButton;
+
     public TMP_Text winText;
-    public Button newRoundButton;
 
     private bool dealerChecked = false;
     private int cardIndex = 0;
     private List<string> spawnedCardsNames = new();
     private List<string> spawnedCardsServer = new();
     private bool dealerRevealAllCards = false;
-    
+    private bool waitForNextRound = false;
+
+
     private void OnEnable()
     {        
-        GameServerManager.OnInitialized += GameServerManager_OnInitialized;
+        if (GameServerManager.IsInitialized())
+        {
+            GameServerManager_OnInitialized();
+        }
+        else
+        {
+            GameServerManager.OnInitialized += GameServerManager_OnInitialized;
+        }
         InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
         InstanceFinder.ClientManager.RegisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
         InstanceFinder.ClientManager.RegisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);
@@ -39,6 +48,12 @@ public class CardsDisplayer : NetworkBehaviour
 
     private void GameServerManager_OnInitialized()
     {
+        int playerIndex = GetPlayerIndex(base.Owner);
+        if (playerIndex == 0)
+        {
+            waitForNextRound = true;
+            return;
+        }
         if (base.Owner.IsLocalClient && !InstanceFinder.IsServer)
         {
             //PlayerDisplayer.SetCameraBlackJack(GetPlayerIndex(base.Owner) - 1); // -1 cuz index 1 is the host
@@ -54,12 +69,19 @@ public class CardsDisplayer : NetworkBehaviour
         dealerChecked = false;
         dealerRevealAllCards = false;
         newRoundButton.gameObject.SetActive(false);
+       // CountdownTimer.StartBlackjackCountdown(this, base.Owner);
     }
 
     private void NewRoundInitAsClient()
     {
         DespawnAllCards();
         cardIndex = 0;
+        if (waitForNextRound)
+        {
+            waitForNextRound = false;
+            PlayerDisplayer.SetCameraBlackJack(GetPlayerIndex(base.Owner) - 1);
+        }
+        //CountdownTimer.StartBlackjackCountdown(this, base.Owner);
     }
 
     public void NewRound_OnClick()
@@ -72,10 +94,11 @@ public class CardsDisplayer : NetworkBehaviour
     {
         if (msg.IsWinMessage)
         {
+            CountdownTimer.StopCountDown();
             if (!InstanceFinder.IsServer && base.Owner.IsLocalClient)
             {
                 ShowWinMessage();
-                ButtonsParent.SetActive(false);
+                ClientComponentsParent.SetActive(false);
                 StartCoroutine(FetchCoinsInDelay());
             }
             else if(InstanceFinder.IsServer)
@@ -107,6 +130,7 @@ public class CardsDisplayer : NetworkBehaviour
         {
             handleClientTurn();
             StartCoroutine(ClientTurnInDelay());
+            CountdownTimer.StartBlackjackCountdown(this, base.Owner);
         }
         else if (msg.HostTurn && base.Owner.IsHost && InstanceFinder.IsServer)
         {
@@ -255,11 +279,11 @@ public class CardsDisplayer : NetworkBehaviour
         UpdateCardsDisplay();
         if (IsMyTurn(base.Owner) && base.Owner.IsLocalClient)
         {
-            ButtonsParent.SetActive(true);
+            ClientComponentsParent.SetActive(true);
         }
         else
         {
-            ButtonsParent.SetActive(false);
+            ClientComponentsParent.SetActive(false);
         }
     }
 
@@ -284,10 +308,7 @@ public class CardsDisplayer : NetworkBehaviour
                         SpawnCardOnBoard(card);
                         spawnedCardsNames.Add(card);
                     }
-                    else
-                    {
-                        cardsText.text = card + " Is already displayed";
-                    }
+                    
                     i++;
                 }
             }
