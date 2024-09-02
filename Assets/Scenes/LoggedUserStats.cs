@@ -31,7 +31,7 @@ public class LoggedUserStats : MonoBehaviour
             LoggedUser.OnUserLoggedIn += UpdateNameAndCoins;
             LoggedUser.OnCoinsChange += UpdateNameAndCoins;
             DontDestroyOnLoad(ScriptHolderObject);
-            DontDestroyOnLoad(userNameText);
+           // DontDestroyOnLoad(userNameText);
             if (!string.IsNullOrEmpty(LoggedUser.Username))
             {
                 UpdateNameAndCoins();

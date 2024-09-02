@@ -17,7 +17,7 @@ namespace FishNet.Discovery
             if (networkDiscovery == null)
                 networkDiscovery = FindObjectOfType<NetworkDiscovery>();
 
-            networkDiscovery.ServerFoundCallback += endPoint => _addresses.Add(endPoint.Address.ToString());
+           // networkDiscovery.ServerFoundCallback += endPoint, => _addresses.Add(endPoint.Address.ToString(), );
         }
 
         private void OnGUI()

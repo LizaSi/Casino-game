@@ -2,6 +2,7 @@
 using FishNet.Managing.Logging;
 using FishNet.Managing.Scened;
 using FishNet.Transporting;
+using PlayerData;
 using System;
 using System.Net;
 using System.Net.Sockets;
@@ -76,7 +77,7 @@ namespace FishNet.Discovery
 		/// <summary>
 		/// Called when a server is found.
 		/// </summary>
-		public event Action<IPEndPoint> ServerFoundCallback;
+		public event Action<IPEndPoint, string> ServerFoundCallback;
 
 		/// <summary>
 		/// True if the server is being advertised.
@@ -256,162 +257,171 @@ namespace FishNet.Discovery
 			_cancellationTokenSource = null;
 		}
 
-		/// <summary>
-		/// Advertises the server on the local network.
-		/// </summary>
-		/// <param name="cancellationToken">Used to cancel advertising.</param>
-		private async Task AdvertiseServerAsync(CancellationToken cancellationToken)
-		{
-			UdpClient udpClient = null;
+        /// <summary>
+        /// Advertises the server on the local network.
+        /// </summary>
+        /// <param name="cancellationToken">Used to cancel advertising.</param>
+        private async Task AdvertiseServerAsync(CancellationToken cancellationToken)
+        {
+            UdpClient udpClient = null;
 
-			try
-			{
-				LogInformation("Started advertising server.");
+            try
+            {
+                LogInformation("Started advertising server.");
 
-				IsAdvertising = true;
+                IsAdvertising = true;
 
-				while (!cancellationToken.IsCancellationRequested)
-				{
-					if (udpClient == null) udpClient = new UdpClient(port);
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    if (udpClient == null) udpClient = new UdpClient(port);
 
-					LogInformation("Waiting for request...");
+                    LogInformation("Waiting for request...");
 
-					Task<UdpReceiveResult> receiveTask = udpClient.ReceiveAsync();
+                    Task<UdpReceiveResult> receiveTask = udpClient.ReceiveAsync();
 
-					Task timeoutTask = Task.Delay(TimeSpan.FromSeconds(SearchTimeout), cancellationToken);
+                    Task timeoutTask = Task.Delay(TimeSpan.FromSeconds(SearchTimeout), cancellationToken);
 
-					Task completedTask = await Task.WhenAny(receiveTask, timeoutTask);
+                    Task completedTask = await Task.WhenAny(receiveTask, timeoutTask);
 
-					if (completedTask == receiveTask)
-					{
-						UdpReceiveResult result = receiveTask.Result;
+                    if (completedTask == receiveTask)
+                    {
+                        UdpReceiveResult result = receiveTask.Result;
 
-						string receivedSecret = Encoding.UTF8.GetString(result.Buffer);
+                        string receivedSecret = Encoding.UTF8.GetString(result.Buffer);
 
-						if (receivedSecret == secret)
-						{
-							LogInformation($"Received request from {result.RemoteEndPoint}.");
+                        if (receivedSecret == secret)
+                        {
+                            LogInformation($"Received request from {result.RemoteEndPoint}.");
 
-							await udpClient.SendAsync(OkBytes, OkBytes.Length, result.RemoteEndPoint);
-						}
-						else
-						{
-							LogWarning($"Received invalid request from {result.RemoteEndPoint}.");
-						}
-					}
-					else
-					{
-						LogInformation("Timed out. Retrying...");
+                            // Include server name in the response
+                            string serverResponse = $"{LoggedUser.Username}";
+                            byte[] responseBytes = Encoding.UTF8.GetBytes(serverResponse);
 
-						udpClient.Close();
+                            await udpClient.SendAsync(responseBytes, responseBytes.Length, result.RemoteEndPoint);
+                        }
+                        else
+                        {
+                            LogWarning($"Received invalid request from {result.RemoteEndPoint}.");
+                        }
+                    }
+                    else
+                    {
+                        LogInformation("Timed out. Retrying...");
 
-						udpClient = null;
-					}
-				}
+                        udpClient.Close();
 
-				LogInformation("Stopped advertising server.");
-			}
-			catch (Exception exception)
-			{
-				Debug.LogException(exception, this);
-			}
-			finally
-			{
-				IsAdvertising = false;
-				
-				LogInformation("Closing UDP client...");
+                        udpClient = null;
+                    }
+                }
 
-				udpClient?.Close();
-			}
-		}
+                LogInformation("Stopped advertising server.");
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+            }
+            finally
+            {
+                IsAdvertising = false;
 
-		/// <summary>
-		/// Searches for servers on the local network.
-		/// </summary>
-		/// <param name="cancellationToken">Used to cancel searching.</param>
-		private async Task SearchForServersAsync(CancellationToken cancellationToken)
-		{
-			UdpClient udpClient = null;
+                LogInformation("Closing UDP client...");
 
-			try
-			{
-				LogInformation("Started searching for servers.");
+                udpClient?.Close();
+            }
+        }
 
-				IsSearching = true;
 
-				IPEndPoint broadcastEndPoint = new IPEndPoint(IPAddress.Broadcast, port);
+        /// <summary>
+        /// Searches for servers on the local network.
+        /// </summary>
+        /// <param name="cancellationToken">Used to cancel searching.</param>
+        private async Task SearchForServersAsync(CancellationToken cancellationToken)
+        {
+            UdpClient udpClient = null;
 
-				while (!cancellationToken.IsCancellationRequested)
-				{
-					if (udpClient == null) udpClient = new UdpClient();
+            try
+            {
+                LogInformation("Started searching for servers.");
 
-					LogInformation("Sending request...");
+                IsSearching = true;
 
-					await udpClient.SendAsync(_secretBytes, _secretBytes.Length, broadcastEndPoint);
+                IPEndPoint broadcastEndPoint = new IPEndPoint(IPAddress.Broadcast, port);
 
-					LogInformation("Waiting for response...");
+                while (!cancellationToken.IsCancellationRequested)
+                {
+                    if (udpClient == null) udpClient = new UdpClient();
 
-					Task<UdpReceiveResult> receiveTask = udpClient.ReceiveAsync();
+                    LogInformation("Sending request...");
 
-					Task timeoutTask = Task.Delay(TimeSpan.FromSeconds(SearchTimeout), cancellationToken);
+                    await udpClient.SendAsync(_secretBytes, _secretBytes.Length, broadcastEndPoint);
 
-					Task completedTask = await Task.WhenAny(receiveTask, timeoutTask);
+                    LogInformation("Waiting for response...");
 
-					if (completedTask == receiveTask)
-					{
-						UdpReceiveResult result = receiveTask.Result;
+                    Task<UdpReceiveResult> receiveTask = udpClient.ReceiveAsync();
 
-						if (result.Buffer.Length == 1 && result.Buffer[0] == 1)
-						{
-							LogInformation($"Received response from {result.RemoteEndPoint}.");
+                    Task timeoutTask = Task.Delay(TimeSpan.FromSeconds(SearchTimeout), cancellationToken);
 
-							_mainThreadSynchronizationContext.Post(delegate { ServerFoundCallback?.Invoke(result.RemoteEndPoint); }, null);
-						}
-						else
-						{
-							LogWarning($"Received invalid response from {result.RemoteEndPoint}.");
-						}
-					}
-					else
-					{
-						LogInformation("Timed out. Retrying...");
+                    Task completedTask = await Task.WhenAny(receiveTask, timeoutTask);
 
-						udpClient.Close();
+                    if (completedTask == receiveTask)
+                    {
+                        UdpReceiveResult result = receiveTask.Result;
 
-						udpClient = null;
-					}
-				}
+                        // Read the server's response (name) from the result buffer
+                        string serverName = Encoding.UTF8.GetString(result.Buffer);
 
-				LogInformation("Stopped searching for servers.");
-			}
-			catch (SocketException socketException)
-			{
-				if (socketException.SocketErrorCode == SocketError.AddressAlreadyInUse)
-				{
-					LogError($"Unable to search for servers. Port {port} is already in use.");
-				}
-				else
-				{
-					Debug.LogException(socketException, this);
-				}
-			}
-			catch (Exception exception)
-			{
-				Debug.LogException(exception, this);
-			}
-			finally
-			{
-				IsSearching = false;
+                        if (!string.IsNullOrEmpty(serverName))
+                        {
+                            LogInformation($"Received response from {result.RemoteEndPoint}, Server Name: {serverName}.");
 
-				udpClient?.Close();
-			}
-		}
+                            // Pass the server name and endpoint to the callback
+                            _mainThreadSynchronizationContext.Post(delegate { ServerFoundCallback?.Invoke(result.RemoteEndPoint, serverName); }, null);
+                        }
+                        else
+                        {
+                            LogWarning($"Received invalid response from {result.RemoteEndPoint}.");
+                        }
+                    }
+                    else
+                    {
+                        LogInformation("Timed out. Retrying...");
 
-		/// <summary>
-		/// Logs a message if the NetworkManager can log.
-		/// </summary>
-		/// <param name="message">Message to log.</param>
-		private void LogInformation(string message)
+                        udpClient.Close();
+
+                        udpClient = null;
+                    }
+                }
+
+                LogInformation("Stopped searching for servers.");
+            }
+            catch (SocketException socketException)
+            {
+                if (socketException.SocketErrorCode == SocketError.AddressAlreadyInUse)
+                {
+                    LogError($"Unable to search for servers. Port {port} is already in use.");
+                }
+                else
+                {
+                    Debug.LogException(socketException, this);
+                }
+            }
+            catch (Exception exception)
+            {
+                Debug.LogException(exception, this);
+            }
+            finally
+            {
+                IsSearching = false;
+
+                udpClient?.Close();
+            }
+        }
+
+        /// <summary>
+        /// Logs a message if the NetworkManager can log.
+        /// </summary>
+        /// <param name="message">Message to log.</param>
+        private void LogInformation(string message)
 		{
 			if (_networkManager.CanLog(LoggingType.Common)) Debug.Log($"[{nameof(NetworkDiscovery)}] {message}", this);
 		}

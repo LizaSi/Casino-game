@@ -2,11 +2,14 @@ using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using UnityEngine;
-using Firebase.Extensions;
 using UnityEngine.UI;
 using TMPro;
 using UnityEngine.SceneManagement;
-using Unity.Services.Authentication.PlayerAccounts;
+using PlayerData;
+
+//using Unity.Services.Authentication.PlayerAccounts;
+#if !UNITY_WEBGL
+using Firebase.Extensions;
 using Firebase.Auth;
 using Firebase.Database;
 using UnityEngine.UIElements;
@@ -15,10 +18,12 @@ using UMA.CharacterSystem;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Collections;
 //using UnityEditor.MemoryProfiler;
+#endif
 
 
 public class Login : MonoBehaviour
 {
+    #if !UNITY_WEBGL
     protected Firebase.Auth.FirebaseAuth auth;
     protected Firebase.Auth.FirebaseAuth otherAuth;
     private bool signInAndFetchProfile = false;
@@ -54,20 +59,23 @@ public class Login : MonoBehaviour
 
 
     Firebase.DependencyStatus dependencyStatus = Firebase.DependencyStatus.UnavailableOther;
-    protected Dictionary<string, Firebase.Auth.FirebaseUser> userByAuth =
-  new Dictionary<string, Firebase.Auth.FirebaseUser>();
-
+    protected Dictionary<string, Firebase.Auth.FirebaseUser> userByAuth = new();
     private Firebase.AppOptions otherAuthOptions = new Firebase.AppOptions
     {
         ApiKey = "",
         AppId = "",
         ProjectId = ""
     };
+    #endif
+
+    private bool signInAndFetchProfile = false;
+    protected string displayName = "";
+    private bool fetchingToken = false;
+    private string m_UserName;
+ //   private DatabaseReference databaseReference;
 
     [SerializeField]
     TMP_InputField m_UsernameText;
-    [SerializeField]
-    TMP_InputField m_PasswordText;
     [SerializeField]
     Text m_Label;
     [SerializeField]
@@ -76,9 +84,13 @@ public class Login : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        m_UsernameText.onEndEdit.AddListener(delegate { OnEndEditUsername(); });
-
-        Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task => {
+        if (Application.platform == RuntimePlatform.WebGLPlayer)
+        {
+            return;
+        }
+        #if !UNITY_WEBGL
+        Firebase.FirebaseApp.CheckAndFixDependenciesAsync().ContinueWithOnMainThread(task =>
+        {
             dependencyStatus = task.Result;
             if (dependencyStatus == Firebase.DependencyStatus.Available)
             {
@@ -92,121 +104,6 @@ public class Login : MonoBehaviour
         });
         //GenerateANewAvatar();
     }
-
-    private void OnEndEditUsername()
-    {
-        //  m_PasswordText.Select();
-    }
-
-    protected void InitializeFirebase()
-    {
-        //  DebugLog("Setting up Firebase Auth");
-        auth = FirebaseAuth.DefaultInstance;
-        auth.StateChanged += AuthStateChanged;
-        auth.IdTokenChanged += IdTokenChanged;
-     //   databaseReference = FirebaseDatabase.DefaultInstance.RootReference;
-        // Specify valid options to construct a secondary authentication object.
-        if (otherAuthOptions != null &&
-            !(string.IsNullOrEmpty(otherAuthOptions.ApiKey) ||
-              string.IsNullOrEmpty(otherAuthOptions.AppId) ||
-              string.IsNullOrEmpty(otherAuthOptions.ProjectId)))
-        {
-            try
-            {
-                otherAuth = FirebaseAuth.GetAuth(Firebase.FirebaseApp.Create(
-                  otherAuthOptions, "Secondary"));
-                otherAuth.StateChanged += AuthStateChanged;
-                otherAuth.IdTokenChanged += IdTokenChanged;
-            }
-            catch (Exception)
-            {
-                //  DebugLog("ERROR: Failed to initialize secondary authentication object.");
-            }
-        }
-        AuthStateChanged(this, null);
-    }
-
-    // Track ID token changes.
-    void IdTokenChanged(object sender, System.EventArgs eventArgs)
-    {
-        Firebase.Auth.FirebaseAuth senderAuth = sender as Firebase.Auth.FirebaseAuth;
-        if (senderAuth == auth && senderAuth.CurrentUser != null && !fetchingToken)
-        {
-            senderAuth.CurrentUser.TokenAsync(false);
-        }
-    }
-
-    void AuthStateChanged(object sender, EventArgs eventArgs)
-    {
-        Firebase.Auth.FirebaseAuth senderAuth = sender as Firebase.Auth.FirebaseAuth;
-        Firebase.Auth.FirebaseUser user = null;
-        if (senderAuth != null) userByAuth.TryGetValue(senderAuth.App.Name, out user);
-        if (senderAuth == auth && senderAuth.CurrentUser != user)
-        {
-            bool signedIn = user != senderAuth.CurrentUser && senderAuth.CurrentUser != null;
-            if (!signedIn && user != null)
-            {
-                // DebugLog("Signed out " + user.UserId);
-            }
-            user = senderAuth.CurrentUser;
-            userByAuth[senderAuth.App.Name] = user;
-            if (signedIn)
-            {
-                //  DebugLog("AuthStateChanged Signed in " + user.UserId);
-                displayName = user.DisplayName ?? "";
-                DisplayDetailedUserInfo(user, 1);
-            }
-        }
-    }
-
-    // Display a more detailed view of a FirebaseUser.
-    protected void DisplayDetailedUserInfo(Firebase.Auth.FirebaseUser user, int indentLevel)
-    {
-        string indent = new String(' ', indentLevel * 2);
-        DisplayUserInfo(user, indentLevel);
-        /* DebugLog(String.Format("{0}Anonymous: {1}", indent, user.IsAnonymous));
-         DebugLog(String.Format("{0}Email Verified: {1}", indent, user.IsEmailVerified));
-         DebugLog(String.Format("{0}Phone Number: {1}", indent, user.PhoneNumber));*/
-        var providerDataList = new List<Firebase.Auth.IUserInfo>(user.ProviderData);
-        var numberOfProviders = providerDataList.Count;
-        if (numberOfProviders > 0)
-        {
-            for (int i = 0; i < numberOfProviders; ++i)
-            {
-                //  DebugLog(String.Format("{0}Provider Data: {1}", indent, i));
-                DisplayUserInfo(providerDataList[i], indentLevel + 2);
-            }
-        }
-    }
-
-    protected void DisplayUserInfo(Firebase.Auth.IUserInfo userInfo, int indentLevel)
-    {
-        string indent = new String(' ', indentLevel * 2);
-        var userProperties = new Dictionary<string, string> {
-        {"Display Name", userInfo.DisplayName},
-        {"Email", userInfo.Email},
-        {"Photo URL", userInfo.PhotoUrl != null ? userInfo.PhotoUrl.ToString() : null},
-        {"Provider ID", userInfo.ProviderId},
-        {"User ID", userInfo.UserId}
-      };
-        foreach (var property in userProperties)
-        {
-            if (!String.IsNullOrEmpty(property.Value))
-            {
-                //  DebugLog(String.Format("{0}{1}: {2}", indent, property.Key, property.Value));
-            }
-        }
-    }
-
-    public void SignUp_ButtonClick()
-    {
-        SceneManager.LoadScene("RoomSelection");
-        //   LoggedUser.SetUser(m_UserName, "");
-        /*if (m_UserName != null)
-            signInFishnetScript.HandleLogin(m_UserName, "");*/
-        // signInFishnet.HandleLogin(m_UserName,"");
-    }
-
     public async void Login_ButtonClick()
     {
         await SigninWithEmailAsync();
@@ -221,23 +118,37 @@ public class Login : MonoBehaviour
         else
             email = m_UsernameText.text;
 
-        if (m_PasswordText == null || string.IsNullOrEmpty(m_PasswordText.text))
-            password = "123456";
-        else
-            password = m_PasswordText.text;
+        password = "123456";
 
+#if UNITY_WEBGL
+        LoginWeb loginWeb = GetComponent<LoginWeb>();
+        loginWeb.SignIn(email);
+#else
         if (signInAndFetchProfile)
         {
-            await auth.SignInAndRetrieveDataWithCredentialAsync(
-              EmailAuthProvider.GetCredential(email, password)).ContinueWithOnMainThread(
-                HandleSignInWithAuthResult);
+            try
+            {
+                await auth.SignInAndRetrieveDataWithCredentialAsync(
+                              EmailAuthProvider.GetCredential(email, password)).ContinueWithOnMainThread(HandleSignInWithAuthResult);
+            }
+            catch (Exception e)
+            {
+                m_Label.text = "Login error " + e.Message;
+            }
         }
         else
         {
-            m_Label.text = "Connecting...";
-            await auth.SignInWithEmailAndPasswordAsync(email, password)
-            .ContinueWithOnMainThread(HandleSignInWithAuthResult);
+            try
+            {
+                await auth.SignInWithEmailAndPasswordAsync(email, password)
+                    .ContinueWithOnMainThread(HandleSignInWithAuthResult);
+            }
+            catch (Exception e)
+            {
+                m_Label.text = "Error login " + e.Message;
+            }
         }
+#endif
     }
 
     /*
@@ -311,6 +222,104 @@ public class Login : MonoBehaviour
     }
 
 
+    protected bool LogTaskCompletion(Task task, string operation)
+    {
+        bool complete = false;
+        if (task.IsCanceled)
+        {
+            m_Label.text = operation + " canceled.";
+            //   DebugLog(operation + " canceled.");
+        }
+        else if (task.IsFaulted)
+        {
+            m_Label.text = operation + " encounted an error.";
+            // DebugLog(operation + " encounted an error.");
+            foreach (Exception exception in task.Exception.Flatten().InnerExceptions)
+            {
+                string authErrorCode = "";
+                if (exception is Firebase.FirebaseException firebaseEx)
+                {
+                    authErrorCode = String.Format("AuthError.{0}: ",
+                      ((Firebase.Auth.AuthError)firebaseEx.ErrorCode).ToString());
+                }
+                m_Label.text = authErrorCode + exception.ToString();
+                Debug.LogError(authErrorCode + exception.ToString());
+            }
+        }
+        else if (task.IsCompleted)
+        {
+            m_Label.text = operation + " completed successfuly";
+            complete = true;
+        }
+        else
+        {
+            Debug.LogWarning($"{operation} {task.Status} {task.AsyncState}");
+        }
+        return complete;
+    }
+
+
+#if !UNITY_WEBGL
+    protected void InitializeFirebase()
+    {
+        auth = FirebaseAuth.DefaultInstance;
+        auth.StateChanged += AuthStateChanged;
+        auth.IdTokenChanged += IdTokenChanged;
+     //   databaseReference = FirebaseDatabase.DefaultInstance.RootReference;
+
+        // Specify valid options to construct a secondary authentication object.
+        if (otherAuthOptions != null &&
+            !(string.IsNullOrEmpty(otherAuthOptions.ApiKey) ||
+              string.IsNullOrEmpty(otherAuthOptions.AppId) ||
+              string.IsNullOrEmpty(otherAuthOptions.ProjectId)))
+        {
+            try
+            {
+                otherAuth = FirebaseAuth.GetAuth(Firebase.FirebaseApp.Create(
+                  otherAuthOptions, "Secondary"));
+                otherAuth.StateChanged += AuthStateChanged;
+                otherAuth.IdTokenChanged += IdTokenChanged;
+            }
+            catch (Exception)
+            {
+                  Debug.LogWarning("ERROR: Failed to initialize secondary authentication object.");
+            }
+        }
+        AuthStateChanged(this, null);
+    } 
+    
+
+    // Track ID token changes.
+    void IdTokenChanged(object sender, System.EventArgs eventArgs)
+    {
+        Firebase.Auth.FirebaseAuth senderAuth = sender as Firebase.Auth.FirebaseAuth;
+        if (senderAuth == auth && senderAuth.CurrentUser != null && !fetchingToken)
+        {
+            senderAuth.CurrentUser.TokenAsync(false);
+        }
+    }
+    
+
+    void AuthStateChanged(object sender, EventArgs eventArgs)
+    {
+        Firebase.Auth.FirebaseAuth senderAuth = sender as Firebase.Auth.FirebaseAuth;
+        Firebase.Auth.FirebaseUser user = null;
+        if (senderAuth != null) userByAuth.TryGetValue(senderAuth.App.Name, out user);
+        if (senderAuth == auth && senderAuth.CurrentUser != user)
+        {
+            bool signedIn = user != senderAuth.CurrentUser && senderAuth.CurrentUser != null;
+
+            user = senderAuth.CurrentUser;
+            userByAuth[senderAuth.App.Name] = user;
+            if (signedIn)
+            {
+                //  DebugLog("AuthStateChanged Signed in " + user.UserId);
+                displayName = user.DisplayName ?? "";
+               // DisplayDetailedUserInfo(user, 1);
+            }
+        }
+    }  
+    
     private async Task<int> FetchUserCoinsAsync(string username)
     {
         DatabaseReference userRef = FirebaseDatabase.DefaultInstance.GetReference("users").Child(username).Child("coins");
@@ -409,37 +418,7 @@ public class Login : MonoBehaviour
 
     // Log the result of the specified task, returning true if the task
     // completed successfully, false otherwise.
-    protected bool LogTaskCompletion(Task task, string operation)
-    {
-        bool complete = false;
-        if (task.IsCanceled)
-        {
-            m_Label.text = operation + " canceled.";
-            //   DebugLog(operation + " canceled.");
-        }
-        else if (task.IsFaulted)
-        {
-            m_Label.text = operation + " encounted an error.";
-            // DebugLog(operation + " encounted an error.");
-            foreach (Exception exception in task.Exception.Flatten().InnerExceptions)
-            {
-                string authErrorCode = "";
-                if (exception is Firebase.FirebaseException firebaseEx)
-                {
-                    authErrorCode = String.Format("AuthError.{0}: ",
-                      ((Firebase.Auth.AuthError)firebaseEx.ErrorCode).ToString());
-                }
-                m_Label.text = authErrorCode + exception.ToString();
-                //     DebugLog(authErrorCode + exception.ToString());
-            }
-        }
-        else if (task.IsCompleted)
-        {
-            //  DebugLog(operation + " completed");
-            complete = true;
-        }
-        return complete;
-    }
+    
 
     private Task createUser()
     {
@@ -454,7 +433,7 @@ public class Login : MonoBehaviour
               if (LogTaskCompletion(task, "User Creation"))
               {
                   var user = task.Result.User;
-                  DisplayDetailedUserInfo(user, 1);
+              //    DisplayDetailedUserInfo(user, 1);
 
                   if (user != null)
                   {
@@ -488,6 +467,7 @@ public class Login : MonoBehaviour
               return task;
           }).Unwrap();
     }
+#endif
 
     // Update is called once per frame
     void Update()
@@ -587,4 +567,3 @@ public class Login : MonoBehaviour
     
     
 }
-

@@ -4,7 +4,7 @@ using FishNet.Object.Synchronizing;
 using FishNet.Transporting;
 using System.Text;
 using UnityEngine;
-using Unity.Services.Authentication.PlayerAccounts;
+using PlayerData;
 using FishNet.Managing.Scened;
 using FishNet;
 using UnityEngine.EventSystems;
@@ -27,6 +27,17 @@ public class MemberList : NetworkBehaviour
         SetName(LoggedUser.Username);
     }
 
+    public static void SetLobbyList(SyncDictionary<NetworkConnection, string> playerNamesDict)
+    {
+        StringBuilder sb = new();
+        foreach (var user in playerNamesDict)
+        {
+            _instance._playerNames[user.Key] = user.Value;
+        }
+        UpdateLobbyList();
+    }
+
+
     public static void UpdateLobbyList()
     {
         StringBuilder sb = new();
@@ -35,20 +46,6 @@ public class MemberList : NetworkBehaviour
             sb.AppendLine(username);
         }
         _instance.displayText.text = sb.ToString();
-
-        /* GameObject canvasGame = GameObject.Find("CanvasGame(Clone)");
-         if (canvasGame != null)
-         {
-             if (canvasGame.TryGetComponent(out NameDisplayer nameDisplayerScript))
-             {
-                 if (toSet)
-                     nameDisplayerScript.SetName();
-                 else
-                 {
-                     nameDisplayerScript.RemoveText();
-                 }
-             }
-         }*/
     }
 
     public static string GetMembers(NetworkConnection conn)
@@ -130,7 +127,7 @@ public class MemberList : NetworkBehaviour
             if (canvasGame.TryGetComponent<NetworkObject>(out var nob))
             {
                // UpdateLobbyList(false);
-                LoadScene2(nob, "Lobby");
+                LoadSceneAllClientsAndFuture(nob, "Lobby");
                 UnloadScene("CreateRoom");
             }
         }
@@ -154,7 +151,7 @@ public class MemberList : NetworkBehaviour
            // UpdateLobbyList(false); 
             if (canvasGame.TryGetComponent<NetworkObject>(out var nob))
             {
-                LoadScene2(nob, "PokerRoom");
+                LoadSceneAllClientsAndFuture(nob, "PokerRoom");
                 UnloadScene("CreateRoom");
             }
         }
@@ -164,7 +161,7 @@ public class MemberList : NetworkBehaviour
         }
     }
 
-    private void LoadScene2(NetworkObject nob, string sceneName)
+    private void LoadSceneAllClientsAndFuture(NetworkObject nob, string sceneName)
     {
         if (!nob.Owner.IsActive)
         {
@@ -192,6 +189,7 @@ public class MemberList : NetworkBehaviour
         if(arg2.ConnectionState != RemoteConnectionState.Started)
         {
             _playerNames.Remove(arg1);
+            UpdateLobbyList();
         }
     }
 
