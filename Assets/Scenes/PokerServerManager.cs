@@ -406,7 +406,6 @@ public class PokerServerManager : NetworkBehaviour
     {
         return Instance._playerNames;
     }
-    */
 
     [Server]
     private int GenerateNewPlayerIndex()
