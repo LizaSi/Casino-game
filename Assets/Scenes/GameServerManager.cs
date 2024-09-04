@@ -10,11 +10,13 @@ using FishNet;
 using System.Threading.Tasks;
 using UnityEngine;
 using Firebase.Database;
+using UnityEngine.UI;
 
 public class GameServerManager : NetworkBehaviour
 {
     private Deck _deck;
     private int playerIndex = 0;
+    [SerializeField] Button ExitButton;
 
     public static event Action OnInitialized;
     public static event Action OnTurnPass;
@@ -42,6 +44,10 @@ public class GameServerManager : NetworkBehaviour
             _instance = this;
         }
         _instance._playerHands.OnChange += playerHands_OnChange;
+        if (InstanceFinder.IsServer)
+        {
+            ExitButton.gameObject.SetActive(true);
+        }
       //  _instance._playerIsMyTurn.OnChange += PlayerIsMyTurn_OnChange;
         NewRoundInit();
         OnInitialized?.Invoke();
