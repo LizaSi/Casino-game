@@ -13,9 +13,11 @@ public class CardsDisplayer : NetworkBehaviour
 {
     [SerializeField] public GameObject ClientComponentsParent;
     [SerializeField] public Button newRoundButton;
+    [SerializeField] private AudioClip WinSound;
 
     public TMP_Text winText;
 
+    private AudioSource m_audioSource;
     private bool dealerChecked = false;
     private int cardIndex = 0;
     private List<string> spawnedCardsNames = new();
@@ -207,6 +209,7 @@ public class CardsDisplayer : NetworkBehaviour
         {
             case GameResult.Win:
                 winText.text = "You win!";
+                SoundManager.Instance.PlaySound(SoundName.Win);
                 break;
             case GameResult.Lose:
                 winText.text = "You lost...";

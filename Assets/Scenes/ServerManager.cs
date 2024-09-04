@@ -188,7 +188,7 @@ public class ServerManager : MonoBehaviour
 
         yield return new WaitForSeconds(2f); //Maybe not needed, to let the event system time to be deleted
 
-        hostsText.text = "Connected!";
+        hostsText.text = "Connected! Look for your name on the main screen";
         if (!LoadScene("CreateRoom"))
         {
             yield return new WaitForSeconds(3f);
