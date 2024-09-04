@@ -59,9 +59,9 @@ public class CardsDisplayer : NetworkBehaviour
         if (base.Owner.IsLocalClient && !InstanceFinder.IsServer)
         {
             //PlayerDisplayer.SetCameraBlackJack(GetPlayerIndex(base.Owner) - 1); // -1 cuz index 1 is the host
-            PlayerDisplayer.SetCameraBlackJack(GetPlayerIndex(base.Owner) - 1, LoggedUser.AvatarCompressedString); // -1 cuz index 1 is the host
             StartCoroutine(ClientTurnInDelay());
         }
+        PlayerDisplayer.SetCameraBlackJack(GetPlayerIndex(base.Owner) - 1, LoggedUser.AvatarCompressedString); // -1 cuz index 1 is the host
     }
 
     private void NewRoundInit()

@@ -1,3 +1,5 @@
+using FishNet;
+using FishNet.Demo.AdditiveScenes;
 using UMA.CharacterSystem;
 using UnityEngine;
 
@@ -9,6 +11,14 @@ public class PlayerDisplayer : MonoBehaviour
         GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
         //////////////////////////
         DynamicCharacterAvatar avatar = instantiatedPlayer.GetComponentInChildren<DynamicCharacterAvatar>();
+
+
+        if (InstanceFinder.IsServer)
+        {
+            Transform playerViewCameraTransform = instantiatedPlayer.transform.Find("PlayerViewCamera");
+            playerViewCameraTransform.gameObject.SetActive(false);
+        }
+
 
         if (avatar != null)
         {
@@ -62,6 +72,12 @@ public class PlayerDisplayer : MonoBehaviour
         GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
         //////////////////////////
         DynamicCharacterAvatar avatar = instantiatedPlayer.GetComponentInChildren<DynamicCharacterAvatar>();
+
+        if (InstanceFinder.IsServer)
+        {
+            Transform playerViewCameraTransform = instantiatedPlayer.transform.Find("PlayerViewCamera");
+            playerViewCameraTransform.gameObject.SetActive(false);
+        }
 
         if (avatar != null)
         {
