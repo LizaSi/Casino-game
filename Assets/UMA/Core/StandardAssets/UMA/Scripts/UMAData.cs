@@ -101,8 +101,8 @@ namespace UMA
 			// continue.
 			if (umaRoot != null)
 			{
-                SaveBonesRecursively(umaRoot.transform, holder.transform, umaGenerator.ignoreTag, umaGenerator.keepTag);
-            }
+				SaveBonesRecursively(umaRoot.transform, holder.transform, umaGenerator.ignoreTag, umaGenerator.keepTag);
+			}
         }
 
         public void SaveBonesRecursively(Transform bone, Transform holder, string ignoreTag, string keepTag)
@@ -113,7 +113,7 @@ namespace UMA
             {
                 if (bone.parent != null)
                 {
-                    AddSavedItem(bone, bone.CompareTag(keepTag));
+                    AddSavedItem(bone,bone.CompareTag(keepTag));
                     bone.SetParent(holder, false);
                 }
             }
@@ -128,7 +128,7 @@ namespace UMA
                 for (int i = 0; i < childlist.Count; i++)
                 {
                     Transform child = childlist[i];
-					SaveBonesRecursively(child, holder, umaGenerator.ignoreTag, umaGenerator.keepTag);
+                    SaveBonesRecursively(child, holder, umaGenerator.ignoreTag, umaGenerator.keepTag);
                 }
             }
         }

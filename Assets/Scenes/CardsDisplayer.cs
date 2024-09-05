@@ -429,7 +429,8 @@ public class CardsDisplayer : NetworkBehaviour
 
             string cardDir = "Cards/" + cardName;
             GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir));
-            instantiatedCard.transform.localScale = new Vector3(2.2816f, 2.2816f, 2.2816f);
+            //instantiatedCard.transform.localScale = new Vector3(2.2816f, 2.2816f, 2.2816f);
+            instantiatedCard.transform.localScale = new Vector3(3f, 3f, 3f);
             instantiatedCard.transform.rotation = Quaternion.identity;
             //instantiatedCard.transform.localPosition = new Vector3((cardIndex * cardSpacing)+537, 288, 15);
             //instantiatedCard.transform.rotation = Quaternion.Euler(0f, 181f, 0f);

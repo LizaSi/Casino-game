@@ -210,26 +210,14 @@ namespace UMA.CharacterSystem.Examples
 			var raceDropdownOptionsArray = Avatar.context.GetAllRacesBase();
 			raceDropdownOptions = new List<string>();
 			//add the 'NoneSet'
-			//raceDropdownOptions.Add("None Set");
+			raceDropdownOptions.Add("None Set");
             for (int i = 0; i < raceDropdownOptionsArray.Length; i++)
 			{
-				///
-				if(i == 3 || i == 8)
-				///
-				{
-					RaceData r = raceDropdownOptionsArray[i];
-					if (r.raceName != "PlaceholderRace" && r.raceName != "RaceDataPlaceholder")
-					{
-                    	raceDropdownOptions.Add(r.raceName);
-                	}
-				}
-				/*
                 RaceData r = raceDropdownOptionsArray[i];
                 if (r.raceName != "PlaceholderRace" && r.raceName != "RaceDataPlaceholder")
                 {
                     raceDropdownOptions.Add(r.raceName);
                 }
-				*/
             }
 			for (int i = 0; i < raceDropdownOptions.Count; i++)
 			{
