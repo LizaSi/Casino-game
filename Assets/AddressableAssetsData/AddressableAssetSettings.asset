@@ -1,0 +1,252 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 468a46d0ae32c3544b7d98094e6448a9, type: 3}
+  m_Name: AddressableAssetSettings
+  m_EditorClassIdentifier: 
+  m_DefaultGroup: 6e5a4759047e84dc2b4ceb42e917ac4f
+  m_CachedHash:
+    serializedVersion: 2
+    Hash: 00000000000000000000000000000000
+  m_OptimizeCatalogSize: 0
+  m_BuildRemoteCatalog: 0
+  m_BundleLocalCatalog: 0
+  m_CatalogRequestsTimeout: 0
+  m_DisableCatalogUpdateOnStart: 0
+  m_IgnoreUnsupportedFilesInBuild: 0
+  m_UniqueBundleIds: 0
+  m_NonRecursiveBuilding: 1
+  m_CCDEnabled: 0
+  m_maxConcurrentWebRequests: 500
+  m_ContiguousBundles: 1
+  m_StripUnityVersionFromBundleBuild: 0
+  m_DisableVisibleSubAssetRepresentations: 0
+  m_ShaderBundleNaming: 0
+  m_ShaderBundleCustomNaming: 
+  m_MonoScriptBundleNaming: 0
+  m_MonoScriptBundleCustomNaming: 
+  m_RemoteCatalogBuildPath:
+    m_Id: 
+  m_RemoteCatalogLoadPath:
+    m_Id: 
+  m_ContentStateBuildPath: 
+  m_BuildAddressablesWithPlayerBuild: 0
+  m_overridePlayerVersion: 
+  m_GroupAssets:
+  - {fileID: 11400000, guid: 473a39878772445c89e3aba75eabdc85, type: 2}
+  - {fileID: 11400000, guid: 69e0e07781280440b9599bdb8031daf4, type: 2}
+  - {fileID: 11400000, guid: 8346c79be16ff4ae7be9e66cc67c05e5, type: 2}
+  - {fileID: 11400000, guid: 4d4a713686a0f418d9c1c246eaf1dfeb, type: 2}
+  - {fileID: 11400000, guid: 2b18a924dfae2434eb63e53385b694b8, type: 2}
+  - {fileID: 11400000, guid: 94432e42b0deb4263850b42a8a004546, type: 2}
+  - {fileID: 11400000, guid: 62ca4339c5f8344b08b84ac95a87cff8, type: 2}
+  - {fileID: 11400000, guid: 1660f81d38969459bbde80dd0a4ba675, type: 2}
+  - {fileID: 11400000, guid: a3d1e7aa2b35c40baa83b187aa18f4e1, type: 2}
+  - {fileID: 11400000, guid: d1c6ecc72fa6c4803b8300d98e04016d, type: 2}
+  - {fileID: 11400000, guid: 7c68cff0252dd46f0b21757216d82a9c, type: 2}
+  - {fileID: 11400000, guid: 715a70435842244e8aafc2a2a353888e, type: 2}
+  - {fileID: 11400000, guid: cc61996bae57f493fbdb97a82e711743, type: 2}
+  - {fileID: 11400000, guid: f27642a0ef39e4f95a8f00ffd9cecb21, type: 2}
+  m_BuildSettings:
+    m_CompileScriptsInVirtualMode: 0
+    m_CleanupStreamingAssetsAfterBuilds: 1
+    m_LogResourceManagerExceptions: 1
+    m_BundleBuildPath: Temp/com.unity.addressables/AssetBundles
+  m_ProfileSettings:
+    m_Profiles:
+    - m_InheritedParent: 
+      m_Id: 0c4525d767d2e4d6dbc293b1b573d00c
+      m_ProfileName: Default
+      m_Values:
+      - m_Id: 6b8848d49575d4d8684e5ade06dd18c4
+        m_Value: '[UnityEditor.EditorUserBuildSettings.activeBuildTarget]'
+      - m_Id: aaa47508351b645b98066c6ef5ce345d
+        m_Value: '[UnityEngine.AddressableAssets.Addressables.BuildPath]/[BuildTarget]'
+      - m_Id: ecbe05f2d688547ee93bf0b4f7ac4d28
+        m_Value: '{UnityEngine.AddressableAssets.Addressables.RuntimePath}/[BuildTarget]'
+      - m_Id: c642304addec9429a8b4277aa487a89c
+        m_Value: ServerData/[BuildTarget]
+      - m_Id: 9efb988ffaf0c4a4093a7a23e6a190f7
+        m_Value: http://[PrivateIpAddress]:[HostingServicePort]
+    m_ProfileEntryNames:
+    - m_Id: 6b8848d49575d4d8684e5ade06dd18c4
+      m_Name: BuildTarget
+      m_InlineUsage: 0
+    - m_Id: aaa47508351b645b98066c6ef5ce345d
+      m_Name: Local.BuildPath
+      m_InlineUsage: 0
+    - m_Id: ecbe05f2d688547ee93bf0b4f7ac4d28
+      m_Name: Local.LoadPath
+      m_InlineUsage: 0
+    - m_Id: c642304addec9429a8b4277aa487a89c
+      m_Name: Remote.BuildPath
+      m_InlineUsage: 0
+    - m_Id: 9efb988ffaf0c4a4093a7a23e6a190f7
+      m_Name: Remote.LoadPath
+      m_InlineUsage: 0
+    m_ProfileVersion: 1
+  m_LabelTable:
+    m_LabelNames:
+    - default
+    - UMA_Base
+    - UMA_Default
+    - FemaleTallShoes_Black
+    - FemaleTallShoes_Turquoise
+    - FemaleTallShoes_White
+    - TallShoes_Black_Recipe
+    - Puck
+    - Harold
+    - UMA_Recipes
+    - TallShoes_Recipe
+    - FemaleLongHair_Recipe
+    - FemalePonyTail_Recipe
+    - BoneyTail_Recipe
+    - woman-haircard 4_Recipe
+    - FemaleSportPants_Recipe
+    - FemaleTankTop_Recipe
+    - ShavedHead
+    - MaleHairSlick01_Recipe
+    - MaleShortHair_Recipe
+    - MilCut
+    - MaleBeard1
+    - MaleBeard2
+    - MaleBeard3
+    - MaleBrow01
+    - MaleBrow02
+    - MaleFace Old
+    - MaleHair1
+    - MaleHair2
+    - MaleHair3
+    - MaleRobe Hood
+    - RobeCollection
+    - TrollHead
+    - BasicHuman Base Recipe
+    - HumanBoy Base Recipe
+    - HumanMale Base Recipe
+    - MaleAnkles_Recipe
+    - MaleHandsMid
+    - ElfMale Base Recipe
+    - HumanMaleHighPoly
+    - DNAConverterControllerExample Base Recipe
+    - Sven
+    - Troll
+    - MaleHoodie_Recipe
+    - MaleSweatPants_Recipe
+    - FemaleHandsMid
+    - Elf Female Base Race Recipe
+    - HumanFemale Base Recipe
+    - HumanFemaleHighPoly
+    - HumanGirl Base Recipe
+    - KimCardassian
+    - Shelly
+    - FemaleSwappedFace
+    - BodyHair
+    - MaleLowPolyHead
+    - MaleSmoothSkin
+    - MaleShirt1
+    - MaleShirt2
+    - MaleShirt3
+    - OverweightMale
+    - FemaleDefaultUnderwear
+    - FemaleShirt2
+    - FemaleShirt3
+    - FemaleUndies
+    - FemaleHair1
+    - FemaleHair2
+    - FemaleHair3
+    - FemalePants1
+    - FemalePants2
+    - FemaleShirt1
+    - FemaleShirt4
+    - GirlShirt1
+    - MaleBrowHR
+    - MaleBrowHR2
+    - MaleDefaultUnderwear
+    - MaleJeans 1
+    - MaleShorts1
+    - MaleShorts2
+    - CHALLENGERCOLLECTION
+    - MaleEye1
+    - MaleEye2
+    - MaleEye3
+    - MaleEye4
+    - MaleEye5
+    - MaleGloves
+    - MaleJeans
+    - MakeMeFatJeans
+    - MalePants
+    - MaleRobe Shoes
+    - MaleRobe
+    - woman-haircard 7_Recipe
+    - woman-haircard_4_tie_Recipe
+    - Bowler_NoHat_Recipe
+    - Bowler_Recipe
+    - BlendShapeRecipe
+    - AlienHeadMorph
+    - ElfEarsMorph
+    - CapsuleColliderRecipe
+    - FemaleDancer1
+    - ToonSneakers1
+    - ToonDancerCollection
+    - ToonCropTShirt1
+    - ToonHotPants1
+    - ToonCapriPants1
+    - ToonStarDancerCollection
+    - ToonHalterNeck1
+    - FemaleToonBase
+    - ToonFemaleUnderwear1
+    - ToonHair1
+    - FemaleStarDancer1
+    - ToonFancyFlats1
+    - MaleChallengerBoots
+    - MaleChallengerGloves
+    - MaleChallengerShouderPads
+    - MaleChallengerTorso
+    - WerewolfTShirt
+    - Wolfie
+    - AntennaRecipe
+    - SpoilerRecipe
+    - StripesRecipe
+    - SkyCarBaseRecipe
+    - ClothRobeRecipe
+    - PhysicsStandardRecipe
+    - ExpressionsRecipe
+    - ForearmTwistRecipe
+    - LocomotionRecipe
+    - NormalRecalculatorRecipe
+    - PhysicsHDRecipe
+    - FemaleToonBaseGuide
+    - GirlBaseGuide
+    - GirlBaseAsDNA
+    - JiggleBellyRecipe
+    - JiggleBreastsRecipe
+    - JiggleButtRecipe
+    - ToonTopsBundle
+    - New UMAWardrobeCollection
+  m_SchemaTemplates: []
+  m_GroupTemplateObjects:
+  - {fileID: 11400000, guid: aef3c0bc6cf1746d2bfb03f8d6538d9e, type: 2}
+  m_InitializationObjects: []
+  m_CertificateHandlerType:
+    m_AssemblyName: 
+    m_ClassName: 
+  m_ActivePlayerDataBuilderIndex: 3
+  m_DataBuilders:
+  - {fileID: 11400000, guid: 2e753bee510214b63b2ae6354266401e, type: 2}
+  - {fileID: 11400000, guid: 0f67a6e23722f486f93ad13fd5764893, type: 2}
+  - {fileID: 11400000, guid: 2d76284b3f45d4bb6b5d9d1c6a96eb45, type: 2}
+  - {fileID: 11400000, guid: 15fe74bfb1d34459ea0219fe82666c16, type: 2}
+  m_ActiveProfileId: 0c4525d767d2e4d6dbc293b1b573d00c
+  m_HostingServicesManager:
+    m_HostingServiceInfos: []
+    m_Settings: {fileID: 11400000}
+    m_NextInstanceId: 0
+    m_RegisteredServiceTypeRefs: []
