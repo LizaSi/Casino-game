@@ -48,9 +48,26 @@ public class GameServerManager : NetworkBehaviour
         {
             ExitButton.gameObject.SetActive(true);
         }
-      //  _instance._playerIsMyTurn.OnChange += PlayerIsMyTurn_OnChange;
         NewRoundInit();
         OnInitialized?.Invoke();
+    }
+
+    private void OnDisable()
+    {
+        _instance._playerHands.OnChange -= playerHands_OnChange;
+    }
+
+    public static void LeaveGame()
+    {
+        _instance.playerIndex = 0;
+        _instance._playerHands.Clear();
+        _instance._playerIsMyTurn.Clear();
+        _instance._playersIndexes.Clear();
+        UpdateBroadcast msg = new()
+        {
+            Leave = true
+        };
+        InstanceFinder.ServerManager.Broadcast(msg);
     }
 
 
@@ -327,6 +344,7 @@ public class GameServerManager : NetworkBehaviour
         public bool UpdateCards;
         public bool DealerTurn;
         public string NewCard;
+        public bool Leave;
     }
 
     public struct TurnPassBroadcast : IBroadcast

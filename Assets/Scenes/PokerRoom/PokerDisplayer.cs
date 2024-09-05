@@ -11,7 +11,7 @@ using static PokerServerManager;
 
 public class PokerDisplayer : NetworkBehaviour
 {
-    [SerializeField] private TMP_Text winText;
+    [SerializeField] private TMP_Text WinText;
     [SerializeField] private Button newRoundButton;
     [SerializeField] private Transform CardTransform;
     [SerializeField] private Transform TableCardTransform;
@@ -73,12 +73,12 @@ public class PokerDisplayer : NetworkBehaviour
             //PokerServerManager.NewRoundInit();
         }
         tableSpaceIndex = 0;
-        winText.text = "";
+        WinText.text = "";
         DespawnAllCards();
         newRoundButton.gameObject.SetActive(false);
         if (!InstanceFinder.IsServer)
         {
-            PokerServerManager.JoinWithName(LoggedUser.Username);
+            StartCoroutine(JoinWithNameInDelay());
             if (base.Owner.IsLocalClient)
             {
                 //////// GameLogic File
@@ -90,6 +90,12 @@ public class PokerDisplayer : NetworkBehaviour
                 //betCoinsText.text = "Gave " + givenAmount.ToString();
             }
         }
+    }
+
+    private IEnumerator JoinWithNameInDelay()
+    {
+        yield return new WaitForSeconds(1.7f);
+        PokerServerManager.JoinWithName(LoggedUser.Username);
     }
 
     private void OnTurnChange()
@@ -116,13 +122,19 @@ public class PokerDisplayer : NetworkBehaviour
             CountdownTimer.StopCountDown();
             if(msg.WinnerName == LoggedUser.Username)
             {
-                winText.text = "You win!";
+                WinText.text = "You win!";
             }
         }
         if (msg.NewRound)
         {
             DespawnAllCards();
             NewRoundInit();
+        }
+        if (msg.Leave)
+        {
+            PokerComponentsParent.SetActive(false);
+            WinText.text = "";
+            CountdownTimer.RemoveTimer();
         }
     }
 
@@ -175,7 +187,7 @@ public class PokerDisplayer : NetworkBehaviour
 
     private void ShowWinMessage(int coinsAmount)
     {
-        winText.text = $"You won {coinsAmount} coins!";
+        WinText.text = $"You won {coinsAmount} coins!";
     }
 
     void Update()
@@ -269,7 +281,7 @@ public class PokerDisplayer : NetworkBehaviour
     private IEnumerator ClientTurnInDelay()
     {
       //  handleClientTurn();
-        yield return new WaitForSeconds(0.8f);
+        yield return new WaitForSeconds(1.8f);
         handleClientTurn();
        // yield return new WaitForSeconds(1.8f);
     }

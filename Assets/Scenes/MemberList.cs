@@ -17,7 +17,6 @@ public class MemberList : NetworkBehaviour
     
     [SyncObject]
     private readonly SyncDictionary<NetworkConnection, string> _playerNames = new();
-    // Passing network con because need to disconnect a user when leave
 
     private static MemberList _instance;
 
@@ -25,6 +24,10 @@ public class MemberList : NetworkBehaviour
     {
         _instance = this;
         SetName(LoggedUser.Username);
+        if (!InstanceFinder.IsServer)
+        {
+            displayText.text = "Wait for host to start game";
+        }
     }
 
     public static void SetLobbyList(SyncDictionary<NetworkConnection, string> playerNamesDict)

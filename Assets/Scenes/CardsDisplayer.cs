@@ -11,11 +11,9 @@ using static GameServerManager;
 
 public class CardsDisplayer : NetworkBehaviour
 {
-    [SerializeField] public GameObject ClientComponentsParent;
+    [SerializeField] private GameObject ClientComponentsParent;
+    [SerializeField] private TMP_Text winText;
     [SerializeField] public Button newRoundButton;
-    [SerializeField] private AudioClip WinSound;
-
-    public TMP_Text winText;
 
     private AudioSource m_audioSource;
     private bool dealerChecked = false;
@@ -27,15 +25,13 @@ public class CardsDisplayer : NetworkBehaviour
 
 
     private void OnEnable()
-    {        
+    {
         if (GameServerManager.IsInitialized())
         {
             GameServerManager_OnInitialized();
         }
-        else
-        {
-            GameServerManager.OnInitialized += GameServerManager_OnInitialized;
-        }
+        GameServerManager.OnInitialized += GameServerManager_OnInitialized;
+
         InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
         InstanceFinder.ClientManager.RegisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
         InstanceFinder.ClientManager.RegisterBroadcast<ClientMsgBroadcast>(OnClientMsgBroadcast);
@@ -176,6 +172,19 @@ public class CardsDisplayer : NetworkBehaviour
         }
         if (msg.UpdateCards)
             UpdateCardsDisplay();
+        if (msg.Leave)
+        {
+            ClientComponentsParent.SetActive(false);
+            newRoundButton.gameObject.SetActive(false);
+            winText.text = "";
+            CountdownTimer.RemoveTimer();
+            dealerChecked = false;
+            cardIndex = 0;
+            spawnedCardsNames = new();
+            spawnedCardsServer = new();
+            dealerRevealAllCards = false;
+            waitForNextRound = false;
+        }
     }
 
     public void Check_OnClick()
@@ -273,7 +282,7 @@ public class CardsDisplayer : NetworkBehaviour
     {
         Debug.LogWarning("Server checked");
         dealerChecked = true;
-        yield return new WaitForSeconds(0.5f); // Wait for client to get up before broadcasting it. 
+        yield return new WaitForSeconds(0.9f); // Wait for client to get up before broadcasting it. 
         ClientCheck();
     }
 
@@ -286,6 +295,7 @@ public class CardsDisplayer : NetworkBehaviour
         }
         else
         {
+            Debug.LogWarning("Not your turn");
             ClientComponentsParent.SetActive(false);
         }
     }
@@ -430,7 +440,7 @@ public class CardsDisplayer : NetworkBehaviour
             string cardDir = "Cards/" + cardName;
             GameObject instantiatedCard = Instantiate(Resources.Load<GameObject>(cardDir));
             //instantiatedCard.transform.localScale = new Vector3(2.2816f, 2.2816f, 2.2816f);
-            instantiatedCard.transform.localScale = new Vector3(3f, 3f, 3f);
+            instantiatedCard.transform.localScale = new Vector3(4f, 4f, 4f);
             instantiatedCard.transform.rotation = Quaternion.identity;
             //instantiatedCard.transform.localPosition = new Vector3((cardIndex * cardSpacing)+537, 288, 15);
             //instantiatedCard.transform.rotation = Quaternion.Euler(0f, 181f, 0f);

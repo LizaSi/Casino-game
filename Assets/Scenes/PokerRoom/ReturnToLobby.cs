@@ -13,9 +13,7 @@ public class ReturnToLobby : MonoBehaviour
             if (InstanceFinder.IsServer)
             {
                 GameObject canvasGame = GameObject.Find("CanvasGame(Clone)");
-                CardsDisplayer blackJackDisplayer = canvasGame.GetComponent<CardsDisplayer>();
-                blackJackDisplayer.ClientComponentsParent.SetActive(false);
-                blackJackDisplayer.newRoundButton.gameObject.SetActive(false);
+                GameServerManager.LeaveGame();
                 NetworkObject nob = canvasGame.GetComponent<NetworkObject>();
                 LoadSceneAllClientsAndFuture(nob, "CreateRoom");
             }
@@ -23,17 +21,16 @@ public class ReturnToLobby : MonoBehaviour
             {
                 GameObject canvasGame = GameObject.Find("CanvasGame(Clone)");
                 CardsDisplayer blackJackDisplayer = canvasGame.GetComponent<CardsDisplayer>();
-                blackJackDisplayer.ClientComponentsParent.SetActive(false);
+               // blackJackDisplayer.ClientComponentsParent.SetActive(false);
                 UnityEngine.SceneManagement.SceneManager.LoadScene("RoomSelection");
             }
         }
-        else if (PokerServerManager.IsInitialized()) 
+        if (PokerServerManager.IsInitialized()) 
         {
             if (InstanceFinder.IsServer)
             {
                 GameObject canvasGame = GameObject.Find("CanvasGame(Clone)");
-                PokerDisplayer pokerDisplayer = canvasGame.GetComponent<PokerDisplayer>();
-                pokerDisplayer.PokerComponentsParent.SetActive(false);
+                PokerServerManager.LeaveGame();
                 NetworkObject nob = canvasGame.GetComponent<NetworkObject>();
                 LoadSceneAllClientsAndFuture(nob, "CreateRoom");
             }

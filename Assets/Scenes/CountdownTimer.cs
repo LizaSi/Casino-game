@@ -19,6 +19,13 @@ public class CountdownTimer : MonoBehaviour
         instance = this; 
     }
 
+    public static void RemoveTimer()
+    {
+        instance.m_countDownText.text = "";
+        instance.countdownTime = 30;
+        StopCountDown();
+    }
+
     public static void StartBlackjackCountdown(CardsDisplayer cardsDisplayer, NetworkConnection turnOwner)
     {
         if (!m_Started)

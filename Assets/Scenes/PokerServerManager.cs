@@ -70,6 +70,36 @@ public class PokerServerManager : NetworkBehaviour
         OnInitialized?.Invoke();
     }
 
+    public static void LeaveGame()
+    {
+        Instance.ClearGameData();
+        UpdateBroadcast msg = new()
+        {
+            Leave = true
+        };
+        InstanceFinder.ServerManager.Broadcast(msg);
+    }
+
+    private void ClearGameData()
+    {
+        _playerHands.Clear();
+        _playerIsMyTurn.Clear();
+        _playersIndexes.Clear();
+        _playerBets.Clear();
+        _playerNames.Clear();
+
+        _deck = null;
+        _tableCards.Clear();
+        _pot = 0;
+        _currentBet = 0;
+        playerIndex = 0;
+        checkCounter = 0;
+        flopRevealed = false;
+        cardsOnBoardCounter = 0;
+
+        UpdatePotValueText();
+    }
+
     private void playerTurn_OnChange(SyncDictionaryOperation op, NetworkConnection key, bool value, bool asServer)
     {
         TurnPassBroadcast msg = new()
@@ -474,6 +504,7 @@ public class PokerServerManager : NetworkBehaviour
         public string CardToAdd;
         public bool IsWinMessage;
         public string WinnerName;
+        public bool Leave;
     }
 
     public struct TurnPassBroadcast : IBroadcast

@@ -399,7 +399,7 @@ MonoBehaviour:
   _componentIndexCache: 0
   _addedNetworkObject: {fileID: 238562043921381815}
   _networkObjectCache: {fileID: 238562043921381815}
-  winText: {fileID: 8632804720635569263}
+  WinText: {fileID: 8632804720635569263}
   newRoundButton: {fileID: 110692520356709970}
   CardTransform: {fileID: 3049501465047543652, guid: b1e08fa5114133046bbdd4b69da0c3d1, type: 3}
   TableCardTransform: {fileID: 6157800276124713418, guid: 85b8ed7724a92484fa93070429fc2fad, type: 3}
@@ -424,8 +424,8 @@ MonoBehaviour:
   _networkObjectCache: {fileID: 238562043921381815}
   ClientComponentsParent: {fileID: 5575899804594033528}
   newRoundButton: {fileID: 110692520356709970}
-  WinSound: {fileID: 0}
   winText: {fileID: 8632804720635569263}
+  WinSound: {fileID: 0}
 --- !u!114 &238562043921381815
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -447,9 +447,9 @@ MonoBehaviour:
   <ParentNetworkObject>k__BackingField: {fileID: 0}
   <ChildNetworkObjects>k__BackingField: []
   SerializedTransformProperties:
-    Position: {x: 576.5, y: 341.5, z: 0}
+    Position: {x: 601.5, y: 341.5, z: 0}
     Rotation: {x: 0, y: 0, z: 0, w: 1}
-    LocalScale: {x: 1.44125, y: 1.44125, z: 1.44125}
+    LocalScale: {x: 1.50375, y: 1.50375, z: 1.50375}
   _isNetworked: 1
   _isGlobal: 1
   _initializeOrder: 0
