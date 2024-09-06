@@ -8,6 +8,7 @@ using UnityEngine;
 using FishNet.Object;
 using UnityEngine.UI;
 using static PokerServerManager;
+using UMA.CharacterSystem;
 
 public class PokerDisplayer : NetworkBehaviour
 {
@@ -48,7 +49,8 @@ public class PokerDisplayer : NetworkBehaviour
         {
             int playerIndex = GetPlayerIndex(base.Owner);
             Debug.LogWarning($"client index is {playerIndex}");
-            PlayerDisplayer.SetCameraPoker(playerIndex - 1, LoggedUser.AvatarCompressedString); // -1 cuz index 1 is the host    }
+            SetCameraAndAvatar(playerIndex, LoggedUser.AvatarCompressedString);
+         //   PlayerDisplayer.SetCameraAndAvatarPoker(playerIndex - 1, LoggedUser.AvatarCompressedString); // -1 cuz index 1 is the host    }
         }
     }
 
@@ -376,6 +378,75 @@ public class PokerDisplayer : NetworkBehaviour
             spawnedCardNames.Add(cardName);
             spawnedCards.Add(instantiatedCard);
             spaceIndex++;
+        }
+    }
+
+    private void SetCameraAndAvatar(int playerIndex, string avatarCompressedString)
+    {
+        GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
+        DynamicCharacterAvatar avatar = instantiatedPlayer.GetComponentInChildren<DynamicCharacterAvatar>();
+
+        if (InstanceFinder.IsServer)
+        {
+            Transform playerViewCameraTransform = instantiatedPlayer.transform.Find("PlayerViewCamera");
+            playerViewCameraTransform.gameObject.SetActive(false);
+            if (!base.Owner.IsLocalClient && avatar != null)
+            {
+                StartCoroutine(ModifyAvatarInDelay(avatar));
+            }
+        }
+        else
+        {
+            GameServerManager.SetAvatarString(avatarCompressedString);
+        }
+
+        instantiatedPlayer.transform.localScale = new Vector3(1f, 1f, 1f);
+        instantiatedPlayer.transform.rotation = Quaternion.identity;
+        if (playerIndex == 0)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(-1.11f, 0f, -0.09f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+            Debug.LogWarning("Displaying 1st player's camera");
+        }
+        else if (playerIndex == 1)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(26.77f, 0f, 24.1f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -74.1f, 0f);
+            Debug.LogWarning("Displaying 2nd player's camera");
+
+        }
+        else if (playerIndex == 2)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(28.49612f, 0f, 41.40894f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -106.946f, 0f);
+        }
+        else if (playerIndex == 3)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(26.65f, 0f, 50.72f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -127.374f, 0f);
+        }
+        else if (playerIndex == 5)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(-14.44f, 0f, 55.26f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -211.864f, 0f);
+        }
+        if (instantiatedPlayer == null)
+        {
+            Debug.LogWarning("No player object found in Resources");
+            return;
+        }
+    }
+
+    private IEnumerator ModifyAvatarInDelay(DynamicCharacterAvatar avatar)
+    {
+        yield return new WaitForSeconds(1.5f);
+        string clientAvatarString = GetAvatarString(base.Owner);
+
+        if (!string.IsNullOrEmpty(clientAvatarString))
+        {
+            AvatarDefinition adf = AvatarDefinition.FromCompressedString(clientAvatarString, '|');
+            avatar.LoadAvatarDefinition(adf);
+            avatar.BuildCharacter(false); // don't restore old DNA...
         }
     }
 

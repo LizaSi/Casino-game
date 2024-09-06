@@ -245,7 +245,6 @@ public class Login : MonoBehaviour
         }
         else if (task.IsCompleted)
         {
-            m_Label.text = operation + " completed successfuly";
             complete = true;
         }
         else

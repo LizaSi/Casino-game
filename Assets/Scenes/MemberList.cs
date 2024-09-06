@@ -14,6 +14,7 @@ using TMPro;
 public class MemberList : NetworkBehaviour
 {
     [SerializeField] private TMP_Text displayText;
+    [SerializeField] private TMP_Text ErrorText;
     
     [SyncObject]
     private readonly SyncDictionary<NetworkConnection, string> _playerNames = new();
@@ -49,6 +50,7 @@ public class MemberList : NetworkBehaviour
             sb.AppendLine(username);
         }
         _instance.displayText.text = sb.ToString();
+        _instance.ErrorText.text = "";
     }
 
     public static string GetMembers(NetworkConnection conn)
@@ -119,6 +121,12 @@ public class MemberList : NetworkBehaviour
 
     public void StartBlackjack_OnClick()
     {
+        if (base.NetworkManager.ServerManager.Clients.Count < 2)
+        {
+            ErrorText.text = "You must be 2 players or above";
+            return;
+        }
+
         foreach (NetworkConnection conn in base.NetworkManager.ServerManager.Clients.Values)
         {
             SceneManager.AddConnectionToScene(conn, UnityEngine.SceneManagement.SceneManager.GetSceneByName("Lobby"));
@@ -143,6 +151,12 @@ public class MemberList : NetworkBehaviour
     }
     public void StartPoker_OnClick()
     {
+        if(base.NetworkManager.ServerManager.Clients.Count < 3)
+        {
+            ErrorText.text = "You must be 3 players or above";
+            return;
+        }
+
         foreach (NetworkConnection conn in base.NetworkManager.ServerManager.Clients.Values)
         {
             SceneManager.AddConnectionToScene(conn, UnityEngine.SceneManagement.SceneManager.GetSceneByName("PokerRoom"));

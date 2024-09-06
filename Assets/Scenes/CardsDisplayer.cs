@@ -8,6 +8,7 @@ using PlayerData;
 using UnityEngine;
 using UnityEngine.UI;
 using static GameServerManager;
+using UMA.CharacterSystem;
 
 public class CardsDisplayer : NetworkBehaviour
 {
@@ -57,7 +58,7 @@ public class CardsDisplayer : NetworkBehaviour
             //PlayerDisplayer.SetCameraBlackJack(GetPlayerIndex(base.Owner) - 1); // -1 cuz index 1 is the host
             StartCoroutine(ClientTurnInDelay());
         }
-        PlayerDisplayer.SetCameraBlackJack(GetPlayerIndex(base.Owner) - 1, LoggedUser.AvatarCompressedString); // -1 cuz index 1 is the host
+        SetCameraAndAvatarBlackJack(GetPlayerIndex(base.Owner) - 1, LoggedUser.AvatarCompressedString); // -1 cuz index 1 is the host
     }
 
     private void NewRoundInit()
@@ -77,7 +78,7 @@ public class CardsDisplayer : NetworkBehaviour
         if (waitForNextRound)
         {
             waitForNextRound = false;
-            PlayerDisplayer.SetCameraBlackJack(GetPlayerIndex(base.Owner) - 1, LoggedUser.AvatarCompressedString);
+            SetCameraAndAvatarBlackJack(GetPlayerIndex(base.Owner) - 1, LoggedUser.AvatarCompressedString);
         }
         //CountdownTimer.StartBlackjackCountdown(this, base.Owner);
     }
@@ -482,6 +483,78 @@ public class CardsDisplayer : NetworkBehaviour
 
         spawnedCardsNames.Clear();
         spawnedCardsServer.Clear();
+    }
+
+    private void SetCameraAndAvatarBlackJack(int playerIndex, string avatarCompressedString)
+    {
+        GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
+        //////////////////////////
+        DynamicCharacterAvatar avatar = instantiatedPlayer.GetComponentInChildren<DynamicCharacterAvatar>();
+
+        if (InstanceFinder.IsServer)
+        {
+            Transform playerViewCameraTransform = instantiatedPlayer.transform.Find("PlayerViewCamera");
+            playerViewCameraTransform.gameObject.SetActive(false);
+            if (!base.Owner.IsLocalClient && avatar != null)
+            {
+                StartCoroutine(ModifyAvatarInDelay(avatar));
+            }
+        }
+        else
+        {
+            GameServerManager.SetAvatarString(avatarCompressedString);
+            //StartCoroutine(ModifyAvatarInDelay(avatar));
+        }
+
+        //////////////////////////
+        instantiatedPlayer.transform.localScale = new Vector3(1f, 1f, 1f);
+        instantiatedPlayer.transform.rotation = Quaternion.identity;
+        if (playerIndex == 1)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(0, 0, 0);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+            Debug.LogWarning("Displaying 1st player's camera");
+        }
+        else if (playerIndex == 2)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(27f, 0, 22.31f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -69.77f, 0f);
+            Debug.LogWarning("Displaying 2nd player's camera");
+
+        }
+        else if (playerIndex == 3)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(29.2486f, 0, 40.15456f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -103.669f, 0f);
+        }
+        else if (playerIndex == 4)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(18.38f, 0, 57.11f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -144.912f, 0f);
+        }
+        else if (playerIndex == 5)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(-18.76f, 0, 52.46f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, 140.332f, 0f);
+        }
+        if (instantiatedPlayer == null)
+        {
+            Debug.LogWarning("No player object found in Resources");
+            return;
+        }
+    }
+
+    private IEnumerator ModifyAvatarInDelay(DynamicCharacterAvatar avatar)
+    {
+        yield return new WaitForSeconds(1.5f);
+        string clientAvatarString = GetAvatarString(base.Owner);
+
+        if (!string.IsNullOrEmpty(clientAvatarString))
+        {
+            AvatarDefinition adf = AvatarDefinition.FromCompressedString(clientAvatarString, '|');
+            avatar.LoadAvatarDefinition(adf);
+            avatar.BuildCharacter(false); // don't restore old DNA...
+        }
     }
 
     public struct ClientMsgBroadcast : IBroadcast

@@ -1,73 +1,24 @@
 using FishNet;
+using FishNet.Connection;
 using FishNet.Demo.AdditiveScenes;
+using FishNet.Object;
+using FishNet.Object.Synchronizing;
 using UMA.CharacterSystem;
 using UnityEngine;
 
-public class PlayerDisplayer : MonoBehaviour
-{ 
-    //public static void SetCameraBlackJack(int playerIndex)
-    public static void SetCameraBlackJack(int playerIndex, string avatarCompressedString)
+public class PlayerDisplayer : NetworkBehaviour
+{
+    [SyncObject] private readonly SyncDictionary<NetworkConnection, string> AvatarsSyncDict = new();
+
+    private static PlayerDisplayer Instance;
+
+    private void Start()
     {
-        GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
-        //////////////////////////
-        DynamicCharacterAvatar avatar = instantiatedPlayer.GetComponentInChildren<DynamicCharacterAvatar>();
-
-
-        if (InstanceFinder.IsServer)
-        {
-            Transform playerViewCameraTransform = instantiatedPlayer.transform.Find("PlayerViewCamera");
-            playerViewCameraTransform.gameObject.SetActive(false);
-        }
-
-
-        if (avatar != null)
-        {
-            ModifyAvatar(avatar, avatarCompressedString);
-        }
-        else
-        {
-            Debug.LogError("DynamicCharacterAvatar not found in the children of the instantiated object.");
-        }
-        //////////////////////////
-        instantiatedPlayer.transform.localScale = new Vector3(1f, 1f, 1f);
-        instantiatedPlayer.transform.rotation = Quaternion.identity;
-        if (playerIndex == 1)
-        {
-            instantiatedPlayer.transform.localPosition = new Vector3(0, 0, 0);
-            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
-            Debug.LogWarning("Displaying 1st player's camera");
-        }
-        else if (playerIndex == 2)
-        {
-            instantiatedPlayer.transform.localPosition = new Vector3(27f, 0, 22.31f);
-            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -69.77f, 0f);
-            Debug.LogWarning("Displaying 2nd player's camera");
-
-        }
-        else if (playerIndex == 3)
-        {
-            instantiatedPlayer.transform.localPosition = new Vector3(29.2486f, 0, 40.15456f);
-            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -103.669f, 0f);
-        }
-        else if (playerIndex == 4)
-        {
-            instantiatedPlayer.transform.localPosition = new Vector3(18.38f, 0, 57.11f);
-            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -144.912f, 0f);
-        }
-        else if (playerIndex == 5)
-        {
-            instantiatedPlayer.transform.localPosition = new Vector3(-18.76f, 0, 52.46f);
-            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, 140.332f, 0f);
-        }
-        if (instantiatedPlayer == null)
-        {
-            Debug.LogWarning("No player object found in Resources");
-            return;
-        }
+        Instance = this;
     }
 
     //public static void SetCameraPoker(int playerIndex)
-    public static void SetCameraPoker(int playerIndex, string avatarCompressedString)
+    public static void SetCameraAndAvatarPoker(int playerIndex, string avatarCompressedString)
     {
         GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
         //////////////////////////
@@ -127,7 +78,7 @@ public class PlayerDisplayer : MonoBehaviour
 
     //////////////////////////
 
-    static void ModifyAvatar(DynamicCharacterAvatar avatar, string avatarCompressedString)
+    public static void ModifyAvatar(DynamicCharacterAvatar avatar, string avatarCompressedString)
     {
         if (string.IsNullOrEmpty(avatarCompressedString))
         {

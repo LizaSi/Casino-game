@@ -40,6 +40,8 @@ public class PokerServerManager : NetworkBehaviour
     [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playersIndexes = new(); //starting from 0
     [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playerBets = new();
     [SyncObject] private readonly SyncDictionary<NetworkConnection, string> _playerNames = new();
+    [SyncObject] private readonly SyncDictionary<NetworkConnection, string> AvatarsSyncDict = new();
+
     public int Pot
     {
         get { return _pot; }
@@ -78,6 +80,23 @@ public class PokerServerManager : NetworkBehaviour
             Leave = true
         };
         InstanceFinder.ServerManager.Broadcast(msg);
+    }
+
+    [Client]
+    public static void SetAvatarString(string avatarString)
+    {
+        Instance.SetAvatarStringServer(avatarString);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SetAvatarStringServer(string avatarString, NetworkConnection sender = null)
+    {
+        AvatarsSyncDict[sender] = avatarString;
+    }
+
+    public static string GetAvatarString(NetworkConnection sender)
+    {
+        return Instance.AvatarsSyncDict[sender];
     }
 
     private void ClearGameData()

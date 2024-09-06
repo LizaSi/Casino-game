@@ -24,6 +24,7 @@ public class GameServerManager : NetworkBehaviour
     [SyncObject] private readonly SyncDictionary<NetworkConnection, string> _playerHands = new();
     [SyncObject] private readonly SyncDictionary<NetworkConnection, bool> _playerIsMyTurn = new();
     [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playersIndexes = new();
+    [SyncObject] private readonly SyncDictionary<NetworkConnection, string> AvatarsSyncDict = new();
 
     private static GameServerManager _instance;
     private static int cameraIndex = 0;
@@ -55,6 +56,23 @@ public class GameServerManager : NetworkBehaviour
     private void OnDisable()
     {
         _instance._playerHands.OnChange -= playerHands_OnChange;
+    }
+
+    [Client]
+    public static void SetAvatarString(string avatarString)
+    {
+        _instance.SetAvatarStringServer(avatarString);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SetAvatarStringServer(string avatarString, NetworkConnection sender = null)
+    {
+        AvatarsSyncDict[sender] = avatarString;
+    }
+
+    public static string GetAvatarString(NetworkConnection sender)
+    {
+        return _instance.AvatarsSyncDict[sender];
     }
 
     public static void LeaveGame()
@@ -284,8 +302,8 @@ public class GameServerManager : NetworkBehaviour
 
         int nextUserIndex = (currentUserIndex % _playersIndexes.Count) + 1;
 
-        UnityEngine.Debug.LogWarning("Turn over for " + currentUserIndex);
-        UnityEngine.Debug.LogWarning("Turn started for " + nextUserIndex);
+  //      UnityEngine.Debug.LogWarning("Turn over for " + currentUserIndex);
+    //    UnityEngine.Debug.LogWarning("Turn started for " + nextUserIndex);
 
         return _playersIndexes.FirstOrDefault(x => x.Value == nextUserIndex).Key;
     }
