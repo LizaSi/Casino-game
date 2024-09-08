@@ -1,10 +1,12 @@
-﻿using System.Linq;
+﻿using System.Collections;
+using System.Collections.Generic;
+using System.Linq;
 using UnityEngine;
 using UnityEditor;
 
 namespace UMA
 {
-    [CustomPropertyDrawer(typeof(BaseCharacterModifier),true)]
+	[CustomPropertyDrawer(typeof(BaseCharacterModifier),true)]
 	public class BaseCharacterModifierPropertyDrawer : PropertyDrawer
 	{
 		BaseCharacterModifier _target;
@@ -44,14 +46,10 @@ namespace UMA
 			else
 			{
 				if(_alwaysExpanded)
-                {
-                    ph = ((EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing) * 6);
-                }
-                else
-                {
-                    ph = ((EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing) * 7);
-                }
-            }
+					ph = ((EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing) * 6);
+				else
+					ph = ((EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing) * 7);
+			}
 			return ph;
 		}
 
@@ -91,12 +89,10 @@ namespace UMA
 				EditorGUI.indentLevel++;
 				position = EditorGUI.IndentedRect(position);
 				if (!_alwaysExpanded)
-                {
-                    position.yMin = position.yMin + (EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing);
-                }
-
-                // Don't make child fields be indented
-                var indent = EditorGUI.indentLevel;
+					position.yMin = position.yMin + (EditorGUIUtility.singleLineHeight + EditorGUIUtility.standardVerticalSpacing);
+				
+				// Don't make child fields be indented
+				var indent = EditorGUI.indentLevel;
 				EditorGUI.indentLevel = 0;
 
 				var adjustScaleProp = property.FindPropertyRelative("_adjustScale");

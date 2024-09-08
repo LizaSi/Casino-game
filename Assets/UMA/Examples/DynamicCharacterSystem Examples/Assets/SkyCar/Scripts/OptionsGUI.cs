@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEngine.UI;
 using UMA.CharacterSystem;
 
@@ -21,9 +23,7 @@ namespace UMA.Examples
         void SetWardrobe(bool active)
         {
             if (wardrobeRecipe == null)
-            {
                 return;
-            }
 
             if (active)
             {

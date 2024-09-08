@@ -1,4 +1,6 @@
-﻿#if UNITY_EDITOR
+﻿using System.Collections;
+using System.Collections.Generic;
+#if UNITY_EDITOR
 #if UMA_ADDRESSABLES
 #if UMA_NOASMDEF
 using UnityEditor;

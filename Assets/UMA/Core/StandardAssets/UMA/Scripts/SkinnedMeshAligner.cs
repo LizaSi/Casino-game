@@ -16,10 +16,9 @@ namespace UMA
 	        Dictionary<Transform, int> templateIndex = new Dictionary<Transform, int>(dataBones.Length);
 	        Dictionary<int, Matrix4x4> boneTransforms = new Dictionary<int, Matrix4x4>(dataBones.Length);
 	        int index = 0;
-            for (int i = 0; i < templateBones.Length; i++)
+	        foreach (var boneT in templateBones)
 	        {
-                Transform boneT = templateBones[i];
-                templateIndex.Add(boneT, index++);
+	            templateIndex.Add(boneT, index++);
 	        }
 
 	        var templateMesh = template.sharedMesh;
@@ -28,18 +27,14 @@ namespace UMA
 	        var dataBindPoses = dataMesh.bindposes;
 	        var destDataBindPoses = dataMesh.bindposes;
 	        int sourceIndex = 0;
-            for (int i = 0; i < dataBones.Length; i++)
+	        foreach (var bone in dataBones)
 	        {
-                Transform bone = dataBones[i];
-                var destIndex = FindBoneIndexInHierarchy(bone, template.rootBone, boneMap, templateIndex);
+	            var destIndex = FindBoneIndexInHierarchy(bone, template.rootBone, boneMap, templateIndex);
 	            if (destIndex == -1)
 	            {
                     if (Debug.isDebugBuild)
-                    {
                         Debug.Log(bone.name, bone);
-                    }
-
-                    sourceIndex++;
+	                sourceIndex++;
 	                continue;
 	            }
 

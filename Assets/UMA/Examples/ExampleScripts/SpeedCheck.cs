@@ -1,4 +1,6 @@
-﻿using UMA;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UMA;
 using UnityEngine;
 
 public class SpeedCheck : MonoBehaviour

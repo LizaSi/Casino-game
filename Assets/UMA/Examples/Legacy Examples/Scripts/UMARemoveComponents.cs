@@ -1,11 +1,12 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 namespace UMA.Examples
 {
-    /// <summary>
-    /// Removes or disables components during character update callback.
-    /// </summary>
-    public class UMARemoveComponents : MonoBehaviour
+	/// <summary>
+	/// Removes or disables components during character update callback.
+	/// </summary>
+	public class UMARemoveComponents : MonoBehaviour
 	{
 		public string[] removeComponentNames;
 		public string[] disableComponentNames;
@@ -20,11 +21,8 @@ namespace UMA.Examples
 			foreach (var componentName in disableComponentNames)
 			{
 				var behavior = (data.animator.GetComponent(componentName) as Behaviour);
-				if (behavior != null)
-                {
-                    behavior.enabled = false;
-                }
-            }
+				if (behavior != null) behavior.enabled = false;
+			}
 		}
 	}
 }

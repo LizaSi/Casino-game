@@ -7,7 +7,6 @@ namespace UMA
 		public override void Awake()
 		{
 			base.Awake();
-            // must turn off the "Copy Render Texture" by default on mobile.
 		}
 
 		public override void addDirtyUMA(UMAData umaToAdd)

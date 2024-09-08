@@ -33,14 +33,10 @@ namespace UMA
 			if (!GenerateGrid)
 			{
 				if (RandomRotation)
-                {
-                    GenerateRandomCharacter(transform.position, RandRotation(transform.rotation),NameBase);
-                }
-                else
-                {
-                    GenerateRandomCharacter(transform.position, transform.rotation, NameBase);
-                }
-            } 
+					GenerateRandomCharacter(transform.position, RandRotation(transform.rotation),NameBase);
+				else
+					GenerateRandomCharacter(transform.position, transform.rotation, NameBase);
+			} 
 			else
 			{
 				float xstart = 0-((GridXSize * GridDistance) / 2.0f);
@@ -57,15 +53,11 @@ namespace UMA
 							pos.z = pos.z + Random.Range(-RandomOffset, RandomOffset);
 						}
 						if (RandomRotation)
-                        {
-                            GenerateRandomCharacter(pos, RandRotation(transform.rotation),NameBase + " "+ i);
-                        }
-                        else
-                        {
-                            GenerateRandomCharacter(pos, transform.rotation, NameBase + " " + i);
-                        }
+							GenerateRandomCharacter(pos, RandRotation(transform.rotation),NameBase + " "+ i);
+						else
+							GenerateRandomCharacter(pos, transform.rotation, NameBase + " " + i);
 
-                        ++i;
+						++i;
 						zstart += GridDistance;
 					}
 					xstart += GridDistance;
@@ -105,16 +97,12 @@ namespace UMA
 		{
 			int total = 0;
 
-            for (int i = 0; i < wardrobeSlots.Count; i++)
-            {
-                RandomWardrobeSlot rws = wardrobeSlots[i];
-                total += rws.Chance;
-            }
+			foreach (RandomWardrobeSlot rws in wardrobeSlots)
+				total += rws.Chance;
 
-            for (int i = 0; i < wardrobeSlots.Count; i++)
+			foreach(RandomWardrobeSlot rws in wardrobeSlots)
 			{
-                RandomWardrobeSlot rws = wardrobeSlots[i];
-                if (UnityEngine.Random.Range(0,total) < rws.Chance)
+				if (UnityEngine.Random.Range(0,total) < rws.Chance)
 				{
 					return rws;
 				}
@@ -133,10 +121,9 @@ namespace UMA
 			Avatar.SetSlot(uwr.WardrobeSlot);
 		    if (uwr.Colors != null)
 			{
-                for (int i = 0; i < uwr.Colors.Count; i++)
+				foreach(RandomColors rc in uwr.Colors)
 				{
-                    RandomColors rc = uwr.Colors[i];
-                    if (rc.ColorTable != null)
+					if (rc.ColorTable != null)
 					{
 						OverlayColorData ocd = GetRandomColor(rc);
 						Avatar.SetColor(rc.ColorName, ocd, false);
@@ -165,15 +152,11 @@ namespace UMA
 			if (Randomizers != null)
 			{
 				if (Randomizers.Count == 0)
-                {
-                    return;
-                }
+					return;
 
-                if (Randomizers.Count == 1)
-                {
-                    Randomizer = Randomizers[0];
-                }
-                else
+				if (Randomizers.Count == 1)
+					Randomizer = Randomizers[0];
+				else
 				{
 					Randomizer = Randomizers[UnityEngine.Random.Range(0, Randomizers.Count)];
 				}
@@ -189,10 +172,9 @@ namespace UMA
 
 				if (ra.SharedColors != null && ra.SharedColors.Count > 0)
 				{
-                    for (int i = 0; i < ra.SharedColors.Count; i++)
+					foreach(RandomColors rc in ra.SharedColors)
 					{
-                        RandomColors rc = ra.SharedColors[i];
-                        if (rc.ColorTable != null)
+						if (rc.ColorTable != null)
 						{
 							Avatar.SetColor(rc.ColorName, GetRandomColor(rc), false);
 						}

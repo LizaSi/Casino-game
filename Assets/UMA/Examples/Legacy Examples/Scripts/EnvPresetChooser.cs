@@ -24,12 +24,8 @@ namespace UMA.Examples
         public int GetActivePreset()
         {
             for (int i = 0, n = transform.childCount; i < n; ++i)
-            {
                 if (transform.GetChild(i).gameObject.activeSelf)
-                {
                     return i;
-                }
-            }
 
             return -1;
         }
@@ -43,9 +39,7 @@ namespace UMA.Examples
             }
 
             for (int i = 0, n = transform.childCount; i < n; ++i)
-            {
                 transform.GetChild(i).gameObject.SetActive(false);
-            }
 
             transform.GetChild(index).gameObject.SetActive(true);
         }

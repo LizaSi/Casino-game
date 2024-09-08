@@ -116,10 +116,8 @@ namespace UMA.Dynamics
 			if (!Physics.GetIgnoreLayerCollision(ragdollLayer, playerLayer))
 			{
 				if (Debug.isDebugBuild)
-                {
-                    Debug.LogWarning("RagdollLayer and PlayerLayer are not ignoring each other! This will cause collision issues. Please update the collision matrix or 'Add Default Layers' in the Physics Slot Definition");
-                }
-            }
+					Debug.LogWarning("RagdollLayer and PlayerLayer are not ignoring each other! This will cause collision issues. Please update the collision matrix or 'Add Default Layers' in the Physics Slot Definition");
+			}
 		}
 
 		void OnDestroy()
@@ -145,10 +143,9 @@ namespace UMA.Dynamics
 		{
 			if (ragdollBlendAmount > 0) 
 			{
-                for (int i = 0; i < _rigidbodies.Count; i++) 
+				foreach (Rigidbody rigidbody in _rigidbodies) 
 				{
-                    Rigidbody rigidbody = _rigidbodies[i];
-                    if (_rootBone && rigidbody.gameObject.name != _rootBone.name)
+					if (_rootBone && rigidbody.gameObject.name != _rootBone.name)
 					{ //this if is to prevent us from modifying the root of the character, only the actual body parts
 						//rotation is interpolated for all body parts
 						rigidbody.transform.rotation = Quaternion.Slerp (rigidbody.transform.rotation, Quaternion.identity, ragdollBlendAmount);
@@ -183,10 +180,9 @@ namespace UMA.Dynamics
 		{
 			if (_ragdolled)
 			{
-                for (int i = 0; i < cachedBones.Count; i++)
+				foreach (CachedBone cachedbone in cachedBones)
 				{
-                    CachedBone cachedbone = cachedBones[i];
-                    cachedbone.boneTransform.localPosition = cachedbone.localPosition;
+					cachedbone.boneTransform.localPosition = cachedbone.localPosition;
 					cachedbone.boneTransform.localRotation = cachedbone.localRotation;
 					cachedbone.boneTransform.localScale = cachedbone.localScale;
 				}
@@ -197,45 +193,35 @@ namespace UMA.Dynamics
 		public void CreatePhysicsObjects()
 		{
 			if( _umaData == null )
-            {
-                _umaData = gameObject.GetComponent<UMAData> ();
-            }
+				_umaData = gameObject.GetComponent<UMAData> ();	
 
-            if (_umaData == null) 
+			if (_umaData == null) 
 			{
 				if (Debug.isDebugBuild)
-                {
-                    Debug.LogError ("CreatePhysicsObjects: umaData is null!");
-                }
-
-                return;
+					Debug.LogError ("CreatePhysicsObjects: umaData is null!");
+				return;
 			}
 
 			SetRendereroffscreenStates();
 
 			//Don't update if we already have a rigidbody on the root bone?
 			if ( _rootBone && _rootBone.GetComponent<Rigidbody> () )
-            {
-                return;
-            }
+				return;
 
-            if (simplePlayerCollider) 
+			if (simplePlayerCollider) 
 			{
 				_playerCollider = gameObject.GetComponent<CapsuleCollider> ();
 				_playerRigidbody = gameObject.GetComponent<Rigidbody> ();
 				if (_playerCollider == null || _playerRigidbody == null)
 				{
 					if (Debug.isDebugBuild)
-                    {
-                        Debug.LogWarning("PlayerCollider or PlayerRigidBody is null, try putting the collider recipe before the PhysicsRecipe, or turn off SimplePlayerCollider.");
-                    }
-                }
+						Debug.LogWarning("PlayerCollider or PlayerRigidBody is null, try putting the collider recipe before the PhysicsRecipe, or turn off SimplePlayerCollider.");
+				}
 			}
 
-            for (int i = 0; i < elements.Count; i++) 
+			foreach (UMAPhysicsElement element in elements) 
 			{
-                UMAPhysicsElement element = elements[i];
-                if (element != null) 
+				if (element != null) 
 				{
 					// add Generic Info
 					GameObject bone = _umaData.GetBoneGameObject (element.boneName);
@@ -243,10 +229,7 @@ namespace UMA.Dynamics
                     if (bone == null)
                     {
 						if (Debug.isDebugBuild)
-                        {
-                            Debug.LogWarning("UMAPhysics: " + element.boneName + " not found!");
-                        }
-
+							Debug.LogWarning("UMAPhysics: " + element.boneName + " not found!");
                         continue; //if we don't find the bone then go to the next iteration
                     }
                 
@@ -260,9 +243,8 @@ namespace UMA.Dynamics
 
                     bone.layer = ragdollLayer;
 
-                    for (int i1 = 0; i1 < element.colliders.Length; i1++)
+                    foreach (ColliderDefinition collider in element.colliders)
                     {
-                        ColliderDefinition collider = element.colliders[i1];
                         // Add Appropriate Collider
                         if (collider.colliderType == ColliderDefinition.ColliderType.Box)
                         {
@@ -309,11 +291,10 @@ namespace UMA.Dynamics
 				}
 			}
 
-            //Second pass to make sure Rigidbodies are all created
-            for (int i = 0; i < elements.Count; i++) 
+			//Second pass to make sure Rigidbodies are all created
+			foreach (UMAPhysicsElement element in elements) 
 			{
-                UMAPhysicsElement element = elements[i];
-                if (element != null) 
+				if (element != null) 
 				{
 					// Make Temp SoftJoint
 					SoftJointLimit tempLimit = new SoftJointLimit ();
@@ -321,12 +302,10 @@ namespace UMA.Dynamics
 					GameObject bone = _umaData.GetBoneGameObject (element.boneName);
 
                     if (bone == null)
-                    {
                         continue; //if we don't find the bone then go to the next iteration
-                    }
-
-                    // Add Character Joint
-                    if (!element.isRoot) {
+                    
+					// Add Character Joint
+					if (!element.isRoot) {
 						CharacterJoint joint = bone.AddComponent<CharacterJoint> ();
 						_rootBone = bone;
 						joint.connectedBody = _umaData.GetBoneGameObject(element.parentBone).GetComponent<Rigidbody> (); // possible error if parent not yet created.
@@ -354,11 +333,9 @@ namespace UMA.Dynamics
 		{
 			if (_umaData) 
 			{
-                SkinnedMeshRenderer[] array = _umaData.GetRenderers();
-                for (int i = 0; i < array.Length; i++) 
+				foreach (Renderer renderer in _umaData.GetRenderers()) 
 				{
-                    Renderer renderer = array[i];
-                    Cloth cloth = renderer.GetComponent<Cloth> ();
+					Cloth cloth = renderer.GetComponent<Cloth> ();
 					if (cloth) 
 					{
                         cloth.sphereColliders = SphereColliders.ToArray();
@@ -366,10 +343,8 @@ namespace UMA.Dynamics
 						if ((cloth.capsuleColliders.Length + cloth.sphereColliders.Length) > 10)
 						{
 							if (Debug.isDebugBuild)
-                            {
-                                Debug.LogWarning("Cloth Collider count is high. You might experience strange behavior with the cloth simulation.");
-                            }
-                        }
+								Debug.LogWarning("Cloth Collider count is high. You might experience strange behavior with the cloth simulation.");
+						}
 					}
 				}
 			}
@@ -388,57 +363,43 @@ namespace UMA.Dynamics
 			if (ragdollState) 
 			{
 				if (onRagdollStarted != null )
-                {
-                    onRagdollStarted.Invoke ();
-                }
-            }
+					onRagdollStarted.Invoke ();
+			}
 			else 
 			{
 				if ( onRagdollEnded != null )
-                {
-                    onRagdollEnded.Invoke ();
-                }
-            }
+					onRagdollEnded.Invoke ();
+			}
 				
 			if (simplePlayerCollider) 
 			{
 				if( _playerRigidbody )
-                {
-                    _playerRigidbody.isKinematic = ragdollState;
-                }
+					_playerRigidbody.isKinematic = ragdollState;
 
-                if ( _playerCollider )
-                {
-                    _playerCollider.enabled = !ragdollState;
-                }
-            }
+				if( _playerCollider )
+					_playerCollider.enabled = !ragdollState;
+			}
 
 			// iterate through all rigidbodies and switch kinematic mode on/off
 			//Set all rigidbodies.isKinematic to opposite of ragdolled state
 			SetAllKinematic( !ragdollState );
 
 			if( enableColliderTriggers ) //Change the trigger state on collider if we enable this flag.
-            {
-                SetBodyColliders( !ragdollState );
-            }
-
-            // switch animator on/off
-            Animator animator = GetComponent<Animator>();
+				SetBodyColliders( !ragdollState );
+				
+			// switch animator on/off
+			Animator animator = GetComponent<Animator>();
 			if( animator != null )
-            {
-                animator.enabled = !ragdollState;
-            }
-            // switch expression player (locks head if left on)
-            ExpressionPlayer expressionPlayer = GetComponent<ExpressionPlayer>();
+				animator.enabled = !ragdollState;	
+			// switch expression player (locks head if left on)
+			ExpressionPlayer expressionPlayer = GetComponent<ExpressionPlayer>();
 			if( expressionPlayer != null )
-            {
-                expressionPlayer.enabled = !ragdollState;
-            }
-
-            // Prevent Mismatched Culling
-            // Skinned mesh renderers cull based on their origonal position before ragdolling.
-            // We use this property to prevent ragdolled meshes from popping in and out unexpectedly.
-            SetUpdateWhenOffscreen( ragdollState );
+				expressionPlayer.enabled = !ragdollState;
+				
+			// Prevent Mismatched Culling
+			// Skinned mesh renderers cull based on their origonal position before ragdolling.
+			// We use this property to prevent ragdolled meshes from popping in and out unexpectedly.
+			SetUpdateWhenOffscreen( ragdollState );
 
 			if (_ragdolled && !ragdollState) 
 			{
@@ -454,10 +415,9 @@ namespace UMA.Dynamics
 
 		private void SetAllKinematic(bool flag)
 		{
-            for (int i = 0; i < _rigidbodies.Count; i++)
+			foreach (Rigidbody rigidbody in _rigidbodies)
 			{
-                Rigidbody rigidbody = _rigidbodies[i];
-                if (rigidbody != null)
+				if (rigidbody != null)
 				{
 					rigidbody.isKinematic = flag;
 				}
@@ -467,26 +427,23 @@ namespace UMA.Dynamics
 
 		private void SetBodyColliders(bool flag)
 		{
-            for (int i = 0; i < _BoxColliders.Count; i++) 
+			foreach (BoxCollider collider in _BoxColliders) 
 			{
-                BoxCollider collider = _BoxColliders[i];
-                collider.isTrigger = flag;
+				collider.isTrigger = flag;
 				//collider.enabled = flag;
 			}
 
-            for (int i = 0; i < _SphereColliders.Count; i++) 
+            foreach (ClothSphereColliderPair collider in _SphereColliders) 
 			{
-                ClothSphereColliderPair collider = _SphereColliders[i];
                 collider.first.isTrigger = flag;
                 //collider.second.isTrigger = flag;
 				//collider.first.enabled = flag;
                 //collider.second.enabled = flag;
 			}
-
-            for (int i = 0; i < _CapsuleColliders.Count; i++) 
+			
+			foreach (CapsuleCollider collider in _CapsuleColliders) 
 			{
-                CapsuleCollider collider = _CapsuleColliders[i];
-                collider.isTrigger = flag;
+				collider.isTrigger = flag;
 				//collider.enabled = flag;
 			}
 		}
@@ -530,12 +487,9 @@ namespace UMA.Dynamics
 					}
 					else
 					{
-                        for (int i = 0; i < renderers.Length; i++)
-                        {
-                            SkinnedMeshRenderer renderer = renderers[i];
-                            renderer.updateWhenOffscreen = flag;
-                        }
-                    }
+						foreach (SkinnedMeshRenderer renderer in renderers)
+							renderer.updateWhenOffscreen = flag;
+					}
 				}
 			}
 		}

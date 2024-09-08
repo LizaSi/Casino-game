@@ -1,5 +1,6 @@
 using UnityEngine;
 #if UNITY_EDITOR
+using UnityEditor;
 #endif
 using System.Collections.Generic;
 
@@ -89,22 +90,12 @@ namespace UMA.CharacterSystem
 
         public void UpdateDynamicSlotLibrary(int? nameHash = null)
         {
-            var Slots = UMAAssetIndexer.Instance.GetAllAssets<SlotDataAsset>();
-            if (nameHash != null)
-            {
-                Slots.RemoveAll(x => x.nameHash != nameHash);
-            }
-            AddSlotAssets(Slots.ToArray());
-               // DynamicAssetLoader.Instance.AddAssets<SlotDataAsset>(ref assetBundlesUsedDict, dynamicallyAddFromResources, dynamicallyAddFromAssetBundles, downloadAssetsEnabled, assetBundleNamesToSearch, resourcesFolderPath, nameHash, "", AddSlotAssets);
+                DynamicAssetLoader.Instance.AddAssets<SlotDataAsset>(ref assetBundlesUsedDict, dynamicallyAddFromResources, dynamicallyAddFromAssetBundles, downloadAssetsEnabled, assetBundleNamesToSearch, resourcesFolderPath, nameHash, "", AddSlotAssets);
         }
 
         public void UpdateDynamicSlotLibrary(string slotName)
         {
-            var Slots = UMAAssetIndexer.Instance.GetAllAssets<SlotDataAsset>();
-
-            Slots.RemoveAll(x => x.slotName != slotName);
-            AddSlotAssets(Slots.ToArray());
-                //DynamicAssetLoader.Instance.AddAssets<SlotDataAsset>(ref assetBundlesUsedDict, dynamicallyAddFromResources, dynamicallyAddFromAssetBundles, downloadAssetsEnabled, assetBundleNamesToSearch, resourcesFolderPath, null, slotName, AddSlotAssets);
+                DynamicAssetLoader.Instance.AddAssets<SlotDataAsset>(ref assetBundlesUsedDict, dynamicallyAddFromResources, dynamicallyAddFromAssetBundles, downloadAssetsEnabled, assetBundleNamesToSearch, resourcesFolderPath, null, slotName, AddSlotAssets);
         }
 
 

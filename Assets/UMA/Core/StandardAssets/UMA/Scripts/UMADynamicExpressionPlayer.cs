@@ -3,11 +3,15 @@
 //	Author: 	Eli Curtz
 //	Copyright:	(c) 2013 Eli Curtz
 //	============================================================
+using System.Collections.Generic;
+using UMA.CharacterSystem;
 #if UNITY_EDITOR
+using UnityEditor;
 #endif
+using UnityEngine;
+
 namespace UMA.PoseTools
 {
-    /*
 	/// <summary>
 	/// UMA specific expression player.
 	/// </summary>
@@ -166,11 +170,10 @@ namespace UMA.PoseTools
 			blinkDelay = Random.Range(minBlinkDelay, maxBlinkDelay);
 
 			if(Camera.main != null)
-            {
-                _mainCameraTransform = Camera.main.transform;
-            }
+				_mainCameraTransform = Camera.main.transform;
 
-            if ((expressionSet != null) && (umaData != null) && (umaData.skeleton != null))
+
+			if ((expressionSet != null) && (umaData != null) && (umaData.skeleton != null))
 			{
 				Transform jaw = null;
 				Transform neck = null;
@@ -204,22 +207,16 @@ namespace UMA.PoseTools
 					{
 						jaw = umaData.animator.GetBoneTransform(HumanBodyBones.Jaw);
 						if (jaw != null)
-                        {
-                            jawHash = UMAUtils.StringToHash(jaw.name);
-                        }
+							jawHash = UMAUtils.StringToHash(jaw.name);
 
-                        neck = umaData.animator.GetBoneTransform(HumanBodyBones.Neck);
+						neck = umaData.animator.GetBoneTransform(HumanBodyBones.Neck);
 						if (neck != null)
-                        {
-                            neckHash = UMAUtils.StringToHash(neck.name);
-                        }
+							neckHash = UMAUtils.StringToHash(neck.name);
 
-                        head = umaData.animator.GetBoneTransform(HumanBodyBones.Head);
+						head = umaData.animator.GetBoneTransform(HumanBodyBones.Head);
 						if (head != null)
-                        {
-                            headHash = UMAUtils.StringToHash(head.name);
-                        }
-                    }
+							headHash = UMAUtils.StringToHash(head.name);
+					}
 				}
 				if (overrideMecanimJaw && jaw == null)
                 {
@@ -265,12 +262,10 @@ namespace UMA.PoseTools
 			}
 
 			if (_mainCameraTransform != null && useDisableDistance && (_mainCameraTransform.position - transform.position).sqrMagnitude > (disableDistance * disableDistance))
-            {
-                return;
-            }
+				return;
 
-            // Fix for animation systems which require consistent values frame to frame
-            Quaternion headRotation = Quaternion.identity;
+			// Fix for animation systems which require consistent values frame to frame
+			Quaternion headRotation = Quaternion.identity;
 			Quaternion neckRotation = Quaternion.identity;
 
 			try { headRotation = umaData.skeleton.GetRotation(headHash); }
@@ -283,16 +278,11 @@ namespace UMA.PoseTools
 			expressionSet.RestoreBones(umaData.skeleton, logResetErrors);
 
 			if (!overrideMecanimNeck)
-            {
-                umaData.skeleton.SetRotation(neckHash, neckRotation);
-            }
+				umaData.skeleton.SetRotation(neckHash, neckRotation);
+			if (!overrideMecanimHead)
+				umaData.skeleton.SetRotation(headHash, headRotation);
 
-            if (!overrideMecanimHead)
-            {
-                umaData.skeleton.SetRotation(headHash, headRotation);
-            }
-
-            if (gazeWeight > 0f)
+			if (gazeWeight > 0f)
 			{
 				if (umaData.animator != null)
 				{
@@ -305,53 +295,31 @@ namespace UMA.PoseTools
 		void LateUpdate()
 		{
 			if (!initialized)
-            {
-                return;
-            }
+				return;
 
-            if (umaData == null || umaData.skeleton == null)
-            {
-                return;
-            }
+			if (umaData == null || umaData.skeleton == null)
+				return;
 
-            if (_mainCameraTransform != null && useDisableDistance && (_mainCameraTransform.position - transform.position).sqrMagnitude > (disableDistance * disableDistance))
-            {
-                return;
-            }
+			if (_mainCameraTransform != null && useDisableDistance && (_mainCameraTransform.position - transform.position).sqrMagnitude > (disableDistance * disableDistance))
+				return;
 
-            if (enableSaccades)
-            {
-                UpdateSaccades();
-            }
+			if (enableSaccades)
+				UpdateSaccades();
 
-            if (enableBlinking)
-            {
-                UpdateBlinking();
-            }
+			if (enableBlinking)
+				UpdateBlinking();
 
-            float[] values = Values;
+			float[] values = Values;
 			MecanimJoint mecanimMask = MecanimJoint.None;
 			if (!overrideMecanimNeck)
-            {
-                mecanimMask |= MecanimJoint.Neck;
-            }
-
-            if (!overrideMecanimHead)
-            {
-                mecanimMask |= MecanimJoint.Head;
-            }
-
-            if (!overrideMecanimJaw)
-            {
-                mecanimMask |= MecanimJoint.Jaw;
-            }
-
-            if (!overrideMecanimEyes)
-            {
-                mecanimMask |= MecanimJoint.Eye;
-            }
-
-            if (overrideMecanimJaw)
+				mecanimMask |= MecanimJoint.Neck;
+			if (!overrideMecanimHead)
+				mecanimMask |= MecanimJoint.Head;
+			if (!overrideMecanimJaw)
+				mecanimMask |= MecanimJoint.Jaw;
+			if (!overrideMecanimEyes)
+				mecanimMask |= MecanimJoint.Eye;
+			if (overrideMecanimJaw)
 			{
 				umaData.skeleton.Restore(jawHash);
 			}
@@ -365,11 +333,9 @@ namespace UMA.PoseTools
 
 				float weight = values[i];
 				if (weight == 0f)
-                {
-                    continue;
-                }
+					continue;
 
-                UMABonePose pose = null;
+				UMABonePose pose = null;
 				if (weight > 0)
 				{
 					pose = expressionSet.posePairs[i].primary;
@@ -425,35 +391,23 @@ namespace UMA.PoseTools
 				{
 					case GazeMode.Listening:
 						if (Mathf.Abs(saccadeDistance) < mutualGazeRange)
-                        {
-                            saccadeDelay = UMAUtils.GaussianRandom(237.5f / 30f, 47.1f / 30f);
-                        }
-                        else
-                        {
-                            saccadeDelay = UMAUtils.GaussianRandom(13f / 30f, 7.1f / 30f);
-                        }
-
-                        break;
+							saccadeDelay = UMAUtils.GaussianRandom(237.5f / 30f, 47.1f / 30f);
+						else
+							saccadeDelay = UMAUtils.GaussianRandom(13f / 30f, 7.1f / 30f);
+						break;
 
 					default:
 						if (Mathf.Abs(saccadeDistance) < mutualGazeRange)
-                        {
-                            saccadeDelay = UMAUtils.GaussianRandom(93.9f / 30f, 94.9f / 30f);
-                        }
-                        else
-                        {
-                            saccadeDelay = UMAUtils.GaussianRandom(27.8f / 30f, 24f / 30f);
-                        }
-
-                        break;
+							saccadeDelay = UMAUtils.GaussianRandom(93.9f / 30f, 94.9f / 30f);
+						else
+							saccadeDelay = UMAUtils.GaussianRandom(27.8f / 30f, 24f / 30f);
+						break;
 				}
 
 				if (saccadeDelay < MinSaccadeDelay)
-                {
-                    saccadeDelay = MinSaccadeDelay;
-                }
+					saccadeDelay = MinSaccadeDelay;
 
-                saccadeTarget *= saccadeDistance;
+				saccadeTarget *= saccadeDistance;
 			}
 
 			if (saccadeProgress < 1f)
@@ -504,10 +458,8 @@ namespace UMA.PoseTools
 					}
 
 					if (blinkDelay < blinkDuration)
-                    {
-                        blinkDelay = blinkDuration;
-                    }
-                } else
+						blinkDelay = blinkDuration;
+				} else
 				{
 					//leftEyeOpen_Close = -1.01f;
 					//rightEyeOpen_Close = -1.01f;
@@ -534,12 +486,9 @@ namespace UMA.PoseTools
 			}
 			set
 			{
-				if (value.Length > Expressions.Count)
-                {
-                    return;
-                }
+				if (value.Length > Expressions.Count) return;
 
-                for (int i = 0; i < value.Length; i++)
+				for (int i = 0; i < value.Length; i++)
 				{
 					Expressions[i].value = value[i];
 				}
@@ -558,11 +507,9 @@ namespace UMA.PoseTools
 			int underscore = name.IndexOf('_');
 
 			if (underscore < 0)
-            {
-                return name;
-            }
+				return name;
 
-            return name.Substring(0, underscore);
+			return name.Substring(0, underscore);
 		}
 
 		/// <summary>
@@ -576,11 +523,9 @@ namespace UMA.PoseTools
 			int underscore = name.IndexOf('_');
 
 			if (underscore < 0)
-            {
-                return null;
-            }
+				return null;
 
-            int space = name.LastIndexOf(' ', underscore);
+			int space = name.LastIndexOf(' ', underscore);
 			return name.Substring(0, space + 1) + name.Substring(underscore + 1);
 		}
 
@@ -628,5 +573,5 @@ namespace UMA.PoseTools
 			}
 		}
 #endif
-	} */
+	}
 }

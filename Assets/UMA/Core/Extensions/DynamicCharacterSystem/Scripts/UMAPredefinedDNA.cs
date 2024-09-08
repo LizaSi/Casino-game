@@ -1,11 +1,14 @@
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System;
+using UnityEngine;
 #if UNITY_EDITOR
+using UnityEditor; //todo: ifdef this
 #endif
 namespace UMA
 {
-    [Serializable]
+	[Serializable]
 	public class DnaValue
 	{
 		public string Name;
@@ -56,16 +59,6 @@ namespace UMA
 
 		public void AddDNA(string Name, float Value)
 		{
-            for (int i = 0; i < PreloadValues.Count; i++)
-            {
-                DnaValue value = PreloadValues[i];
-                if (value.Name.Equals(Name))
-                {
-                    value.Value = Value;
-                    return; 
-                }
-            }
-            // If not found, add new one
 			PreloadValues.Add(new DnaValue(Name, Value));
 		}
 		public void Clear()
@@ -73,29 +66,12 @@ namespace UMA
 			PreloadValues.Clear();
         }
 
-        public float GetValue(string Name)
-        {
-            if (ContainsName(Name))
-            {
-                for (int i = 0; i < PreloadValues.Count; i++)
-                {
-                    DnaValue value = PreloadValues[i];
-                    if (value.Name == Name)
-                    {
-                        return value.Value;
-                    }
-                }
-            }
-            return 0;
-        }
-
 		public UMAPredefinedDNA Clone()
         {
 			UMAPredefinedDNA newdna = new UMAPredefinedDNA();
-            for (int i = 0; i < PreloadValues.Count; i++)
+			foreach(DnaValue d in PreloadValues)
             {
-                DnaValue d = PreloadValues[i];
-                newdna.AddDNA(d.Name, d.Value);
+				newdna.AddDNA(d.Name, d.Value);
             }
 			return newdna;
         }

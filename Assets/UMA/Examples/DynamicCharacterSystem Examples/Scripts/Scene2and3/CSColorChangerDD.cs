@@ -1,8 +1,9 @@
 ﻿using UnityEngine;
+using System.Collections;
 
 namespace UMA.CharacterSystem.Examples
 {
-    public class CSColorChangerDD : MonoBehaviour
+	public class CSColorChangerDD : MonoBehaviour
 	{
 		public string colorToChange;
 

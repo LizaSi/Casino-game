@@ -1,10 +1,11 @@
 using UnityEngine;
 using UnityEditor;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace UMA.CharacterSystem.Editors
 {
-    [CustomPropertyDrawer(typeof(SkeletonModifier))]
+	[CustomPropertyDrawer(typeof(SkeletonModifier))]
 	public class SkeletonModifierPropertyDrawer : PropertyDrawer
 	{
 		float padding = 4f;
@@ -77,11 +78,8 @@ namespace UMA.CharacterSystem.Editors
 				if (_allowLegacyDNADrawer)
 				{
 					if (thisSpValDrawer == null)
-                    {
-                        thisSpValDrawer = new spValModifierPropertyDrawer();
-                    }
-
-                    thisSpValDrawer.dnaNames = dnaNames;
+						thisSpValDrawer = new spValModifierPropertyDrawer();
+					thisSpValDrawer.dnaNames = dnaNames;
 				}
 
 				if (warningIcon == null)
@@ -97,10 +95,8 @@ namespace UMA.CharacterSystem.Editors
 			else
 			{
 				if(_dnaNames != null)
-                {
-                    UpdateDnaNames(_dnaNames);
-                }
-            }
+					UpdateDnaNames(_dnaNames);
+			}
 			return _initialized;
 		}
 #pragma warning restore 618 //restore obsolete warning
@@ -113,20 +109,16 @@ namespace UMA.CharacterSystem.Editors
 		public void UpdateDnaNames(string[] newDnaNames)
 		{
 			if (thisSpValDrawer != null)
-            {
-                thisSpValDrawer.dnaNames = newDnaNames;
-            }
-        }
+				thisSpValDrawer.dnaNames = newDnaNames;
+		}
 
 		public override void OnGUI(Rect position, SerializedProperty property, GUIContent label)
 		{
 
 			if (!Init(hashNames, hashes))
-            {
-                return;
-            }
+				return;
 
-            int startingIndent = EditorGUI.indentLevel;
+			int startingIndent = EditorGUI.indentLevel;
 
 			EditorGUI.BeginProperty(position, label, property);
 
@@ -405,11 +397,10 @@ namespace UMA.CharacterSystem.Editors
 				var activeValues = valuesX.isExpanded ? valuesX : (valuesY.isExpanded ? valuesY : (valuesZ.isExpanded ? valuesZ : valuesX));
 				var subValuesVal = activeValues.FindPropertyRelative("_val");
 				if (subValuesVal.isExpanded)
-                {
-                    extraLines++;
-                }
-
-                var modifyingDNAProp = subValuesVal.FindPropertyRelative("_modifyingDNA");
+					extraLines++;
+				
+				
+				var modifyingDNAProp = subValuesVal.FindPropertyRelative("_modifyingDNA");
 				var modifyingDNACount = modifyingDNAProp.FindPropertyRelative("_dnaEvaluators").arraySize;
 				var legacyModifiersCount = subValuesVal.FindPropertyRelative("_modifiers").arraySize;
 				//When modifiers get upgraded to _modifyingDNA they get cleared
@@ -503,10 +494,8 @@ namespace UMA.CharacterSystem.Editors
 							if (newSelectedIndex == 0)
 							{
 								if (niceDNANames[0].text.IndexOf("(missing) ") < 0)
-                                {
-                                    property.FindPropertyRelative("_DNATypeName").stringValue = "";
-                                }
-                            }
+									property.FindPropertyRelative("_DNATypeName").stringValue = "";
+							}
 							else
 							{
 								property.FindPropertyRelative("_DNATypeName").stringValue = dnaNames[newSelectedIndex - 1];

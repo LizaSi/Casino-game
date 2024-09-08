@@ -1,14 +1,11 @@
 {
     "name": "UMA_Core_Editor",
-    "rootNamespace": "",
     "references": [
         "UMA_Core",
         "Unity.Addressables.Editor",
         "Unity.ResourceManager",
         "Unity.Addressables",
-        "Addressable_Editor",
-        "Unity.Mathematics",
-        "Unity.Burst"
+        "Addressable_Editor"
     ],
     "includePlatforms": [
         "Editor"

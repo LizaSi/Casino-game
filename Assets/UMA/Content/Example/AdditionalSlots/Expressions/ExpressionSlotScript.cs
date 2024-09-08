@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
+using System.Collections;
 using UnityEngine.Events;
 
 namespace UMA.PoseTools
 {
-    /// <summary>
-    /// Auxillary slot which adds an UMAExpressionPlayer to a newly created character.
-    /// </summary>
-    public class ExpressionSlotScript : MonoBehaviour 
+	/// <summary>
+	/// Auxillary slot which adds an UMAExpressionPlayer to a newly created character.
+	/// </summary>
+	public class ExpressionSlotScript : MonoBehaviour 
 	{
 		public void OnCharacterBegun(UMAData umaData)
 		{
@@ -23,11 +24,9 @@ namespace UMA.PoseTools
 			if (expressionSet == null)
 			{
 				if (Debug.isDebugBuild)
-                {
-                    Debug.LogError("Couldn't add Expressions to Race: " + umaData.umaRecipe.raceData.raceName, umaData.gameObject);
-                }
+					Debug.LogError("Couldn't add Expressions to Race: " + umaData.umaRecipe.raceData.raceName, umaData.gameObject);
 
-                return;
+				return;
 			}
 			var expressionPlayer = umaData.GetComponent<UMAExpressionPlayer>();
 			if (expressionPlayer == null)
@@ -36,16 +35,10 @@ namespace UMA.PoseTools
 				expressionPlayer.SlotUpdateVsCharacterUpdate++;
 				umaData.CharacterUpdated.AddListener(new UnityAction<UMAData>(umaData_OnCharacterUpdated));
 			}
-			else
-            {
-				expressionPlayer.enabled = true;
-            }
 			expressionPlayer.expressionSet = expressionSet;
 			expressionPlayer.umaData = umaData;
-			var boneHashes = expressionSet.GetAnimatedBoneHashes();
-			for (int i=0; i< boneHashes.Length; i++)
+			foreach (var hash in expressionSet.GetAnimatedBoneHashes())
 			{
-				var hash = boneHashes[i];
 				umaData.skeleton.SetAnimatedBoneHierachy(hash);
 			}
 		}

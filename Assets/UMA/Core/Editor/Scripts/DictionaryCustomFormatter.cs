@@ -10,12 +10,8 @@ namespace UMA.Editors
 
 		public object GetFormat(Type formatType)
 		{
-			if (typeof(ICustomFormatter).Equals(formatType))
-            {
-                return this;
-            }
-
-            return null;
+			if (typeof(ICustomFormatter).Equals(formatType)) return this;
+			return null;
 		}
 
 		#endregion
@@ -24,12 +20,9 @@ namespace UMA.Editors
 
 		public string Format(string format, object arg, IFormatProvider formatProvider)
 		{
-			if (arg == null)
-            {
-                throw new ArgumentNullException("arg");
-            }
+			if (arg == null) throw new ArgumentNullException("arg");
 
-            var dict = arg as Dictionary<string, object>;
+			var dict = arg as Dictionary<string, object>;
 			if (format != null && dict != null)
 			{
 				object o;
@@ -49,14 +42,9 @@ namespace UMA.Editors
 			}
 
 			if (arg is IFormattable)
-            {
-                return ((IFormattable)arg).ToString(format, formatProvider);
-            }
-            else
-            {
-                return arg.ToString();
-            }
-        }
+				return ((IFormattable)arg).ToString(format, formatProvider);
+			else return arg.ToString();
+		}
 		#endregion
 	}
 }

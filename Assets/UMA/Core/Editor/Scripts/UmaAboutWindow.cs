@@ -1,16 +1,19 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Collections;
 
 namespace UMA
 {
     public class UmaAboutWindow : EditorWindow 
     {
         public static string umaVersion { get { return _version; } }
-        private static readonly string _version = "2.13.f2";
+        private static readonly string _version = "2.11.7A1";
         private string windowTitle = "UMA About";
-        private string wikiLink = "https://github.com/umasteeringgroup/UMA/wiki";
+        private string wikiLink = "http://umadocs.secretanorak.com/doku.php";
         private string githubLink = "https://github.com/umasteeringgroup";
         private string unityThreadLink = "https://forum.unity.com/threads/uma-unity-multipurpose-avatar-on-the-asset-store.219175/";
+        private string umaForumLink = "http://umacommunity.boards.net/forum";
+        private string slackLink = "https://uma-community.slack.com";
         private string discordLink = "https://discord.gg/KdteVKd";
 
         private Vector2 size = new Vector2(400, 300);
@@ -37,9 +40,7 @@ namespace UMA
             Initialize();
 
             if (!initialized)
-            {
                 return;
-            }
 
             Rect centered = _BannerRect;
             centered.center = new Vector2(size.x *0.5f, _BannerRect.yMax*0.5f);
@@ -68,7 +69,14 @@ namespace UMA
             {
                 Application.OpenURL(unityThreadLink);
             }
-
+            if(GUILayout.Button("UMA Forum"))
+            {
+                Application.OpenURL(umaForumLink);
+            }
+            if (GUILayout.Button("Slack Channel"))
+            {
+                Application.OpenURL(slackLink);
+            }
             if(GUILayout.Button("Secret Anorak's Discord Channel"))
             {
                 Application.OpenURL(discordLink);
@@ -78,14 +86,10 @@ namespace UMA
         void Initialize()
         {
             if (_BannerTexture == null)
-            {
                 _BannerTexture = UMAUtils.LoadTextureAsset("UmaBanner");
-            }
 
             if (_IconTexture == null)
-            {
                 _IconTexture = UMAUtils.LoadTextureAsset("UMA32");
-            }
 
             if (!initialized)
             {

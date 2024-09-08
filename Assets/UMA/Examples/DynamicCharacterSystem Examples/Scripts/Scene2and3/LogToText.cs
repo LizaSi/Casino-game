@@ -1,10 +1,11 @@
 using UnityEngine;
+using System.Collections;
 using System.Text;
 using UnityEngine.UI;
 
 namespace UMA.CharacterSystem.Examples
 {
-    public class LogToText : MonoBehaviour
+	public class LogToText : MonoBehaviour
 	{
 		StringBuilder buffer = new StringBuilder();
 		bool changed;
@@ -49,11 +50,8 @@ namespace UMA.CharacterSystem.Examples
 					{
 						buffer.Length = 0;
 						for (int i = lines.Length - 65; i < lines.Length; i++)
-                        {
-                            buffer.AppendFormat("{0}", lines[i]);
-                        }
-
-                        text = buffer.ToString();
+							buffer.AppendFormat("{0}", lines[i]);
+						text = buffer.ToString();
 					}
 					GetComponent<Text>().text = text;
 				}

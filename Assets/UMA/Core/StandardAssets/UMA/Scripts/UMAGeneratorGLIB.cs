@@ -1,4 +1,8 @@
-﻿namespace UMA
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace UMA
 {
     /// <summary>
     /// This is a dummy class and should not be used

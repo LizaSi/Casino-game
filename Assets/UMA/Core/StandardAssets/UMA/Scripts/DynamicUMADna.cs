@@ -1,7 +1,9 @@
 using UnityEngine;
 #if UNITY_EDITOR
+using UnityEditor;
 #endif
 using System.Collections.Generic;
+using UMA.CharacterSystem;
 
 namespace UMA
 {
@@ -50,9 +52,7 @@ namespace UMA
             get
             {
                 if (_values.Length > 0)
-                {
                     return _values;
-                }
                 else
                 {
 					return new float[0];
@@ -94,11 +94,9 @@ namespace UMA
 		public static string[] GetNames()
 		{
 			if (Debug.isDebugBuild)
-            {
-                Debug.LogWarning("Calling the static GetNames() method of Dynamic DNA, result will be empty");
-            }
+				Debug.LogWarning("Calling the static GetNames() method of Dynamic DNA, result will be empty");
 
-            return new string[0];
+			return new string[0];
 		}
 
         #endregion
@@ -164,19 +162,12 @@ namespace UMA
             int idx = -1;
 			//changed to IndexOf because its slightly faster than For loop
 			if (!string.IsNullOrEmpty(dnaName))
-            {
-                idx = System.Array.IndexOf(Names, dnaName);
-            }
+				idx = System.Array.IndexOf(Names, dnaName);
 
-            if (idx == -1 && failSilently == false)
-            {
+			if (idx == -1 && failSilently == false)
                 throw new System.ArgumentOutOfRangeException();
-            }
             else if (idx == -1 && failSilently == true)
-            {
                 return 0.5f;
-            }
-
             return GetValue(idx);
         }
 
@@ -184,8 +175,7 @@ namespace UMA
         {
             if (idx < Count)
             {
-				float value = _values[idx];
-				return value;
+                return Values[idx];
             }
             throw new System.ArgumentOutOfRangeException();
         }
@@ -194,15 +184,9 @@ namespace UMA
             int idx = -1;
 			//changed to IndexOf because its slightly faster than For loop
 			if (!string.IsNullOrEmpty(dnaName))
-            {
-                idx = System.Array.IndexOf(Names, dnaName);
-            }
-
-            if (idx == -1)
-            {
+				idx = System.Array.IndexOf(Names, dnaName);
+			if (idx == -1)
                 throw new System.ArgumentOutOfRangeException();
-            }
-
             SetValue(idx, value);
         }
         public override void SetValue(int idx, float value)
@@ -223,19 +207,15 @@ namespace UMA
 		{
 			InitializeDynamicDNADictionary();
 			if (DynamicDNADictionary.TryGetValue(dnaAssetName, out _dnaAsset))
-            {
-                return;
-            }
+				return;
 
             _dnaAsset = UMAContext.Instance.GetDNA(dnaAssetName);
 
 			if (!_dnaAsset)
 			{
 				if (Debug.isDebugBuild)
-                {
-                    Debug.LogWarning("DynamicUMADna could not find DNAAsset " + dnaAssetName + "!");
-                }
-            }
+					Debug.LogWarning("DynamicUMADna could not find DNAAsset " + dnaAssetName + "!");
+			}
 		}
 
 		public static DynamicUMADna LoadInstance(string data)
@@ -307,10 +287,8 @@ namespace UMA
 			else
 			{
 				if (Debug.isDebugBuild)
-                {
-                    Debug.LogWarning("Deserialized DynamicUMADna with no matching asset!");
-                }
-            }
+					Debug.LogWarning("Deserialized DynamicUMADna with no matching asset!");
+			}
 
             return res;
         }
@@ -319,10 +297,7 @@ namespace UMA
             var res = new DynamicUMADna_Byte();
             res.bDnaAsset = dna.dnaAsset;
             if(dna.dnaAsset != null)
-            {
                 res.bDnaAssetName = dna.dnaAsset.name;
-            }
-
             res.bDnaSettings = new DNASettings[dna._values.Length];
             for (int i = 0; i < dna._values.Length; i++)
             {

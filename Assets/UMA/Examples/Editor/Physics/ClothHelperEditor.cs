@@ -1,9 +1,11 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 using UnityEditor;
 
 namespace UMA.Dynamics.Examples
 {
-    [CustomEditor(typeof(ClothHelper))]
+	[CustomEditor(typeof(ClothHelper))]
 	public class ClothHelperEditor : Editor
 	{
 
@@ -21,11 +23,9 @@ namespace UMA.Dynamics.Examples
 			DrawDefaultInspector ();
 
 			if( m_Cloth != null )
-            {
-                EditorGUILayout.LabelField( "Number of Constraints: ", m_Cloth.coefficients.Length.ToString() );
-            }
+				EditorGUILayout.LabelField( "Number of Constraints: ", m_Cloth.coefficients.Length.ToString() );
 
-            m_ClothHelper.drawFlag = EditorGUILayout.Toggle ( "Display Constraints", m_ClothHelper.drawFlag);
+			m_ClothHelper.drawFlag = EditorGUILayout.Toggle ( "Display Constraints", m_ClothHelper.drawFlag);
 
 			if (GUILayout.Button ("Set Default Constraints")) 
 			{
@@ -80,10 +80,8 @@ namespace UMA.Dynamics.Examples
 				}
 
 				if (!m_ClothHelper.clothVerts.ContainsKey ( key ))
-                {
-                    m_ClothHelper.clothVerts.Add ( key, i);
-                }
-            }
+					m_ClothHelper.clothVerts.Add ( key, i);
+			}
 
 			int matchCount = 0;
 			ClothSkinningCoefficient[] newConstraints = new ClothSkinningCoefficient[cloth.coefficients.Length];

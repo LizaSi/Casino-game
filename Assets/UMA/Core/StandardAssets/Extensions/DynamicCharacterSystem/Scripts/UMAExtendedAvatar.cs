@@ -30,12 +30,9 @@ namespace UMA.CharacterSystem
 			
 			if(showPlaceholder){
 				// Check for mesh Change
-				if(!previewMesh || lastPreviewModel != previewModel)
-                {
-                    LoadMesh();
-                }
-
-                mat.color = previewColor;
+				if(!previewMesh || lastPreviewModel != previewModel) LoadMesh();
+				
+				mat.color = previewColor;
 				if(!Application.isPlaying && previewMesh != null)
 				{
 					
@@ -54,19 +51,14 @@ namespace UMA.CharacterSystem
 			string female = "";
 			GameObject model = null;
 
-            for (int i = 0; i < assets.Length; i++)
+			foreach(string guid in assets)
 			{
-                string guid = assets[i];
-                string thePath = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
+				string thePath = UnityEditor.AssetDatabase.GUIDToAssetPath(guid);
 				if (thePath.ToLower().Contains("female"))
-                {
-                    female = thePath;
-                }
-                else
-                {
-                    male = thePath;
-                }
-            }
+					female = thePath;
+				else
+					male = thePath;
+			}
 
 			if (previewModel == PreviewModel.Male)
 			{
@@ -77,10 +69,8 @@ namespace UMA.CharacterSystem
 				else
 				{
 					if(Debug.isDebugBuild)
-                    {
-                        Debug.LogWarning("Could not load Male_Unified model for preview!");
-                    }
-                }
+						Debug.LogWarning("Could not load Male_Unified model for preview!");
+				}
 			}
 
             if (previewModel == PreviewModel.Female)
@@ -92,23 +82,17 @@ namespace UMA.CharacterSystem
                 else
                 {
                     if (Debug.isDebugBuild)
-                    {
                         Debug.LogWarning("Could not load Female_Unified model for preview!");
-                    }
                 }
             }
 
 			if (model != null)
-            {
-                previewMesh = model.GetComponentInChildren<SkinnedMeshRenderer>().sharedMesh;
-            }
-            else
+				previewMesh = model.GetComponentInChildren<SkinnedMeshRenderer>().sharedMesh;
+			else
 			{
 				if (Debug.isDebugBuild)
-                {
-                    Debug.LogWarning("Preview Model not found on object " + gameObject.name);
-                }
-            }
+					Debug.LogWarning("Preview Model not found on object " + gameObject.name);
+			}
 		}
 	#endif
 	}

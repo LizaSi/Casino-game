@@ -3,10 +3,11 @@ using UnityEngine;
 using UnityEditor;
 using System.IO;
 #endif
+using UMA;
 
 namespace UMA.Examples
 {
-    public class UMARecipeCrowd : MonoBehaviour
+	public class UMARecipeCrowd : MonoBehaviour
 	{
 		public UMAContextBase context;
 		public UMAGeneratorBase generator;
@@ -37,27 +38,18 @@ namespace UMA.Examples
 		void Awake()
 		{
 			if (space <= 0)
-            {
-                space = 1f;
-            }
+				space = 1f;
 
-            if (atlasScale > 1f)
-            {
-                atlasScale = 1f;
-            }
+			if (atlasScale > 1f)
+				atlasScale = 1f;
+			if (atlasScale < 0.0625f)
+				atlasScale = 0.0625f;
 
-            if (atlasScale < 0.0625f)
-            {
-                atlasScale = 0.0625f;
-            }
+			if ((crowdSize.x > 0) && (crowdSize.y > 0))
+				generating = true;
 
-            if ((crowdSize.x > 0) && (crowdSize.y > 0))
-            {
-                generating = true;
-            }
-
-#if UNITY_EDITOR
-            if (saveCrowd)
+	#if UNITY_EDITOR
+			if (saveCrowd)
 			{
 				saveFolderPath = "Saved Crowd " + System.DateTime.Now.ToString().Replace('/', '_');
 				saveFolderPath = saveFolderPath.Replace(':', '_');
@@ -88,11 +80,9 @@ namespace UMA.Examples
 			if (hideWhileGenerating)
 			{
 				if (umaData.animator != null)
-                {
-                    umaData.animator.enabled = false;
-                }
-
-                Renderer[] renderers = umaData.GetRenderers();
+					umaData.animator.enabled = false;
+				
+				Renderer[] renderers = umaData.GetRenderers();
 				for (int i = 0; i < renderers.Length; i++)
 				{
 					renderers[i].enabled = false;
@@ -103,11 +93,9 @@ namespace UMA.Examples
 		public GameObject GenerateOneCharacter()
 		{
 			if ((recipeMixers == null) || (recipeMixers.Length == 0))
-            {
-                return null;
-            }
+				return null;
 
-            Vector3 umaPos = new Vector3((spawnX - crowdSize.x / 2f) * space, 0f, (spawnY - crowdSize.y / 2f) * space);
+			Vector3 umaPos = new Vector3((spawnX - crowdSize.x / 2f) * space, 0f, (spawnY - crowdSize.y / 2f) * space);
 
 			if (spawnY < crowdSize.y)
 			{
@@ -126,11 +114,9 @@ namespace UMA.Examples
 					foreach (UMAData generatedData in generatedCrowd)
 					{
 						if (generatedData.animator != null)
-                        {
-                            generatedData.animator.enabled = true;
-                        }
+							generatedData.animator.enabled = true;
 
-                        Renderer[] renderers = generatedData.GetRenderers();
+						Renderer[] renderers = generatedData.GetRenderers();
 						for (int i = 0; i < renderers.Length; i++)
 						{
 							renderers[i].enabled = true;
@@ -200,12 +186,8 @@ namespace UMA.Examples
 			{
 				foreach (var sharedColor in sharedColors)
 				{
-					if (sharedColor == null)
-                    {
-                        continue;
-                    }
-
-                    int index = Random.Range(0, sharedColor.colors.Length);
+					if (sharedColor == null) continue;
+					int index = Random.Range(0, sharedColor.colors.Length);
 					for (int i = 0; i < recipeColors.Length; i++)
 					{
 						if (recipeColors[i].name == sharedColor.sharedColorName)
@@ -224,25 +206,12 @@ namespace UMA.Examples
 			for (int i = 0; i < slots.Length; i++)
 			{
 				SlotData slot = slots[i];
-				if (slot == null)
-                {
-                    continue;
-                }
+				if (slot == null) continue;
+				if (slot.asset.name == null) continue;
 
-                if (slot.asset.name == null)
-                {
-                    continue;
-                }
-
-                if (slot.asset.slotName == "MaleJeans01")
-                {
-                    maleJeansIndex = i;
-                }
-                else if (slot.asset.slotName == "MaleLegs")
-                {
-                    maleLegsIndex = i;
-                }
-            }
+				if (slot.asset.slotName == "MaleJeans01") maleJeansIndex = i;
+				else if (slot.asset.slotName == "MaleLegs") maleLegsIndex = i;
+			}
 			if ((maleJeansIndex >= 0) && (maleLegsIndex >= 0))
 			{
 				umaData.umaRecipe.SetSlot(maleLegsIndex, null);
@@ -304,12 +273,9 @@ namespace UMA.Examples
 			{
 				Transform child = gameObject.transform.GetChild(i);
 				UMADynamicAvatar umaAvatar = child.gameObject.GetComponent<UMADynamicAvatar>();
-				if (umaAvatar == null)
-                {
-                    continue;
-                }
+				if (umaAvatar == null) continue;
 
-                UMAData umaData = umaAvatar.umaData;
+				UMAData umaData = umaAvatar.umaData;
 				umaData.umaRecipe = new UMAData.UMARecipe();
 
 				RandomizeRecipe(umaData);

@@ -31,9 +31,7 @@ namespace UMA.Timeline
             bool dcaUpdated = false;
             DynamicCharacterAvatar avatar = playerData as DynamicCharacterAvatar;
             if (avatar == null)
-            {
                 return;
-            }
 
             if (!isAdded)
             {
@@ -44,9 +42,8 @@ namespace UMA.Timeline
                 {
                     if (recipesToAdd != null)
                     {
-                        for (int i = 0; i < recipesToAdd.Count; i++)
+                        foreach (UMAWardrobeRecipe recipe in recipesToAdd)
                         {
-                            UMAWardrobeRecipe recipe = recipesToAdd[i];
                             avatar.SetSlot(recipe);
                             dcaUpdated = true;
                         }
@@ -54,9 +51,7 @@ namespace UMA.Timeline
                     else
                     {
                         if (Debug.isDebugBuild)
-                        {
                             Debug.LogWarning("Wardrobe recipes not set!");
-                        }
                     }
                 }
 

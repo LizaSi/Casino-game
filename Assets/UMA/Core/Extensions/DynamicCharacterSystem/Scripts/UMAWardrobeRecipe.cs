@@ -2,11 +2,12 @@ using UnityEngine;
 using System.Collections.Generic;
 
 #if UNITY_EDITOR
+using UnityEditor;
 #endif
 
 namespace UMA.CharacterSystem
 {
-    public partial class UMAWardrobeRecipe : UMATextRecipe
+	public partial class UMAWardrobeRecipe : UMATextRecipe
 	{
 		[SerializeField]
 		[Tooltip("For tracking incompatible items. Not automatic.")]
@@ -25,16 +26,10 @@ namespace UMA.CharacterSystem
 			get
 			{
 				if (string.IsNullOrEmpty(replaces))
-                {
-                    return false;
-                }
-
-                if (replaces.ToLower() == "nothing")
-                {
-                    return false;
-                }
-
-                return true;
+					return false;
+				if (replaces.ToLower() == "nothing")
+					return false;
+				return true;
 			}
 		}
 
@@ -63,16 +58,10 @@ namespace UMA.CharacterSystem
 		private bool CopyFromUTR(UMATextRecipe recipeToCopyFrom)
 		{
 			if (Debug.isDebugBuild)
-            {
-                Debug.Log("WardrobeConverts");
-            }
-
-            if (recipeToCopyFrom.recipeType != "Wardrobe" || recipeToCopyFrom.GetType() != typeof(UMATextRecipe))
-            {
-                return false;
-            }
-
-            recipeType = "Wardrobe";
+				Debug.Log("WardrobeConverts");
+			if (recipeToCopyFrom.recipeType != "Wardrobe" || recipeToCopyFrom.GetType() != typeof(UMATextRecipe))
+				return false;
+			recipeType = "Wardrobe";
 			recipeString = recipeToCopyFrom.recipeString;
 			compatibleRaces = recipeToCopyFrom.compatibleRaces;
 			wardrobeSlot = recipeToCopyFrom.wardrobeSlot;
@@ -82,11 +71,9 @@ namespace UMA.CharacterSystem
 			name = recipeToCopyFrom.name;
 			
 			if (recipeToCopyFrom.OverrideDNA != null)
-            {
-                OverrideDNA = recipeToCopyFrom.OverrideDNA.Clone();
-            }
+				OverrideDNA = recipeToCopyFrom.OverrideDNA.Clone();
 
-            DisplayValue = recipeToCopyFrom.DisplayValue;
+			DisplayValue = recipeToCopyFrom.DisplayValue;
 			return true;
 		}
 

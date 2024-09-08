@@ -1,12 +1,13 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
-namespace UMA
-{
+namespace UMA {
 
-    /// <summary>
-    /// A field that can hold DNAConverters that use the IDNAConverter interface
-    /// </summary>
-    [System.Serializable]
+	/// <summary>
+	/// A field that can hold DNAConverters that use the IDNAConverter interface
+	/// </summary>
+	[System.Serializable]
 	public class DNAConverterField {
 
 		[SerializeField]
@@ -17,11 +18,8 @@ namespace UMA
 			get {
 				Validate();
 				if (_converter == null)
-                {
-                    return null;
-                }
-
-                return _converter as IDNAConverter;
+					return null;
+				return _converter as IDNAConverter;
 			}
 			set { _converter = value as UnityEngine.Object; }
 		}

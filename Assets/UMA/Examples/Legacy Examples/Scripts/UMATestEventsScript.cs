@@ -1,11 +1,12 @@
 using UnityEngine;
+using System.Collections;
 
 namespace UMA.Examples
 {
-    /// <summary>
-    /// Examples of the character building callbacks.
-    /// </summary>
-    public class UMATestEventsScript : MonoBehaviour
+	/// <summary>
+	/// Examples of the character building callbacks.
+	/// </summary>
+	public class UMATestEventsScript : MonoBehaviour
 	{
 		public void CreatedEvent(UMA.UMAData data)
 		{

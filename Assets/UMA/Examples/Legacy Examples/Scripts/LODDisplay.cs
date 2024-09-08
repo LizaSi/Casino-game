@@ -1,4 +1,8 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+using UMA;
+using UMA.CharacterSystem;
 
 namespace UMA.Examples
 {
@@ -30,9 +34,7 @@ namespace UMA.Examples
             else
             {
                 if (Debug.isDebugBuild)
-                {
                     Debug.LogWarning("No LOD Display prefab set on " + gameObject.name);
-                }
             }
         }
 

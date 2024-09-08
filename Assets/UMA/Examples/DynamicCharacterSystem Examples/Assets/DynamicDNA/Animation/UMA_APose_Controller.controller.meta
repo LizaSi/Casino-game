@@ -1,10 +1,8 @@
 fileFormatVersion: 2
 guid: 66af5264f1619114db5f72f979ce14bd
-labels:
-- UMA_Animator Controller
+timeCreated: 1466726032
+licenseType: Free
 NativeFormatImporter:
-  externalObjects: {}
-  mainObjectFileID: 0
   userData: 
   assetBundleName: 
   assetBundleVariant: 

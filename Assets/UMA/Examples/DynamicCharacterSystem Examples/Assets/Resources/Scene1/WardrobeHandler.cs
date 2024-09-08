@@ -1,5 +1,6 @@
-﻿using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
+using System.Collections.Generic;
+using UMA.CharacterSystem;
 using UnityEngine.UI;
 
 namespace UMA.CharacterSystem.Examples
@@ -22,7 +23,7 @@ namespace UMA.CharacterSystem.Examples
 				if (Recipe == null)
 					return false;
 
-                if (UMAAssetIndexer.Instance.Preloads.ContainsKey(Recipe.name)) return true;
+				if (UMAAssetIndexer.Instance.Preloads.ContainsKey(Recipe.name)) return true;
 	
 				return false;
 #else
@@ -34,7 +35,21 @@ namespace UMA.CharacterSystem.Examples
 		{
 			Text txt = GetComponentInChildren<Text>();
 			txt.text = theText;
-			txt.color = LoadedColor;
+			if (Recipe == null)
+			{
+				txt.color = Color.black;
+				txt.text = theText;
+			}
+			else if (!isReady)
+			{
+				txt.color = UnloadedColor;
+				txt.text = "(U) " + theText;
+			}
+			else
+			{
+				txt.text = "(L)" + theText;
+				txt.color = LoadedColor;
+			}
 
 			if (txt.text.Length > 20)
 			{

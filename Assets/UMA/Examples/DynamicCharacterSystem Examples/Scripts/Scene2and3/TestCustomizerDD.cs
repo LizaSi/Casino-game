@@ -5,11 +5,12 @@ using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
+using UMA;
 using UMA.Examples;
 
 namespace UMA.CharacterSystem.Examples
 {
-    public class TestCustomizerDD : MonoBehaviour
+	public class TestCustomizerDD : MonoBehaviour
 	{
 		//SharedColorTableItem makes it possible to have more color tables than just skin/hair/cloth
 		//So a slot has a shared color name and this iterates over the shared color tables to see if a table with that name exists
@@ -26,7 +27,7 @@ namespace UMA.CharacterSystem.Examples
 		public DynamicCharacterAvatar Avatar;
 		//public DynamicCharacterSystem characterSystem;
 		//ConverterCustomizer is an editor only tool
-		// public DynamicDNAConverterCustomizer converterCustomizer;
+		public DynamicDNAConverterCustomizer converterCustomizer;
 
 		public SharedColorTable GenericColorList;
 		public Sprite genericColorSwatch;
@@ -141,6 +142,16 @@ namespace UMA.CharacterSystem.Examples
 			}
 			Avatar.CharacterCreated.AddListener(Init);
 			//converterCustomizer is editor only
+#if UNITY_EDITOR
+			if (converterCustomizer == null)
+			{
+				converterCustomizer = GameObject.FindObjectOfType<DynamicDNAConverterCustomizer>();
+			}
+			else
+			{
+				converterCustomizer.BonesCreated.AddListener(BonesCreated);
+			}
+#endif
 		}
 
 		private void BonesCreated()
@@ -163,11 +174,8 @@ namespace UMA.CharacterSystem.Examples
 				if (Avatar != null)
 				{
 					if (Orbitor != null)
-                    {
-                        Orbitor.SwitchTarget(Avatar.gameObject.transform);
-                    }
-
-                    thisRace = Avatar.activeRace.name;
+						Orbitor.SwitchTarget(Avatar.gameObject.transform);
+					thisRace = Avatar.activeRace.name;
 				}
 				else
 				{
@@ -183,11 +191,8 @@ namespace UMA.CharacterSystem.Examples
 			else
 			{
 				if (newAvatarObject == Avatar.gameObject)
-                {
-                    return;
-                }
-
-                if (Orbitor != null)
+					return;
+				if (Orbitor != null)
 				{
 					Orbitor.SwitchTarget(newAvatarObject.transform);
 					Orbitor.distance = 1.5f;
@@ -211,14 +216,11 @@ namespace UMA.CharacterSystem.Examples
 			raceDropdownOptions = new List<string>();
 			//add the 'NoneSet'
 			raceDropdownOptions.Add("None Set");
-            for (int i = 0; i < raceDropdownOptionsArray.Length; i++)
+			foreach (RaceData r in raceDropdownOptionsArray)
 			{
-                RaceData r = raceDropdownOptionsArray[i];
-                if (r.raceName != "PlaceholderRace" && r.raceName != "RaceDataPlaceholder")
-                {
-                    raceDropdownOptions.Add(r.raceName);
-                }
-            }
+				if (r.raceName != "PlaceholderRace" && r.raceName != "RaceDataPlaceholder")
+					raceDropdownOptions.Add(r.raceName);
+			}
 			for (int i = 0; i < raceDropdownOptions.Count; i++)
 			{
 				var thisddOption = new Dropdown.OptionData();
@@ -235,45 +237,26 @@ namespace UMA.CharacterSystem.Examples
 			// we also need to make the raceChangeOptions toggles match the settings in the component
 			Toggle[] thisChangeRaceToggles = null;
 			if(changeRaceDropdown.template.Find("ChangeRaceOptsHolder") != null)
-            {
-                if (changeRaceDropdown.template.Find("ChangeRaceOptsHolder").Find("ChangeRaceToggles") != null)
-                {
-                    if (changeRaceDropdown.template.Find("ChangeRaceOptsHolder").Find("ChangeRaceToggles").GetComponentsInChildren<Toggle>().Length != 0)
-                    {
-                        thisChangeRaceToggles = changeRaceDropdown.template.Find("ChangeRaceOptsHolder").Find("ChangeRaceToggles").GetComponentsInChildren<Toggle>();
-                    }
-                }
-            }
-
-            if (thisChangeRaceToggles != null)
-            {
-                for (int i = 0; i < thisChangeRaceToggles.Length; i++)
+				if(changeRaceDropdown.template.Find("ChangeRaceOptsHolder").Find("ChangeRaceToggles") != null)
+					if(changeRaceDropdown.template.Find("ChangeRaceOptsHolder").Find("ChangeRaceToggles").GetComponentsInChildren<Toggle>().Length != 0)
+						thisChangeRaceToggles = changeRaceDropdown.template.Find("ChangeRaceOptsHolder").Find("ChangeRaceToggles").GetComponentsInChildren<Toggle>();
+			if(thisChangeRaceToggles != null)
+			for(int i = 0; i < thisChangeRaceToggles.Length; i++)
 			{
 				if (thisChangeRaceToggles[i].gameObject.name == "KeepDNA")
-                    {
-                        thisChangeRaceToggles[i].isOn = _keepDNA;
-                    }
-                    else if (thisChangeRaceToggles[i].gameObject.name == "KeepWardrobe")
-                    {
-                        thisChangeRaceToggles[i].isOn = _keepWardrobe;
-                    }
-                    else if (thisChangeRaceToggles[i].gameObject.name == "KeepBodyColors")
-                    {
-                        thisChangeRaceToggles[i].isOn = _keepBodyColors;
-                    }
-                }
-            }
-
-            changeRaceDropdown.onValueChanged.AddListener(ChangeRace);
+					thisChangeRaceToggles[i].isOn = _keepDNA;
+				else if (thisChangeRaceToggles[i].gameObject.name == "KeepWardrobe")
+					thisChangeRaceToggles[i].isOn = _keepWardrobe;
+				else if (thisChangeRaceToggles[i].gameObject.name == "KeepBodyColors")
+					thisChangeRaceToggles[i].isOn = _keepBodyColors;
+			}
+			changeRaceDropdown.onValueChanged.AddListener(ChangeRace);
 		}
 		public void ChangeRace(string racename)
 		{
 			if (Avatar == null)
-            {
-                return;
-            }
-
-            CloseAllPanels();
+				return;
+			CloseAllPanels();
 			int raceInt = -1;
 			for (int i = 0; i < changeRaceDropdown.options.Count; i++)
 			{
@@ -284,31 +267,21 @@ namespace UMA.CharacterSystem.Examples
 				}
 			}
 			if (raceInt != -1)
-            {
-                ChangeRace(raceInt);
-            }
-            else
+				ChangeRace(raceInt);
+			else
 			{
 				//this must be a newly Downloaded Race so just let CharacterAvatar deal with it...
 				DynamicCharacterAvatar.ChangeRaceOptions thisLoadOptions = DynamicCharacterAvatar.ChangeRaceOptions.none;
 				if (_keepDNA || _keepWardrobe || _keepBodyColors)
 				{
 					if (_keepDNA)
-                    {
-                        thisLoadOptions |= DynamicCharacterAvatar.ChangeRaceOptions.keepDNA;
-                    }
+						thisLoadOptions |= DynamicCharacterAvatar.ChangeRaceOptions.keepDNA;
+					if (_keepWardrobe)
+						thisLoadOptions |= DynamicCharacterAvatar.ChangeRaceOptions.keepWardrobe;
+					if (_keepBodyColors)
+						thisLoadOptions |= DynamicCharacterAvatar.ChangeRaceOptions.keepBodyColors;
 
-                    if (_keepWardrobe)
-                    {
-                        thisLoadOptions |= DynamicCharacterAvatar.ChangeRaceOptions.keepWardrobe;
-                    }
-
-                    if (_keepBodyColors)
-                    {
-                        thisLoadOptions |= DynamicCharacterAvatar.ChangeRaceOptions.keepBodyColors;
-                    }
-
-                    thisLoadOptions &= ~DynamicCharacterAvatar.ChangeRaceOptions.none;
+					thisLoadOptions &= ~DynamicCharacterAvatar.ChangeRaceOptions.none;
 				}
 				Avatar.ChangeRace(racename, thisLoadOptions);
 			}
@@ -322,29 +295,18 @@ namespace UMA.CharacterSystem.Examples
 				thisRace = RaceToSet;
 				//Force CharacterSystem to find the new race - unless its None Set
 				if(RaceToSet != "None Set")
-                {
-                    UMAContextBase.Instance.GetRace(RaceToSet);
-                }
-
-                DynamicCharacterAvatar.ChangeRaceOptions thisLoadOptions = DynamicCharacterAvatar.ChangeRaceOptions.none;
+					UMAContextBase.Instance.GetRace(RaceToSet);
+				DynamicCharacterAvatar.ChangeRaceOptions thisLoadOptions = DynamicCharacterAvatar.ChangeRaceOptions.none;
 				if (_keepDNA || _keepWardrobe || _keepBodyColors)
 				{
 					if (_keepDNA)
-                    {
-                        thisLoadOptions |= DynamicCharacterAvatar.ChangeRaceOptions.keepDNA;
-                    }
+						thisLoadOptions |= DynamicCharacterAvatar.ChangeRaceOptions.keepDNA;
+					if (_keepWardrobe)
+						thisLoadOptions |= DynamicCharacterAvatar.ChangeRaceOptions.keepWardrobe;
+					if (_keepBodyColors)
+						thisLoadOptions |= DynamicCharacterAvatar.ChangeRaceOptions.keepBodyColors;
 
-                    if (_keepWardrobe)
-                    {
-                        thisLoadOptions |= DynamicCharacterAvatar.ChangeRaceOptions.keepWardrobe;
-                    }
-
-                    if (_keepBodyColors)
-                    {
-                        thisLoadOptions |= DynamicCharacterAvatar.ChangeRaceOptions.keepBodyColors;
-                    }
-
-                    thisLoadOptions &= ~DynamicCharacterAvatar.ChangeRaceOptions.none;
+					thisLoadOptions &= ~DynamicCharacterAvatar.ChangeRaceOptions.none;
 				}
 				Avatar.ChangeRace(RaceToSet, thisLoadOptions);
 			}
@@ -355,10 +317,9 @@ namespace UMA.CharacterSystem.Examples
 			List<string> slotsFromAllRaces = new List<string>();
 
 			List<RaceData> races = UMAAssetIndexer.Instance.GetAllAssets<RaceData>();
-            for (int i1 = 0; i1 < races.Count; i1++)
+			foreach (RaceData rd in races)
 			{
-                RaceData rd = races[i1];
-                string race = rd.raceName;
+				string race = rd.raceName;
 				int i = 0;
 				var recipes = UMAAssetIndexer.Instance.GetRecipes(race);
 				foreach (string slot in recipes.Keys)
@@ -370,15 +331,11 @@ namespace UMA.CharacterSystem.Examples
 					}
 				}
 			}
-            for (int i = 0; i < slotsFromAllRaces.Count; i++)
+			foreach (string slot in slotsFromAllRaces)
 			{
-                string slot = slotsFromAllRaces[i];
-                if (slot == "None")
-                {
-                    continue;
-                }
-
-                if (wardrobeDropdownPanel.transform.Find(slot + "DropdownHolder") == null)
+				if (slot == "None")
+					continue;
+				if (wardrobeDropdownPanel.transform.Find(slot + "DropdownHolder") == null)
 				{
 					GameObject thisWardrobeDropdown = Instantiate(wardrobeDrodownPrefab) as GameObject;
 					thisWardrobeDropdown.transform.SetParent(wardrobeDropdownPanel.transform, false);
@@ -395,11 +352,8 @@ namespace UMA.CharacterSystem.Examples
 		public void SetUpWardrobeDropdowns()
 		{
 			if (Avatar != null)
-            {
-                thisRace = Avatar.activeRace.name;
-            }
-
-            var raceRecipes = UMAAssetIndexer.Instance.GetRecipes(thisRace);
+				thisRace = Avatar.activeRace.name;
+			var raceRecipes = UMAAssetIndexer.Instance.GetRecipes(thisRace);
 			InitializeWardrobeDropDowns();
 			foreach (Transform child in wardrobeDropdownPanel.transform)
 			{
@@ -494,10 +448,8 @@ namespace UMA.CharacterSystem.Examples
 				}
 			}
 			if (Avatar != null)
-            {
-                UpdateSuppressedWardrobeDropdowns();
-            }
-        }
+				UpdateSuppressedWardrobeDropdowns();
+		}
 
 		private void SetUpWardrobeCollectionDropdown(Transform childGO, Dropdown thisDD)
 		{
@@ -527,10 +479,8 @@ namespace UMA.CharacterSystem.Examples
 				{
 					activeWCs++;
 					if(Avatar.IsCollectionApplied(wardrobeOptions[i].name))
-                    {
-                        appliedWCs++;
-                    }
-                }
+						appliedWCs++;
+				}
 			}
 			thisDD.value = 0;
 			thisDD.transform.Find("SlotLabel").GetComponent<Text>().text = "";
@@ -568,11 +518,8 @@ namespace UMA.CharacterSystem.Examples
 			for (int i = 0; i < allItems.Length; i++)
 			{
 				if (allItems[i].gameObject == selectedItem)
-                {
-                    continue;
-                }
-
-                var collectionName = allItems[i].gameObject.name.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)[1];
+					continue;
+				var collectionName = allItems[i].gameObject.name.Split(new string[] { ": " }, StringSplitOptions.RemoveEmptyEntries)[1];
 				if (Avatar.GetWardrobeCollection(collectionName))
 				{
 					var forcedCheckmark = Instantiate<GameObject>(selectedItemCheckMark.gameObject);
@@ -593,18 +540,12 @@ namespace UMA.CharacterSystem.Examples
 		public void UpdateSuppressedWardrobeDropdowns()
 		{
 			if (Avatar.WardrobeRecipes.Count == 0)
-            {
-                return;
-            }
-
-            foreach (KeyValuePair<string, UMATextRecipe> kp in Avatar.WardrobeRecipes)
+				return;
+			foreach (KeyValuePair<string, UMATextRecipe> kp in Avatar.WardrobeRecipes)
 			{
 				if (kp.Value.suppressWardrobeSlots == null)
-                {
-                    continue;
-                }
-
-                var suppressedSlots = kp.Value.suppressWardrobeSlots;
+					continue;
+				var suppressedSlots = kp.Value.suppressWardrobeSlots;
 				foreach (Transform child in wardrobeDropdownPanel.transform)
 				{
 					var thisDD = child.GetComponent<Dropdown>();
@@ -634,17 +575,15 @@ namespace UMA.CharacterSystem.Examples
 			thisRace = Avatar.activeRace.name;
 			var currentColorDropdowns = colorDropdownPanel.transform.GetComponentsInChildren<CSColorChangerDD>(true);
 			List<string> activeColorDropdowns = new List<string>();
-            //foreach (DynamicCharacterAvatar.ColorValue colorType in Avatar.characterColors.Colors)
-            //using new colorvaluestuff
-            for (int i = 0; i < Avatar.characterColors.Colors.Count; i++)
+			//foreach (DynamicCharacterAvatar.ColorValue colorType in Avatar.characterColors.Colors)
+			//using new colorvaluestuff
+			foreach (OverlayColorData colorType in Avatar.characterColors.Colors)
 			{
-                OverlayColorData colorType = Avatar.characterColors.Colors[i];
-                activeColorDropdowns.Add(colorType.name);
+				activeColorDropdowns.Add(colorType.name);
 				bool dropdownExists = false;
-                for (int i1 = 0; i1 < currentColorDropdowns.Length; i1++)
+				foreach (CSColorChangerDD colorDropdown in currentColorDropdowns)
 				{
-                    CSColorChangerDD colorDropdown = currentColorDropdowns[i1];
-                    if (colorDropdown.colorToChange == colorType.name)
+					if (colorDropdown.colorToChange == colorType.name)
 					{
 						dropdownExists = true;
 						colorDropdown.gameObject.SetActive(true);
@@ -664,15 +603,12 @@ namespace UMA.CharacterSystem.Examples
 					SetUpColorDropdownValue(thisColorDropdown.GetComponent<CSColorChangerDD>(), colorType);
 				}
 			}
-            CSColorChangerDD[] array = colorDropdownPanel.transform.GetComponentsInChildren<CSColorChangerDD>();
-            for (int i = 0; i < array.Length; i++)
+			foreach (CSColorChangerDD colorDropdown in colorDropdownPanel.transform.GetComponentsInChildren<CSColorChangerDD>())
 			{
-                CSColorChangerDD colorDropdown = array[i];
-                bool keepOptionActive = false;
-                for (int i1 = 0; i1 < umaData.umaRecipe.sharedColors.Length; i1++)
+				bool keepOptionActive = false;
+				foreach (UMA.OverlayColorData ucd in umaData.umaRecipe.sharedColors)
 				{
-                    OverlayColorData ucd = umaData.umaRecipe.sharedColors[i1];
-                    if (colorDropdown.colorToChange == ucd.name)
+					if (colorDropdown.colorToChange == ucd.name)
 					{
 						keepOptionActive = true;
 						break;
@@ -689,11 +625,8 @@ namespace UMA.CharacterSystem.Examples
 			if (GenericColorList == null)
 			{
 				if (Debug.isDebugBuild)
-                {
-                    Debug.LogWarning("[TestCustomizerDD] the GenericColorList was null or missing, this must be set.");
-                }
-
-                return;
+					Debug.LogWarning("[TestCustomizerDD] the GenericColorList was null or missing, this must be set.");
+				return;
 			}
 			int colorTableSelected = -1;
 			SharedColorTable thisColorTable = null;
@@ -703,11 +636,8 @@ namespace UMA.CharacterSystem.Examples
 				if (thisColorTable == null)
 				{
 					if (Debug.isDebugBuild)
-                    {
-                        Debug.LogWarning("[TestCustomizerDD] the colorList for " + colorType.name + " was null or missing, please set this or remove it from the list.");
-                    }
-
-                    return;
+						Debug.LogWarning("[TestCustomizerDD] the colorList for " + colorType.name + " was null or missing, please set this or remove it from the list.");
+					return;
 				}
 				for (int i = 0; i < thisColorTable.colors.Length; i++)
 				{
@@ -968,18 +898,14 @@ namespace UMA.CharacterSystem.Examples
 		public void LoadRecipe()
 		{
 			if (Avatar != null)
-            {
-                Avatar.DoLoad();
-            }
-        }
+				Avatar.DoLoad();
+		}
 
 		public void SaveRecipe()
 		{
 			if (Avatar != null)
-            {
-                Avatar.DoSave();
-            }
-        }
+				Avatar.DoSave();
+		}
 
 		public void ListLoadableFiles(ScrollRect ItemList)
 		{
@@ -997,10 +923,9 @@ namespace UMA.CharacterSystem.Examples
 			if (Directory.Exists(persistentPath))
 			{
 				string[] persistentDataFiles = Directory.GetFiles(persistentPath, "*.txt");
-                for (int i = 0; i < persistentDataFiles.Length; i++)
+				foreach (string path in persistentDataFiles)
 				{
-                    string path = persistentDataFiles[i];
-                    GameObject thisLoadableItem = Instantiate(loadableItemPrefab) as GameObject;
+					GameObject thisLoadableItem = Instantiate(loadableItemPrefab) as GameObject;
 					thisLoadableItem.transform.SetParent(ItemList.content.transform, false);
 					thisLoadableItem.GetComponent<CSLoadableItem>().customizerScript = this;
 					thisLoadableItem.GetComponent<CSLoadableItem>().filepath = path;
@@ -1008,12 +933,10 @@ namespace UMA.CharacterSystem.Examples
 					thisLoadableItem.GetComponentInChildren<Text>().text = Path.GetFileNameWithoutExtension(path);
 				}
 			}
-
-            List<string> list = UMAContext.Instance.GetRecipeFiles();
-            for (int i = 0; i < list.Count; i++)
+			
+			foreach (string s in UMAContext.Instance.GetRecipeFiles())
 			{
-                string s = list[i];
-                GameObject thisLoadableItem = Instantiate(loadableItemPrefab) as GameObject;
+				GameObject thisLoadableItem = Instantiate(loadableItemPrefab) as GameObject;
 				thisLoadableItem.transform.SetParent(ItemList.content.transform, false);
 				thisLoadableItem.GetComponent<CSLoadableItem>().customizerScript = this;
 				thisLoadableItem.GetComponent<CSLoadableItem>().filename = Path.GetFileNameWithoutExtension(s);
@@ -1039,31 +962,17 @@ namespace UMA.CharacterSystem.Examples
 				if (_loadRace || _loadDNA || _loadWardrobe || _loadBodyColors || _loadWardrobeColors)
 				{
 					if(_loadRace)
-                    {
-                        thisLoadOptions |= DynamicCharacterAvatar.LoadOptions.loadRace;
-                    }
+						thisLoadOptions |= DynamicCharacterAvatar.LoadOptions.loadRace;
+					if (_loadDNA)
+						thisLoadOptions |= DynamicCharacterAvatar.LoadOptions.loadDNA;
+					if (_loadWardrobe)
+						thisLoadOptions |= DynamicCharacterAvatar.LoadOptions.loadWardrobe;
+					if (_loadBodyColors)
+						thisLoadOptions |= DynamicCharacterAvatar.LoadOptions.loadBodyColors;
+					if (_loadWardrobeColors)
+						thisLoadOptions |= DynamicCharacterAvatar.LoadOptions.loadWardrobeColors;
 
-                    if (_loadDNA)
-                    {
-                        thisLoadOptions |= DynamicCharacterAvatar.LoadOptions.loadDNA;
-                    }
-
-                    if (_loadWardrobe)
-                    {
-                        thisLoadOptions |= DynamicCharacterAvatar.LoadOptions.loadWardrobe;
-                    }
-
-                    if (_loadBodyColors)
-                    {
-                        thisLoadOptions |= DynamicCharacterAvatar.LoadOptions.loadBodyColors;
-                    }
-
-                    if (_loadWardrobeColors)
-                    {
-                        thisLoadOptions |= DynamicCharacterAvatar.LoadOptions.loadWardrobeColors;
-                    }
-
-                    thisLoadOptions &= ~DynamicCharacterAvatar.LoadOptions.useDefaults;
+					thisLoadOptions &= ~DynamicCharacterAvatar.LoadOptions.useDefaults;
 				}
 
 				Avatar.LoadFromRecipeString(recipeText, thisLoadOptions);
@@ -1077,31 +986,20 @@ namespace UMA.CharacterSystem.Examples
 			{
 				thisFilename = Path.GetFileNameWithoutExtension(thisFilename.Replace(" ", ""));
 				if (Debug.isDebugBuild)
-                {
-                    Debug.Log("Saved File with filename " + thisFilename);
-                }
-
-                Avatar.saveFilename = thisFilename;
+					Debug.Log("Saved File with filename " + thisFilename);
+				Avatar.saveFilename = thisFilename;
 
 				DynamicCharacterAvatar.SaveOptions thisSaveOptions = DynamicCharacterAvatar.SaveOptions.useDefaults;
 				if (_saveDNA || _saveWardrobe || _saveColors)
 				{
 					if (_saveDNA)
-                    {
-                        thisSaveOptions |= DynamicCharacterAvatar.SaveOptions.saveDNA;
-                    }
+						thisSaveOptions |= DynamicCharacterAvatar.SaveOptions.saveDNA;
+					if (_saveWardrobe)
+						thisSaveOptions |= DynamicCharacterAvatar.SaveOptions.saveWardrobe;
+					if (_saveColors)
+						thisSaveOptions |= DynamicCharacterAvatar.SaveOptions.saveColors;
 
-                    if (_saveWardrobe)
-                    {
-                        thisSaveOptions |= DynamicCharacterAvatar.SaveOptions.saveWardrobe;
-                    }
-
-                    if (_saveColors)
-                    {
-                        thisSaveOptions |= DynamicCharacterAvatar.SaveOptions.saveColors;
-                    }
-
-                    thisSaveOptions &= ~DynamicCharacterAvatar.SaveOptions.useDefaults;
+					thisSaveOptions &= ~DynamicCharacterAvatar.SaveOptions.useDefaults;
 				}
 
 				Avatar.DoSave(false,"", thisSaveOptions);

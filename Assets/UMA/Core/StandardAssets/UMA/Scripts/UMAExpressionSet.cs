@@ -37,14 +37,12 @@ namespace UMA.PoseTools
             if (boneHashes == null)
             {
                 List<int> boneHashList = new List<int>();
-                for (int i = 0; i < posePairs.Length; i++)
+                foreach (PosePair pair in posePairs)
                 {
-                    PosePair pair = posePairs[i];
                     if (pair.primary != null)
                     {
-                        for (int i1 = 0; i1 < pair.primary.poses.Length; i1++)
+                        foreach (UMABonePose.PoseBone bone in pair.primary.poses)
                         {
-                            UMABonePose.PoseBone bone = pair.primary.poses[i1];
                             if (!boneHashList.Contains(bone.hash))
                             {
                                 boneHashList.Add(bone.hash);
@@ -53,9 +51,8 @@ namespace UMA.PoseTools
                     }
                     if (pair.inverse != null)
                     {
-                        for (int i1 = 0; i1 < pair.inverse.poses.Length; i1++)
+                        foreach (UMABonePose.PoseBone bone in pair.inverse.poses)
                         {
-                            UMABonePose.PoseBone bone = pair.inverse.poses[i1];
                             if (!boneHashList.Contains(bone.hash))
                             {
                                 boneHashList.Add(bone.hash);
@@ -75,16 +72,12 @@ namespace UMA.PoseTools
         /// <param name="logErrors"></param>
         public void RestoreBones(UMASkeleton umaSkeleton, bool logErrors = false)
         {
-            if (umaSkeleton == null)
-            {
-                return;
-            }
+            if (umaSkeleton == null) return;
 
             ValidateBoneHashes();
 
-            for (int i = 0; i < boneHashes.Length; i++)
+            foreach (int hash in boneHashes)
             {
-                int hash = boneHashes[i];
                 if (!umaSkeleton.Restore(hash))
                 {
 					if (logErrors)
@@ -92,15 +85,13 @@ namespace UMA.PoseTools
 						//Since this generally logs like crazy which screws everything anyway, it might be nice to provide some useful information?
 						var umaname = umaSkeleton.GetBoneGameObject(umaSkeleton.rootBoneHash).GetComponentInParent<UMAAvatarBase>().gameObject.name;
 						string boneName = "";
-                        for (int i1 = 0; i1 < posePairs.Length; i1++)
+						foreach (PosePair pair in posePairs)
 						{
-                            PosePair pair = posePairs[i1];
-                            if (pair.primary != null)
+							if (pair.primary != null)
 							{
-                                for (int i2 = 0; i2 < pair.primary.poses.Length; i2++)
+								foreach (UMABonePose.PoseBone bone in pair.primary.poses)
 								{
-                                    UMABonePose.PoseBone bone = pair.primary.poses[i2];
-                                    if (bone.hash == hash)
+									if (bone.hash == hash)
 									{
 										boneName = bone.bone;
 									}
@@ -108,10 +99,9 @@ namespace UMA.PoseTools
 							}
 							if (pair.inverse != null)
 							{
-                                for (int i2 = 0; i2 < pair.inverse.poses.Length; i2++)
+								foreach (UMABonePose.PoseBone bone in pair.inverse.poses)
 								{
-                                    UMABonePose.PoseBone bone = pair.inverse.poses[i2];
-                                    if (bone.hash == hash)
+									if (bone.hash == hash)
 									{
 										boneName = bone.bone;
 									}
@@ -119,10 +109,8 @@ namespace UMA.PoseTools
 							}
 						}
 						if (Debug.isDebugBuild)
-                        {
-                            Debug.LogWarning("Couldn't reset bone! " + boneName + " on " + umaname);
-                        }
-                    }
+							Debug.LogWarning("Couldn't reset bone! " + boneName + " on " + umaname);
+					}
                 }
             }
         }
@@ -140,10 +128,7 @@ namespace UMA.PoseTools
         /// <param name="umaSkeleton">Skeleton containing transforms.</param>
         public Transform[] GetAnimatedBones(UMASkeleton umaSkeleton)
         {
-            if (umaSkeleton == null)
-            {
-                return null;
-            }
+            if (umaSkeleton == null) return null;
 
             ValidateBoneHashes();
 

@@ -19,9 +19,7 @@ namespace UMA.Examples
                 GUI.color = i == active ? new Color(0.5f, 1f, 0.5f) : Color.white;
 
                 if (GUILayout.Button(presets[i].name))
-                {
                     target.SetActivePreset(i);
-                }
 
                 if (GUILayout.Button("->", GUILayout.MaxWidth(30f)))
                 {
@@ -38,9 +36,7 @@ namespace UMA.Examples
 
             GUILayout.Space(25f);
             if (GUILayout.Button("Generate Screenshots"))
-            {
                 target.DumpAllScreens();
-            }
         }
     }
 }

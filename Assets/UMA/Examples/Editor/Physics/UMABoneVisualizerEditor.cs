@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using UnityEditor;
+using System.Collections;
 
 [CustomEditor(typeof(UMABoneVisualizer))]
 public class Example : Editor

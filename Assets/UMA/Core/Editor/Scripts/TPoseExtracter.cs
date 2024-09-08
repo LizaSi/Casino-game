@@ -39,10 +39,7 @@ namespace UMA.Editors
 								asset.Serialize();
 							}
 							if (!Directory.Exists(assetDirectory))
-                            {
                                 Directory.CreateDirectory(assetDirectory);
-                            }
-
                             try
                             {
                                 AssetDatabase.CreateAsset(asset, assetDirectory + Path.DirectorySeparatorChar + name + "_TPose.asset");
@@ -89,11 +86,8 @@ namespace UMA.Editors
 
 
                 if (!Directory.Exists(path))
-                {
-                    Directory.CreateDirectory(path);
-                }
-
-                AssetDatabase.CreateAsset(asset, path+"/" + name + "_TPose.asset");
+					Directory.CreateDirectory(path);
+				AssetDatabase.CreateAsset(asset, path+"/" + name + "_TPose.asset");
 	            EditorUtility.SetDirty(asset);
 	            AssetDatabase.SaveAssets();
 	        }

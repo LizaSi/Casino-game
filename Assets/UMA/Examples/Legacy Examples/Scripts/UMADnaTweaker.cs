@@ -1,8 +1,10 @@
-﻿using UnityEngine;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
 
 namespace UMA.Examples
 {
-    public class UMADnaTweaker : MonoBehaviour
+	public class UMADnaTweaker : MonoBehaviour
 	{
 		public string dnaToTweak;
 		public UMACustomization customizer;
@@ -11,16 +13,10 @@ namespace UMA.Examples
 		{
 
 			if (string.IsNullOrEmpty(dnaToTweak))
-            {
-                return;
-            }
-
-            if (customizer == null)
-            {
-                return;
-            }
-
-            customizer.PerformDNAChange(dnaToTweak, newValue);
+				return;
+			if (customizer == null)
+				return;
+			customizer.PerformDNAChange(dnaToTweak, newValue);
 		}
 	}
 }

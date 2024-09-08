@@ -38,16 +38,11 @@ namespace UMA.CharacterSystem.Editors
 			get
 			{
 				if (_importIcon != null)
-                {
-                    return _importIcon;
-                }
-                //Chek EditorStyles has been set up
-                if (EditorStyles.label == null)
-                {
-                    return new Texture2D(4, 4);
-                }
-
-                _importIcon = EditorGUIUtility.FindTexture("CollabPull");
+					return _importIcon;
+				//Chek EditorStyles has been set up
+				if (EditorStyles.label == null)
+					return new Texture2D(4, 4);
+				_importIcon = EditorGUIUtility.FindTexture("CollabPull");
 				return _importIcon;
 			}
 		}
@@ -58,16 +53,11 @@ namespace UMA.CharacterSystem.Editors
 			{
 				_importStyle= new GUIStyle();
 				if (_importContent != null && _importIcon != null)
-                {
-                    return _importContent;
-                }
-                //Check EditorStyles has been set up
-                if (EditorStyles.label == null)
-                {
-                    return new GUIContent("", "Show Import Names Tools");
-                }
-
-                _importContent = new GUIContent("", "Show Import Names Tools");
+					return _importContent;
+				//Check EditorStyles has been set up
+				if (EditorStyles.label == null)
+					return new GUIContent("", "Show Import Names Tools");
+				_importContent = new GUIContent("", "Show Import Names Tools");
 				_importStyle = new GUIStyle(EditorStyles.label);
 				_importStyle.fixedHeight = importIcon.height + 4f;
 				_importStyle.contentOffset = new Vector2(-4f, -0f);
@@ -99,10 +89,8 @@ namespace UMA.CharacterSystem.Editors
 		public static void SetLivePopupEditor(DynamicUMADnaAssetEditor liveDUDAEditor)
 		{
 			if (Application.isPlaying)
-            {
-                _livePopupEditor = liveDUDAEditor;
-            }
-        }
+				_livePopupEditor = liveDUDAEditor;
+		}
 
 		public void Init()
 		{
@@ -130,11 +118,9 @@ namespace UMA.CharacterSystem.Editors
 		public override void OnInspectorGUI()
 		{
 			if (!initialized)
-            {
-                Init();
-            }
+				Init();
 
-            serializedObject.Update();
+			serializedObject.Update();
 			GUILayout.Space(5);
 			var dnaHeaderRect = EditorGUILayout.GetControlRect();
 
@@ -192,10 +178,8 @@ namespace UMA.CharacterSystem.Editors
 				if (GUI.Button(hashBtnRect, new GUIContent("Edit", _dnaTypehashTooltip)))
 				{
 					if (EditorUtility.DisplayDialog("Really Change the Hash?", "If you change the DNA Assets hash, any recipes that use this DNA will need to be inspected so they update to the new value. Are you sure?", "Yes", "Cancel"))
-                    {
-                        editTypeHashEnabled = true;
-                    }
-                }
+						editTypeHashEnabled = true;
+				}
 				EditorGUI.BeginDisabledGroup(true);
 				EditorGUI.PropertyField(hashFieldRect, dnaTypeHash, new GUIContent(""));
 				EditorGUI.EndDisabledGroup();
@@ -221,10 +205,8 @@ namespace UMA.CharacterSystem.Editors
 			for (int i = _dnaNameList.serializedProperty.arraySize - 1; i >= 0; i--)
 			{
 				if (_removeList.Contains(i))
-                {
-                    _dnaNameList.serializedProperty.DeleteArrayElementAtIndex(i);
-                }
-            }
+					_dnaNameList.serializedProperty.DeleteArrayElementAtIndex(i);
+			}
 			_removeList.Clear();
 
 
@@ -243,11 +225,8 @@ namespace UMA.CharacterSystem.Editors
 			GUI.Box(dropArea, "Drag DynamicUMADNAAssets here to import their names. Click to pick.");
 			var AddMethods = new GUIContent[dnaNamesAddOpts.Count];
 			for (int i = 0; i < dnaNamesAddOpts.Count; i++)
-            {
-                AddMethods[i] = new GUIContent(dnaNamesAddOpts[i]);
-            }
-
-            Rect selectedAddMethodRect = dropArea;
+				AddMethods[i] = new GUIContent(dnaNamesAddOpts[i]);
+			Rect selectedAddMethodRect = dropArea;
 			selectedAddMethodRect.yMin = dropArea.yMax - EditorGUIUtility.singleLineHeight - 5;
 			selectedAddMethodRect.xMin = dropArea.xMin - ((EditorGUI.indentLevel * 10) - 10);
 			selectedAddMethodRect.xMax = dropArea.xMax - ((EditorGUI.indentLevel * 10) + 10);
@@ -255,11 +234,9 @@ namespace UMA.CharacterSystem.Editors
 
 			var namesList = new List<string>(Names.arraySize);
 			for (int i = 0; i < Names.arraySize; i++)
-            {
-                namesList.Add(Names.GetArrayElementAtIndex(i).stringValue);
-            }
+				namesList.Add(Names.GetArrayElementAtIndex(i).stringValue);
 
-            ImportDNADropArea(dropArea, namesList, selectedAddMethod);
+			ImportDNADropArea(dropArea, namesList, selectedAddMethod);
 
 			EditorGUILayout.Space();
 
@@ -336,20 +313,17 @@ namespace UMA.CharacterSystem.Editors
 		private void RecursiveScanFoldersForAssets(string path, List<string> dnaNames, int addMethod)
 		{
 			var assetFiles = System.IO.Directory.GetFiles(path, "*.asset");
-            for (int i = 0; i < assetFiles.Length; i++)
+			foreach (var assetFile in assetFiles)
 			{
-                string assetFile = assetFiles[i];
-                var tempDNAAsset = AssetDatabase.LoadAssetAtPath(assetFile, typeof(DynamicUMADnaAsset)) as DynamicUMADnaAsset;
+				var tempDNAAsset = AssetDatabase.LoadAssetAtPath(assetFile, typeof(DynamicUMADnaAsset)) as DynamicUMADnaAsset;
 				if (tempDNAAsset)
 				{
 					AddDNANames(tempDNAAsset, dnaNames, addMethod);
 				}
 			}
-            string[] array = System.IO.Directory.GetDirectories(path);
-            for (int i = 0; i < array.Length; i++)
+			foreach (var subFolder in System.IO.Directory.GetDirectories(path))
 			{
-                string subFolder = array[i];
-                RecursiveScanFoldersForAssets(subFolder.Replace('\\', '/'), dnaNames, addMethod);
+				RecursiveScanFoldersForAssets(subFolder.Replace('\\', '/'), dnaNames, addMethod);
 			}
 		}
 
@@ -359,10 +333,8 @@ namespace UMA.CharacterSystem.Editors
 			for (int i = 0; i < tempDNAAsset.Names.Length; i++)
 			{
 				if (!newNames.Contains(tempDNAAsset.Names[i]))
-                {
-                    newNames.Add(tempDNAAsset.Names[i]);
-                }
-            }
+					newNames.Add(tempDNAAsset.Names[i]);
+			}
 			dnaNames = newNames;
 			(target as DynamicUMADnaAsset).Names = dnaNames.ToArray();
 		}
@@ -428,11 +400,8 @@ namespace UMA.CharacterSystem.Editors
 			if (GUI.Button(addBtnRect,"Add"))
 			{
 				if (newDNAName == "")
-                {
-                    return;
-                }
-
-                if (canAddNewDNAName)
+					return;
+				if (canAddNewDNAName)
 				{
 					Names.arraySize = Names.arraySize + 1;
 					Names.GetArrayElementAtIndex(Names.arraySize - 1).stringValue = newDNAName;
@@ -511,10 +480,8 @@ namespace UMA.CharacterSystem.Editors
 			for(int i = 0; i < defaultNames.Length; i++)
 			{
 				if (!currentNames.Contains(defaultNames[i]))
-                {
-                    currentNames.Add(defaultNames[i]);
-                }
-            }
+					currentNames.Add(defaultNames[i]);
+			}
 			(target as DynamicUMADnaAsset).Names = currentNames.ToArray();
 		}
 	}

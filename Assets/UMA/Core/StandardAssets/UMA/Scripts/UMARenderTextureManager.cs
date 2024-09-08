@@ -15,17 +15,9 @@ namespace UMA
 		public void OnCreated(UMAData umaData)
 		{
 			var RT = umaData.GetFirstRenderTexture();
-			if( RT == null)
-            {
-                return;
-            }
-
-            if (allUMACharacters == null)
-            {
-                allUMACharacters = new Dictionary<UMAData, RenderTexture>();
-            }
-
-            allUMACharacters.Add(umaData, RT);
+			if( RT == null) return;
+			if (allUMACharacters == null) allUMACharacters = new Dictionary<UMAData, RenderTexture>();
+			allUMACharacters.Add(umaData, RT);
 			anyRT = RT;
 			if (!enabled)
 			{
@@ -35,23 +27,12 @@ namespace UMA
 
 		public void OnUpdate(UMAData umaData)
 		{
-			if (updatingCount > 0)
-            {
-                updatingCount--;
-            }
+			if (updatingCount > 0) updatingCount--;
+			var RT = umaData.GetFirstRenderTexture();
+			if (RT == null) return;
+			if (allUMACharacters == null) allUMACharacters = new Dictionary<UMAData, RenderTexture>();
 
-            var RT = umaData.GetFirstRenderTexture();
-			if (RT == null)
-            {
-                return;
-            }
-
-            if (allUMACharacters == null)
-            {
-                allUMACharacters = new Dictionary<UMAData, RenderTexture>();
-            }
-
-            allUMACharacters[umaData] = RT;
+			allUMACharacters[umaData] = RT;
 			anyRT = RT;
 			if (!enabled)
 			{
@@ -77,12 +58,8 @@ namespace UMA
 
 		public void Update()
 		{
-			if (updatingCount > 0)
-            {
-                return;
-            }
-
-            if (anyRT == null)
+			if (updatingCount > 0) return;
+			if (anyRT == null)
 			{
 				if (allUMACharacters != null && allUMACharacters.Count > 0)
 				{
@@ -90,11 +67,8 @@ namespace UMA
 					while (enumerator.MoveNext())
 					{
 						anyRT = enumerator.Current.Value;
-						if (anyRT != null)
-                        {
-                            break;
-                        }
-                    }
+						if (anyRT != null) break;
+					}
 					if (anyRT == null)
 					{
 						enabled = false;
@@ -124,5 +98,6 @@ namespace UMA
 				}
 			}
 		}
+
 	}
 }

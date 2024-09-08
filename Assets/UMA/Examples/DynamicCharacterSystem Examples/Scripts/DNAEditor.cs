@@ -31,10 +31,9 @@ namespace UMA.CharacterSystem
             _InitialValue = currentval;
 
 			DNARangeAsset[] dnaRangeAssets = avatar.activeRace.data.dnaRanges;
-            for (int i = 0; i < dnaRangeAssets.Length; i++) 
+			foreach (DNARangeAsset d in dnaRangeAssets) 
 			{
-                DNARangeAsset d = dnaRangeAssets[i];
-                if (d.ContainsDNARange (_Index, _DNAName)) {
+				if (d.ContainsDNARange (_Index, _DNAName)) {
 					_dnr = d;
 					return;
 				}

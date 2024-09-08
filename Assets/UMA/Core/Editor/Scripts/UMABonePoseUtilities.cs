@@ -1,12 +1,16 @@
 ﻿using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
+using System;
 using UMA.CharacterSystem;
+using UnityEditor.Animations;
+using System.IO;
+using System.Text.RegularExpressions;
 using UMA.PoseTools;
 
 namespace UMA
 {
-    public class BonePoseUtilities : EditorWindow
+	public class BonePoseUtilities : EditorWindow
 	{
 		public static string[] raceNames;
 
@@ -51,11 +55,8 @@ namespace UMA
 			}
 
 			if (GUILayout.Button("Close"))
-            {
-                Close();
-            }
-
-            EditorGUILayout.EndHorizontal();
+				Close();
+			EditorGUILayout.EndHorizontal();
 		}
 
 		private void CreatePoseSet(string fileName)

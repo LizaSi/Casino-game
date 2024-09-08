@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.IO;
+using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 using UMA.CharacterSystem;
@@ -6,7 +7,7 @@ using UMA.CharacterSystem;
 
 namespace UMA.Editors
 {
-    [CustomEditor(typeof(UMARandomizer))]
+	[CustomEditor(typeof(UMARandomizer))]
 	public class UMARandomizerEditor : Editor
 	{
 
@@ -19,14 +20,11 @@ namespace UMA.Editors
 			currentTarget.raceDatas = new List<RaceData>();
 
 			currentTarget.raceDatas = UMAAssetIndexer.Instance.GetAllAssets<RaceData>();
-            for (int i = 0; i < currentTarget.raceDatas.Count; i++)
+			foreach(RaceData race in currentTarget.raceDatas)
 			{
-                RaceData race = currentTarget.raceDatas[i];
-                if (race != null)
-                {
-                    Races.Add(race.name);
-                }
-            }
+				if (race != null)
+				Races.Add(race.name);
+			}
 			currentTarget.races = Races.ToArray();
 		}
 
@@ -78,20 +76,17 @@ namespace UMA.Editors
 		protected void RecursiveScanFoldersForAssets(string path)
 		{
 			var assetFiles = System.IO.Directory.GetFiles(path, "*.asset");
-            for (int i = 0; i < assetFiles.Length; i++)
+			foreach (var assetFile in assetFiles)
 			{
-                string assetFile = assetFiles[i];
-                var tempRecipe = AssetDatabase.LoadAssetAtPath(assetFile, typeof(UMAWardrobeRecipe)) as UMAWardrobeRecipe;
+				var tempRecipe = AssetDatabase.LoadAssetAtPath(assetFile, typeof(UMAWardrobeRecipe)) as UMAWardrobeRecipe;
 				if (tempRecipe)
 				{
 					currentTarget.droppedItems.Add(tempRecipe);
 				}
 			}
-            string[] array = System.IO.Directory.GetDirectories(path);
-            for (int i = 0; i < array.Length; i++)
+			foreach (var subFolder in System.IO.Directory.GetDirectories(path))
 			{
-                string subFolder = array[i];
-                RecursiveScanFoldersForAssets(subFolder.Replace('\\', '/'));
+				RecursiveScanFoldersForAssets(subFolder.Replace('\\', '/'));
 			}
 		}
 
@@ -124,11 +119,9 @@ namespace UMA.Editors
 			// show each possible item.
 			string name = "<null>";
 			if (rws.WardrobeSlot != null)
-            {
-                name = rws.WardrobeSlot.name;
-            }
+				name = rws.WardrobeSlot.name;
 
-            GUIHelper.FoldoutBar(ref rws.GuiFoldout, name + " ("+rws.Chance+")", out rws.Delete);
+			GUIHelper.FoldoutBar(ref rws.GuiFoldout, name + " ("+rws.Chance+")", out rws.Delete);
 			if (rws.GuiFoldout)
 			{
 				GUIHelper.BeginVerticalPadded(10, new Color(0.75f, 0.75f, 0.75f));
@@ -140,20 +133,16 @@ namespace UMA.Editors
 						rws.AddColorTable = true;
 					}
 					RandomColors delme = null;
-                    for (int i = 0; i < rws.Colors.Count; i++)
+					foreach (RandomColors rc in rws.Colors)
 					{
-                        RandomColors rc = rws.Colors[i];
-                        if (RandomColorsGUI(ra, rws, rc))
-                        {
-                            delme = rc;
-                        }
-                    }
+						if (RandomColorsGUI(ra, rws, rc))
+							delme = rc;
+					}
 					if (delme != null)
 					{
 						rws.Colors.Remove(delme);
 						EditorUtility.SetDirty(this.target);
-						string path = AssetDatabase.GetAssetPath(target.GetInstanceID());
-						AssetDatabase.ImportAsset(path);
+						AssetDatabase.SaveAssets();
 					}
 				}
 				else
@@ -166,11 +155,7 @@ namespace UMA.Editors
 
 		public void RandomAvatarGUI(RandomAvatar ra)
 		{
-            if (ra.raceData == null)
-			{
-                ra.raceData = UMAAssetIndexer.Instance.GetAsset<RaceData>(ra.RaceName);
-            }
-            bool del = false;
+			bool del = false;
 			GUIHelper.FoldoutBar(ref ra.GuiFoldout, ra.RaceName, out del);
 			if (ra.GuiFoldout)
 			{
@@ -189,10 +174,9 @@ namespace UMA.Editors
 					GUIHelper.BeginVerticalPadded(10, new Color(0.75f, 0.75f, 0.75f));
 					if (ra.SharedColors != null && ra.SharedColors.Count > 0)
 					{
-                        for (int i = 0; i < ra.SharedColors.Count; i++)
+						foreach (RandomColors rc in ra.SharedColors)
 						{
-                            RandomColors rc = ra.SharedColors[i];
-                            RandomColorsGUI(ra, rc);
+							RandomColorsGUI(ra, rc);
 						}
 					}
 					else
@@ -222,20 +206,16 @@ namespace UMA.Editors
 					else
 					{
 
-                        for (int i = 0; i < ra.RandomDna.Count; i++)
+						foreach (RandomDNA rd in ra.RandomDna)
 						{
-                            RandomDNA rd = ra.RandomDna[i];
-                            EditorGUILayout.BeginHorizontal();
+							EditorGUILayout.BeginHorizontal();
 							EditorGUILayout.LabelField(rd.DnaName, EditorStyles.miniLabel, GUILayout.Width(100));
 							float lastMin = rd.MinValue;
 							float lastMax = rd.MaxValue;
 							EditorGUILayout.MinMaxSlider(ref rd.MinValue, ref rd.MaxValue, 0.0f, 1.0f);
 							if (rd.MinValue != lastMin || rd.MaxValue != lastMax)
-                            {
-                                ra.DnaChanged = true;
-                            }
-
-                            rd.Delete = GUILayout.Button("\u0078", EditorStyles.miniButton, GUILayout.ExpandWidth(false));
+								ra.DnaChanged = true;
+							rd.Delete = GUILayout.Button("\u0078", EditorStyles.miniButton, GUILayout.ExpandWidth(false));
 							string vals = rd.MinValue.ToString("N3") +" - " +rd.MaxValue.ToString("N3");
 							EditorGUILayout.LabelField(vals, EditorStyles.miniTextField, GUILayout.Width(80));
 							EditorGUILayout.EndHorizontal();
@@ -261,10 +241,9 @@ namespace UMA.Editors
 
 					string lastSlot = "";
 
-                    for (int i = 0; i < ra.RandomWardrobeSlots.Count; i++)
+					foreach (RandomWardrobeSlot rws in ra.RandomWardrobeSlots)
 					{
-                        RandomWardrobeSlot rws = ra.RandomWardrobeSlots[i];
-                        if (rws.SlotName != lastSlot)
+						if (rws.SlotName != lastSlot)
                         {
 							GUILayout.Label("[" + rws.SlotName + "]");
 							lastSlot = rws.SlotName;
@@ -292,16 +271,14 @@ namespace UMA.Editors
 			GUILayout.Space(10);
 			DropAreaGUI(updateDropArea);
 			GUILayout.Space(10);
-            for (int i = 0; i < currentTarget.RandomAvatars.Count; i++)
+			foreach(RandomAvatar ra in currentTarget.RandomAvatars)
 			{
-                RandomAvatar ra = currentTarget.RandomAvatars[i];
-                RandomAvatarGUI(ra);
+				RandomAvatarGUI(ra);
 			}
 			if (GUI.changed)
 			{
 				EditorUtility.SetDirty(currentTarget);
-				string path = AssetDatabase.GetAssetPath(currentTarget.GetInstanceID());
-				AssetDatabase.ImportAsset(path);
+				AssetDatabase.SaveAssets();
 			}
 		}
 
@@ -313,24 +290,21 @@ namespace UMA.Editors
 
 			if (currentTarget.droppedItems.Count > 0)
 			{
-                for (int i = 0; i < currentTarget.RandomAvatars.Count; i++)
+				foreach(RandomAvatar rv in currentTarget.RandomAvatars)
 				{
-                    RandomAvatar rv = currentTarget.RandomAvatars[i];
-                    rv.GuiFoldout = false;
-                    for (int i1 = 0; i1 < rv.RandomWardrobeSlots.Count; i1++)
+					rv.GuiFoldout = false;
+					foreach(RandomWardrobeSlot rws in rv.RandomWardrobeSlots)
 					{
-                        RandomWardrobeSlot rws = rv.RandomWardrobeSlots[i1];
-                        rws.GuiFoldout = false;
+						rws.GuiFoldout = false;
 					}
 				}
 
 				RandomAvatar ra = FindAvatar(currentTarget.raceDatas[currentTarget.currentRace]);
 
-                // Add all the wardrobe items.
-                for (int i = 0; i < currentTarget.droppedItems.Count; i++)
+				// Add all the wardrobe items.
+				foreach (UMAWardrobeRecipe uwr in currentTarget.droppedItems)
 				{
-                    UMAWardrobeRecipe uwr = currentTarget.droppedItems[i];
-                    if (RecipeCompatible(uwr, currentTarget.raceDatas[currentTarget.currentRace]))
+					if (RecipeCompatible(uwr, currentTarget.raceDatas[currentTarget.currentRace]))
 					{
 						RandomWardrobeSlot rws = new RandomWardrobeSlot(uwr,uwr.wardrobeSlot);
 						ra.GuiFoldout = true;
@@ -361,10 +335,9 @@ namespace UMA.Editors
 				}
 				ChangeCount += ra.SharedColors.RemoveAll(x => x.Delete);
 				ChangeCount += ra.RandomWardrobeSlots.RemoveAll(x => x.Delete);
-                for (int i = 0; i < ra.RandomWardrobeSlots.Count; i++)
+				foreach(RandomWardrobeSlot rws in ra.RandomWardrobeSlots)
 				{
-                    RandomWardrobeSlot rws = ra.RandomWardrobeSlots[i];
-                    ChangeCount += rws.Colors.RemoveAll(x => x.Delete);
+					ChangeCount += rws.Colors.RemoveAll(x => x.Delete);
 					if (rws.AddColorTable)
 					{
 						rws.Colors.Add(new RandomColors(rws));
@@ -377,18 +350,16 @@ namespace UMA.Editors
 			if (ChangeCount > 0)
 			{
 				EditorUtility.SetDirty(currentTarget);
-				string path = AssetDatabase.GetAssetPath(currentTarget.GetInstanceID());
-				AssetDatabase.ImportAsset(path);
+				AssetDatabase.SaveAssets();
 			}
 		}
 
 		private bool RecipeCompatible(UMAWardrobeRecipe uwr, RaceData raceData)
 		{
-            // first, see if the recipe is directly compatible with the race.
-            for (int i = 0; i < uwr.compatibleRaces.Count; i++)
+			// first, see if the recipe is directly compatible with the race.
+			foreach (string s in uwr.compatibleRaces)
 			{
-                string s = uwr.compatibleRaces[i];
-                if (s == raceData.raceName)
+				if (s == raceData.raceName)
 				{
 					return true;
 				}
@@ -403,11 +374,10 @@ namespace UMA.Editors
 
 		private RandomAvatar FindAvatar(RaceData raceData)
 		{
-            // Is the current race defined?
-            for (int i = 0; i < currentTarget.RandomAvatars.Count; i++)
+			// Is the current race defined?
+			foreach (RandomAvatar ra in currentTarget.RandomAvatars)
 			{
-                RandomAvatar ra = currentTarget.RandomAvatars[i];
-                if (raceData.raceName == ra.RaceName)
+				if (raceData.raceName == ra.RaceName)
 				{
 					return ra;
 				}

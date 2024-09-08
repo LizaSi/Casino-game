@@ -1,4 +1,6 @@
-﻿using UMA.CharacterSystem;
+﻿using System.Collections;
+using System.Collections.Generic;
+using UMA.CharacterSystem;
 using UMA;
 using UnityEngine;
 using UnityEngine.UI;
@@ -45,10 +47,7 @@ public class SaveAndLoadSample : MonoBehaviour
     public void LoadUMA()
     {
         if (string.IsNullOrEmpty(saveString))
-        {
-            return;
-        }
-
+            return; 
         if (useCompressedString)
         {
             AvatarDefinition adf = AvatarDefinition.FromCompressedString(compressedString, '|');

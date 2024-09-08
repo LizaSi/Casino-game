@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 
 public class SwayRootBone : SwayBone
@@ -25,12 +27,8 @@ public class SwayRootBone : SwayBone
 	{
 		foreach(Transform t in transform)
 		{
-			if (Exclusions.Contains(t))
-            {
-                continue;
-            }
-
-            SwayBone sb = t.gameObject.GetComponent<SwayBone>();
+			if (Exclusions.Contains(t)) continue;
+			SwayBone sb = t.gameObject.GetComponent<SwayBone>();
 			if (sb == null)
 			{
 				sb = t.gameObject.AddComponent<SwayBone>();
@@ -52,10 +50,9 @@ public class SwayRootBone : SwayBone
 
 	public void FixedUpdate ()
 	{
-        for (int i = 0; i < SwayBones.Count; i++)
+		foreach (SwayBone sb in SwayBones)
 		{
-            SwayBone sb = SwayBones[i];
-            sb.DoUpdate(step);
+			sb.DoUpdate(step);
 			if (UpdateChangesEachFrame)
 			{
 				sb.elasticity = elasticity;

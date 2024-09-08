@@ -1,14 +1,14 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using UnityEngine.Rendering;
 
 namespace UMA
 {
-    /// <summary>
-    /// Default mesh combiner for UMA UMAMeshdata from slots.
-    /// </summary>
-    public class UMADefaultMeshCombiner : UMAMeshCombiner
+	/// <summary>
+	/// Default mesh combiner for UMA UMAMeshdata from slots.
+	/// </summary>
+	public class UMADefaultMeshCombiner : UMAMeshCombiner
 	{
 		protected List<SkinnedMeshCombiner.CombineInstance> combinedMeshList;
 		protected List<UMAData.GeneratedMaterial> combinedMaterialList;
@@ -33,18 +33,13 @@ namespace UMA
 			{
 				umaData.SetupSkeleton();
 			}
-			else
-			{
-				umaData.CheckSkeletonSetup();
-			}
 			#endregion
 			if (umaData.umaRoot != null)
 			{
 				umaData.CleanMesh(false);
-				if ((umaData.rendererCount == umaData.generatedMaterials.rendererAssets.Count && umaData.AreRenderersEqual(umaData.generatedMaterials.rendererAssets)))
+				if (umaData.rendererCount == umaData.generatedMaterials.rendererAssets.Count && umaData.AreRenderersEqual(umaData.generatedMaterials.rendererAssets))
 				{
 					renderers = umaData.GetRenderers();
-					umaData.SetRendererAssets(umaData.generatedMaterials.rendererAssets.ToArray());
 				}
 				else
 				{
@@ -58,28 +53,18 @@ namespace UMA
 						if (oldRenderers != null && oldRenderers.Length > i)
 						{
 							renderers[i] = oldRenderers[i];
-                            if (umaData.generatedMaterials.rendererAssets[i] != null)
-                            {
-                                umaData.generatedMaterials.rendererAssets[i].ApplySettingsToRenderer(renderers[i]);
-                            }
-                            else
-                            {
-                                umaData.ResetRendererSettings(i);
-                                if (umaData.defaultRendererAsset != null)
-                                {
-                                    umaData.defaultRendererAsset.ApplySettingsToRenderer(renderers[i]);
-                                }
-                            }
+							if (umaData.generatedMaterials.rendererAssets[i] != null)
+								umaData.generatedMaterials.rendererAssets[i].ApplySettingsToRenderer(renderers[i]);
+							else
+								umaData.ResetRendererSettings(i);
 
-                            continue;
+							continue;
 						}
 						UMARendererAsset rendererAsset = umaData.generatedMaterials.rendererAssets[i];
 						if (rendererAsset == null)
-                        {
-                            rendererAsset = umaData.defaultRendererAsset;
-                        }
+							rendererAsset = umaData.defaultRendererAsset;
 
-                        renderers[i] = MakeRenderer(i, umaData, globalTransform, rendererAsset);
+						renderers[i] = MakeRenderer(i, globalTransform, rendererAsset);
 					}
 
 					if (oldRenderers != null)
@@ -102,13 +87,11 @@ namespace UMA
 			{
 				Cloth cloth = renderers[i].GetComponent<Cloth>();
 				if (cloth != null)
-                {
-                    DestroyImmediate(cloth,false); //Crashes if trying to use Destroy()
-                }
-            }
+					DestroyImmediate(cloth,false); //Crashes if trying to use Destroy()
+			}
 		}
 
-		private SkinnedMeshRenderer MakeRenderer(int i, UMAData umaData, Transform rootBone, UMARendererAsset rendererAsset = null)
+		private SkinnedMeshRenderer MakeRenderer(int i, Transform rootBone, UMARendererAsset rendererAsset = null)
 		{
 			GameObject newSMRGO = new GameObject(i == 0 ? "UMARenderer" : ("UMARenderer " + i));
 			newSMRGO.transform.parent = umaData.transform;
@@ -120,11 +103,6 @@ namespace UMA
 			var newRenderer = newSMRGO.AddComponent<SkinnedMeshRenderer>();
 			newRenderer.enabled = false;
 			newRenderer.sharedMesh = new Mesh();
-			if (umaData.markDynamic)
-            {
-                newRenderer.sharedMesh.MarkDynamic();
-            }
-
 #if UMA_32BITBUFFERS
 			newRenderer.sharedMesh.indexFormat = UnityEngine.Rendering.IndexFormat.UInt32;
 #endif
@@ -159,7 +137,6 @@ namespace UMA
 
 			for (currentRendererIndex = 0; currentRendererIndex < umaData.generatedMaterials.rendererAssets.Count; currentRendererIndex++)
 			{
-                int subMeshIndex = 0;
 				//Move umaMesh creation to with in the renderer loops
 				//May want to make sure to set all it's buffers to null instead of creating a new UMAMeshData
 
@@ -169,48 +146,29 @@ namespace UMA
 
 				BuildCombineInstances();
 
-				if (combinedMeshList.Count == 0)
-                {
-                    continue;
-                }
-
-                if (combinedMeshList.Count == 1)
+				if (combinedMeshList.Count == 1)
 				{
 					// fast track
 					var tempMesh = SkinnedMeshCombiner.ShallowInstanceMesh(combinedMeshList[0].meshData, combinedMeshList[0].triangleMask );
-					if (umaData.umaRecipe.BlendshapeSlots.ContainsKey(combinedMeshList[0].meshData.SlotName))
-                    {
-
-						var Blendshapes = SkinnedMeshCombiner.GetBlendshapeSources(tempMesh, umaData.umaRecipe);
-						tempMesh.blendShapes = Blendshapes.ToArray();
-                    }
-					tempMesh.ApplyDataToUnityMesh(renderers[currentRendererIndex], umaData.skeleton,umaData);
-                    var inst = combinedMeshList[0];
-                    inst.slotData.vertexOffset = 0;
-                    inst.slotData.submeshIndex = 0;
-                    inst.slotData.skinnedMeshRenderer = currentRendererIndex;
+					tempMesh.ApplyDataToUnityMesh(renderers[currentRendererIndex], umaData.skeleton);
 				}
 				else
 				{
 					UMAMeshData umaMesh = new UMAMeshData();
-					umaMesh.SlotName = "CombinedMesh";
-#if NO_BAD_BUFFERS
 					umaMesh.ClaimSharedBuffers();
-#endif
+
 					umaMesh.subMeshCount = 0;
 					umaMesh.vertexCount = 0;
 
-					SkinnedMeshCombiner.CombineMeshes(umaMesh, combinedMeshList.ToArray(), umaData.blendShapeSettings,umaData.umaRecipe, currentRendererIndex );
+					SkinnedMeshCombiner.CombineMeshes(umaMesh, combinedMeshList.ToArray(), umaData.blendShapeSettings );
 
 					if (updatedAtlas)
 					{
 						RecalculateUV(umaMesh);
 					}
 
-					umaMesh.ApplyDataToUnityMesh(renderers[currentRendererIndex], umaData.skeleton,umaData);
-#if NO_BAD_BUFFERS
+					umaMesh.ApplyDataToUnityMesh(renderers[currentRendererIndex], umaData.skeleton);
 					umaMesh.ReleaseSharedBuffers();
-#endif
 				}
 				var cloth = renderers[currentRendererIndex].GetComponent<Cloth>();
 				if (clothProperties != null)
@@ -225,63 +183,20 @@ namespace UMA
 					UMAUtils.DestroySceneObject(cloth);
 				}
 
-				//Material[] materials = new Material[combinedMaterialList.Count];
-				
-				// allocate enough space to avoid extra allocations
-				List<Material> materials = new List<Material>(combinedMaterialList.Count+2);
-
-				var renderer = renderers[currentRendererIndex];
-				var submeshes = new List<SubMeshDescriptor>();
-				
+				Material[] materials = new Material[combinedMaterialList.Count];
 				for(int i=0;i<combinedMaterialList.Count;i++)
                 {
-					if (i >= renderer.sharedMesh.subMeshCount) 
-					{
-						Debug.LogWarning("Submesh count mismatch between generated materials and renderer mesh. This can happen if you have overlays applied to a utility (non-mesh) slot somehow. This can cause the wrong materials to be applied to the mesh.");
-						break;
-					}
-					var cm = combinedMaterialList[i];
-					materials.Add(cm.material);
-					submeshes.Add(renderer.sharedMesh.GetSubMesh(i));
-
-                    for (int k = 0; k < cm.materialFragments.Count; k++)
-                    {
-                        var matfrag = cm.materialFragments[k];
-                        matfrag.slotData.submeshIndex = subMeshIndex;
-                    }
-
-                    subMeshIndex++;
-
-                    if (cm.umaMaterial.secondPass != null)
-                    {
-                        Material secondPass = Instantiate(cm.umaMaterial.secondPass);
-						cm.secondPassMaterial = secondPass;
-                        // Apply shader property blocks to second pass material
-                        UMAGeneratorPro.ApplyMaterialParameters(cm,umaData,secondPass);
-                        // set textures based on overlay texture channels
-                        CopyMaterialTextures(secondPass, cm.material, cm.umaMaterial);
-						// set compositing parameters if needed
-						if (cm.material.HasProperty("_OverlayCount"))
-						{
-							SetCompositingParameters(secondPass, cm);
-						}
-						materials.Add(secondPass);	
-                        submeshes.Add(renderer.sharedMesh.GetSubMesh(i));
-                        subMeshIndex++;
-                    }
-                    combinedMaterialList[i].skinnedMeshRenderer = renderers[currentRendererIndex];
+					materials[i] = combinedMaterialList[i].material;
+					combinedMaterialList[i].skinnedMeshRenderer = renderers[currentRendererIndex];
 				}
-				//renderers[currentRendererIndex].sharedMaterials = materials;
-				renderers[currentRendererIndex].sharedMaterials = materials.ToArray();
-				renderers[currentRendererIndex].sharedMesh.SetSubMeshes(submeshes.ToArray(), MeshUpdateFlags.DontRecalculateBounds | MeshUpdateFlags.DontValidateIndices);
-                renderers[currentRendererIndex].sharedMesh.UploadMeshData(umaData.markNotReadable);
-            }
+				renderers[currentRendererIndex].sharedMaterials = materials;
+			}
 
-            umaData.umaRecipe.ClearDNAConverters();
+			umaData.umaRecipe.ClearDNAConverters();
 			for (int i = 0; i < umaData.umaRecipe.slotDataList.Length; i++)
 			{
 				SlotData slotData = umaData.umaRecipe.slotDataList[i];
-				if (slotData != null && !slotData.isBlendShapeSource)
+				if (slotData != null)
 				{
 					umaData.umaRecipe.AddDNAUpdater(slotData.asset.slotDNA);
 				}
@@ -290,29 +205,7 @@ namespace UMA
 			umaData.firstBake = false;
 		}
 
-        public static void SetCompositingParameters(Material secondPass, UMAData.GeneratedMaterial cm)
-        {
-			// if this is a compositing shader, there is only one material fragment.
-            if (cm.materialFragments.Count == 1)
-			{
-				TextureProcessPRO.SetCompositingProperties(cm, secondPass, cm.materialFragments[0]);
-			}
-        }
-
-        public static void CopyMaterialTextures(Material secondPass, Material material, UMAMaterial uMAMaterial)
-        {
-            for (int i = 0; i < uMAMaterial.channels.Length; i++)
-			{
-                UMAMaterial.MaterialChannel channel = uMAMaterial.channels[i];
-                var texture = material.GetTexture(channel.materialPropertyName);
-				if (texture != null)
-				{
-                    secondPass.SetTexture(channel.materialPropertyName, texture);
-                }
-			}
-        }
-
-        protected void BuildCombineInstances()
+		protected void BuildCombineInstances()
 		{
 			SkinnedMeshCombiner.CombineInstance combineInstance;
 
@@ -324,11 +217,8 @@ namespace UMA
 				UMARendererAsset rendererAsset = umaData.GetRendererAsset(currentRendererIndex);
 				var generatedMaterial = umaData.generatedMaterials.materials[materialIndex];
 				if (generatedMaterial.rendererAsset != rendererAsset)
-                {
-                    continue;
-                }
-
-                combinedMaterialList.Add(generatedMaterial);
+					continue;
+				combinedMaterialList.Add(generatedMaterial);
 				generatedMaterial.materialIndex = materialIndex;
 
 				for (int materialDefinitionIndex = 0; materialDefinitionIndex < generatedMaterial.materialFragments.Count; materialDefinitionIndex++)
@@ -336,30 +226,13 @@ namespace UMA
 					var materialDefinition = generatedMaterial.materialFragments[materialDefinitionIndex];
 					var slotData = materialDefinition.slotData;
 					combineInstance = new SkinnedMeshCombiner.CombineInstance();
-					if (umaData.VertexOverrides.ContainsKey(slotData.slotName))
-					{
-						combineInstance.meshData = slotData.asset.meshData.ShallowCopy(umaData.VertexOverrides[slotData.slotName]);
-						combineInstance.meshData.SlotName = slotData.slotName;
-					}
-					else
-                    {
-						combineInstance.meshData = slotData.asset.meshData;
-						combineInstance.meshData.SlotName = slotData.slotName;
-					}
-                    // save a copy of the slotData so we can add
-                    // the vertex offsets, submeshindex to it.
-                    combineInstance.slotData = slotData;
+					combineInstance.meshData = slotData.asset.meshData;
 
 					//New MeshHiding
 					if (slotData.meshHideMask != null)
-                    {
-                        combineInstance.triangleMask = slotData.meshHideMask;
-                    }
+						combineInstance.triangleMask = slotData.meshHideMask;
 
-                    combineInstance.targetSubmeshIndices = new int[combineInstance.meshData.subMeshCount];
-					if (combineInstance.meshData.subMeshCount == 0) {
-						continue;
-					}
+					combineInstance.targetSubmeshIndices = new int[combineInstance.meshData.subMeshCount];
 					for (int i = 0; i < combineInstance.meshData.subMeshCount; i++)
 					{
 						combineInstance.targetSubmeshIndices[i] = -1;
@@ -389,16 +262,13 @@ namespace UMA
 				var generatedMaterial = umaData.generatedMaterials.materials[materialIndex];
 
 				if (generatedMaterial.rendererAsset != umaData.GetRendererAsset(currentRendererIndex))
-                {
-                    continue;
-                }
-
-                if (generatedMaterial.umaMaterial.materialType != UMAMaterial.MaterialType.Atlas)
+					continue;
+				
+				if (generatedMaterial.umaMaterial.materialType != UMAMaterial.MaterialType.Atlas)
 				{
-                    for (int i = 0; i < generatedMaterial.materialFragments.Count; i++)
+					foreach (var fragment in generatedMaterial.materialFragments)
 					{
-                        UMAData.MaterialFragment fragment = generatedMaterial.materialFragments[i];
-                        int vertexCount = fragment.slotData.asset.meshData.vertices.Length;
+						int vertexCount = fragment.slotData.asset.meshData.vertices.Length;
 						idx += vertexCount;
 					}
 					continue;
@@ -433,9 +303,6 @@ namespace UMA
 							atlasYRange = size.y / generatedMaterial.cropResolution.y;
 						}
 					}
-
-                    var sd = fragment.slotData;
-                    sd.UVArea.Set(atlasXMin, atlasYMin, atlasXRange, atlasYRange);
 
 					while (vertexCount-- > 0)
 					{

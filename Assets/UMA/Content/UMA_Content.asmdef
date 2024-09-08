@@ -1,17 +1,8 @@
 {
     "name": "UMA_Content",
-    "rootNamespace": "",
     "references": [
-        "UMA_Core",
-        "JBooth.BetterShaders.Editor"
+        "UMA_Core"
     ],
     "includePlatforms": [],
-    "excludePlatforms": [],
-    "allowUnsafeCode": false,
-    "overrideReferences": false,
-    "precompiledReferences": [],
-    "autoReferenced": true,
-    "defineConstraints": [],
-    "versionDefines": [],
-    "noEngineReferences": false
+    "excludePlatforms": []
 }

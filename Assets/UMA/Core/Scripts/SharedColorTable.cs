@@ -16,9 +16,7 @@ namespace UMA
 		}
 	#endif
 		public int channelCount;
-		[Tooltip("If true, all colors will have the same name, copied from sharedColorName")]
-        public bool copyColorName = true;
-        public string sharedColorName;
+		public string sharedColorName;
 		public OverlayColorData[] colors;
 
 		#region ISerializationCallbackReceiver Members
@@ -31,14 +29,10 @@ namespace UMA
 		{
 			if (colors != null)
 			{
-                for (int i = 0; i < colors.Length; i++)
+				foreach (var color in colors)
 				{
-                    OverlayColorData color = colors[i];
-                    color.EnsureChannelsExact(channelCount);
-					if (copyColorName && !string.IsNullOrEmpty(sharedColorName))
-					{
-						color.name = sharedColorName;
-					}
+					color.EnsureChannels(channelCount);
+					color.name = sharedColorName;
 				}
 			}
 		}

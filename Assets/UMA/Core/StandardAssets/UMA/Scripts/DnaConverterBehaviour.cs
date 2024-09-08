@@ -36,9 +36,6 @@ namespace UMA
 		/// [FormerlySerializedAs("ApplyDnaAction")]
 		protected DNAConvertDelegate _applyDnaAction;
 
-		protected DNAConvertDelegate _postApplyDnaAction;
-
-
 		#region IDnaConverter IMPLIMENTATION
 
 		public System.Type DNAType
@@ -62,11 +59,8 @@ namespace UMA
 			get
 			{
 				if (dnaTypeHash == 0)
-                {
-                    dnaTypeHash = UMAUtils.StringToHash(DNAType.Name);
-                }
-
-                return dnaTypeHash;
+					dnaTypeHash = UMAUtils.StringToHash(DNAType.Name);
+				return dnaTypeHash;
 			}
 		}
 
@@ -74,12 +68,6 @@ namespace UMA
 		{
 			get { return _preApplyDnaAction; }
 			set { _preApplyDnaAction = value; }
-		}
-
-		public DNAConvertDelegate PostApplyDnaAction
-        {
-			get { return _postApplyDnaAction; }
-			set { _postApplyDnaAction = value; }
 		}
 
 		public DNAConvertDelegate ApplyDnaAction

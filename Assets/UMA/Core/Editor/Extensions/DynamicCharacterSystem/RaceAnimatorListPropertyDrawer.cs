@@ -113,10 +113,8 @@ namespace UMA.CharacterSystem.Editors
 									{
 										var thisAnimator = FindMissingAnimator(thisAnimatorName);
 										if (thisAnimator != null)
-                                    {
-                                        UMAAssetIndexer.Instance.EvilAddAsset(thisAnimator.GetType(), thisAnimator);
-                                    }
-                                }
+											UMAAssetIndexer.Instance.EvilAddAsset(thisAnimator.GetType(), thisAnimator);
+									}
 								}
 							EditorGUI.BeginDisabledGroup(true);
 							EditorGUI.TextField(aFieldR, thisAnimtorProp.FindPropertyRelative("animatorControllerName").stringValue);
@@ -129,9 +127,8 @@ namespace UMA.CharacterSystem.Editors
 						EditorGUI.indentLevel++;
 					}
 					if (willDeleteArrayElementAtIndex.Count > 0) {
-                        for (int i1 = 0; i1 < willDeleteArrayElementAtIndex.Count; i1++) {
-                            int i = willDeleteArrayElementAtIndex[i1];
-                            thisAnimatorsProp.DeleteArrayElementAtIndex (i);
+						foreach (int i in willDeleteArrayElementAtIndex) {
+							thisAnimatorsProp.DeleteArrayElementAtIndex (i);
 						}
 					}
 					thisAnimatorsProp.serializedObject.ApplyModifiedProperties();
@@ -193,11 +190,9 @@ namespace UMA.CharacterSystem.Editors
 		private bool CheckAnimatorAvailability(string racName)
 		{
 			if (Application.isPlaying)
-            {
-                return true;
-            }
+				return true;
 
-            if (UMAAssetIndexer.Instance.GetAssetDictionary(typeof(RuntimeAnimatorController)).ContainsKey(racName))
+			if (UMAAssetIndexer.Instance.GetAssetDictionary(typeof(RuntimeAnimatorController)).ContainsKey(racName))
 			{
 				return true;
 			}
@@ -206,12 +201,9 @@ namespace UMA.CharacterSystem.Editors
 			if (thisDCA != null)
 			{
 				defaultController = thisDCA.raceAnimationControllers.defaultAnimationController != null ? thisDCA.raceAnimationControllers.defaultAnimationController : (thisDCA.animationController != null ? thisDCA.animationController : null);
-
-				if (defaultController != null && defaultController.name == racName)
-                {
-                    return true;
-                }
-            }
+				if (defaultController.name == racName)
+					return true;
+			}
 
 			return false;
 		}
@@ -223,12 +215,10 @@ namespace UMA.CharacterSystem.Editors
 			var foundWardrobeGUIDS = AssetDatabase.FindAssets("t:RuntimeAnimatorController " + animatorName);
 			if (foundWardrobeGUIDS.Length > 0)
 			{
-                for (int i = 0; i < foundWardrobeGUIDS.Length; i++)
+				foreach (string guid in foundWardrobeGUIDS)
 				{
-                    string guid = foundWardrobeGUIDS[i];
-                    var tempAsset = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(AssetDatabase.GUIDToAssetPath(guid));
-				
-					if (tempAsset != null && tempAsset.name == animatorName)
+					var tempAsset = AssetDatabase.LoadAssetAtPath<RuntimeAnimatorController>(AssetDatabase.GUIDToAssetPath(guid));
+					if (tempAsset.name == animatorName)
 					{
 						foundAnimator = tempAsset;
 						break;

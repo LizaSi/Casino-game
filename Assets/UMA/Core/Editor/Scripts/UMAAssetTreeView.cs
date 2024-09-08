@@ -1,6 +1,6 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Drawing;
 using System.Linq;
 using UnityEditor;
 using UnityEditor.IMGUI.Controls;
@@ -16,26 +16,21 @@ namespace UMA.Controls
 		const float kToggleWidth = 18f;
 		public bool showControls = true;
 		public AssetIndexerWindow owningWindow;
-		private static GUIContent pingIcon = null;
-		private static GUIContent inspectIcon = null;
 
 		enum AssetColumns
 		{
 			Selection,
 			Name,
-			Actions,
 			Type,
 			IsResource,
 			IsAddressable,
-            Total,
 			Group,
 			Labels,
-			Ignore,
 			Always,
-            Buttons
-        }
+			Buttons
+		}
 
-        public enum SortOption
+		public enum SortOption
 		{
 			Name,
 			Group
@@ -49,11 +44,7 @@ namespace UMA.Controls
 			SortOption.Name,
 			SortOption.Name,
 			SortOption.Name,
-			SortOption.Name,
-            SortOption.Name,
-            SortOption.Name,
-            SortOption.Name,
-            SortOption.Group,
+			SortOption.Group,
 			SortOption.Name,
 			SortOption.Name,
 			SortOption.Name
@@ -62,29 +53,20 @@ namespace UMA.Controls
 		public static void TreeToList(TreeViewItem root, IList<TreeViewItem> result)
 		{
 			if (root == null)
-            {
-                throw new System.NullReferenceException("root");
-            }
+				throw new System.NullReferenceException("root");
+			if (result == null)
+				throw new System.NullReferenceException("result");
 
-            if (result == null)
-            {
-                throw new System.NullReferenceException("result");
-            }
-
-            result.Clear();
+			result.Clear();
 
 			if (root.children == null)
-            {
-                return;
-            }
+				return;
 
-            Stack<TreeViewItem> stack = new Stack<TreeViewItem>();
+			Stack<TreeViewItem> stack = new Stack<TreeViewItem>();
 			for (int i = root.children.Count - 1; i >= 0; i--)
-            {
-                stack.Push(root.children[i]);
-            }
+				stack.Push(root.children[i]);
 
-            while (stack.Count > 0)
+			while (stack.Count > 0)
 			{
 				TreeViewItem current = stack.Pop();
 				result.Add(current);
@@ -119,11 +101,9 @@ namespace UMA.Controls
 		void SortIfNeeded(TreeViewItem root, IList<TreeViewItem> rows)
 		{
 			if (rows.Count <= 1)
-            {
-                return;
-            }
+				return;
 
-            if (multiColumnHeader.sortedColumnIndex == -1)
+			if (multiColumnHeader.sortedColumnIndex == -1)
 			{
 				return; // No column to sort for (just use the order the data are in)
 			}
@@ -139,11 +119,9 @@ namespace UMA.Controls
 			var sortedColumns = multiColumnHeader.state.sortedColumns;
 
 			if (sortedColumns.Length == 0)
-            {
-                return;
-            }
+				return;
 
-            var myTypes = rootItem.children.Cast<TreeViewItem<AssetTreeElement>>();
+			var myTypes = rootItem.children.Cast<TreeViewItem<AssetTreeElement>>();
 			var orderedQuery = InitialOrder(myTypes, sortedColumns);
 			for (int i = 1; i < sortedColumns.Length; i++)
 			{
@@ -191,7 +169,6 @@ namespace UMA.Controls
 			showBorder = true;
 			customFoldoutYOffset = (kRowHeights - EditorGUIUtility.singleLineHeight) * 0.5f; // center foldout in the row since we also center content. See RowGUI
 			extraSpaceBeforeIconAndLabel = kToggleWidth;
-			
 			//multiColumnHeader.sortingChanged += OnSortingChanged;
 			//	var myColumnHeader = (MyMultiColumnHeader)treeView.multiColumnHeader;
 			//this.multiColumnHeader.mode = MyMultiColumnHeader.Mode.MinimumHeaderWithoutSorting;
@@ -239,13 +216,7 @@ namespace UMA.Controls
 				}
 				break;
 
-                case AssetColumns.Ignore:
-                    {
-                        GUI.Label(cellRect, ate.IgnoreCount.ToString());
-                    }
-                    break;
-
-                case AssetColumns.IsResource:
+				case AssetColumns.IsResource:
 				{
 					GUI.Label(cellRect, ate.IsResourceCount.ToString());
 				}
@@ -262,20 +233,11 @@ namespace UMA.Controls
 				}
 				break;
 
-					case AssetColumns.Actions:
-					break;
-
 				case AssetColumns.IsAddressable:
 				{
 					GUI.Label(cellRect, ate.IsAddrCount.ToString());
 				}
 				break;
-
-                case AssetColumns.Total:
-                    {
-                        GUI.Label(cellRect, ate.totalCount.ToString());
-                    }
-                    break;
 
 				case AssetColumns.Group:
 					break;
@@ -289,7 +251,7 @@ namespace UMA.Controls
 					string QualifiedName = item.data.type.AssemblyQualifiedName;
 					if (UMAAssetIndexer.Instance.IsAdditionalIndexedType(QualifiedName))
 					{
-						if (GUI.Button(cellRect, "Del Type", EditorStyles.toolbarButton))
+						if (GUI.Button(cellRect, "Remove this Type", EditorStyles.toolbarButton))
 						{
 							UMAAssetIndexer.Instance.RemoveType(item.data.type);
 							List<AssetTreeElement> RemoveMe = new List<AssetTreeElement>();
@@ -330,44 +292,16 @@ namespace UMA.Controls
 			switch (column)
 			{
 				case AssetColumns.Selection:
+				{
+					// EditorGUI.Toggle(cellRect, item.data.ai._SerializedItem != null);
+					bool newVal = EditorGUI.Toggle(cellRect, element.Checked);
+					if (newVal != element.Checked)
 					{
-
-
-						// EditorGUI.Toggle(cellRect, item.data.ai._SerializedItem != null);
-						bool newVal = EditorGUI.Toggle(cellRect, element.Checked);
-						if (newVal != element.Checked)
-						{
-							element.Checked = newVal;
-							RecalcTypeChecks(element.type);
-						}
-						if (pingIcon == null)
-						{
-                            InitIcons();
-                        }
-
+						element.Checked = newVal;
+						RecalcTypeChecks(element.type);
 					}
+				}
 				break;
-
-				case AssetColumns.Actions:
-					{
-						Rect rect = cellRect;
-						rect.width = 22;
-						rect.height = 22;
-
-						if (GUI.Button(rect, inspectIcon))
-						{
-							UnityEngine.Object o = AssetDatabase.LoadMainAssetAtPath(ai._Path);
-							InspectorUtlity.InspectTarget(o);
-						}
-                        rect.x += 30;
-                        if (GUI.Button(rect, pingIcon))
-                        {
-                            UnityEngine.Object o = AssetDatabase.LoadMainAssetAtPath(ai._Path);
-                            EditorGUIUtility.PingObject(o);
-                        }
-
-                    }
-                    break;
 
 				case AssetColumns.Type:
 				{
@@ -384,30 +318,11 @@ namespace UMA.Controls
 					{
 						ai.IsAlwaysLoaded = clicked;
 						UMAAssetIndexer.Instance.ForceSave();
-						owningWindow.RecountTypes();
-						owningWindow.Repaint();
-                    }
+					}
 				}
 				break;
 
-                case AssetColumns.Ignore:
-                    {
-                        cellRect.x += kCheckboxOffset;
-                        cellRect.width -= kCheckboxOffset;
-                        bool clicked = EditorGUI.Toggle(cellRect, ai.Ignore);
-                        if (clicked != ai.Ignore)
-                        {
-                            ai.Ignore = clicked;
-                            UMAAssetIndexer.Instance.ForceSave();
-                            owningWindow.RecountTypes();
-                            owningWindow.Repaint();
-
-                        }
-                    }
-                    break;
-
-
-                case AssetColumns.IsResource:
+				case AssetColumns.IsResource:
 				{
 					cellRect.x += kCheckboxOffset;
 					cellRect.width -= kCheckboxOffset;
@@ -437,13 +352,6 @@ namespace UMA.Controls
 					EditorGUI.Toggle(cellRect, ai.IsAddressable);
 				}
 				break;
-
-                case AssetColumns.Total:
-                    {
-                        cellRect.x += kCheckboxOffset;
-                        cellRect.width -= kCheckboxOffset;
-                    }
-                    break;
 
 				case AssetColumns.Group:
 					EditorGUI.LabelField(cellRect, ai.AddressableGroup);
@@ -476,11 +384,11 @@ namespace UMA.Controls
 					Rect ButtonRect = new Rect(cellRect);
 					ButtonRect.width = BtnWidth;
 
-					//if(GUI.Button(ButtonRect,"Inspect",EditorStyles.toolbarButton))
-					//{
-					//	UnityEngine.Object o = AssetDatabase.LoadMainAssetAtPath(ai._Path);
-					//	InspectorUtlity.InspectTarget(o);
-					//}
+					if(GUI.Button(ButtonRect,"Inspect",EditorStyles.toolbarButton))
+					{
+						UnityEngine.Object o = AssetDatabase.LoadMainAssetAtPath(ai._Path);
+						InspectorUtlity.InspectTarget(o);
+					}
 					/*
 					ButtonRect.x = ButtonRect.x + BtnWidth;
 					if (item.data.ai._SerializedItem == null)
@@ -502,7 +410,7 @@ namespace UMA.Controls
 					*/
 #if UMA_ADDRESSABLES
 
-					if (ai._Type == typeof(UMATextRecipe))
+					if (ai.Item is UMATextRecipe)
 					{
 						UMATextRecipe recipe = ai.Item as UMATextRecipe;
 
@@ -530,13 +438,13 @@ namespace UMA.Controls
 						}
 					}
 #endif
-					//ButtonRect.x = ButtonRect.x + ButtonRect.width;
-					//ButtonRect.width = 32;
-					//if (GUI.Button(ButtonRect,"Ping", EditorStyles.toolbarButton))
-					//{
-					//	UnityEngine.Object o = AssetDatabase.LoadMainAssetAtPath(ai._Path);
-					//	EditorGUIUtility.PingObject(o);
-					//}
+					ButtonRect.x = ButtonRect.x + ButtonRect.width;
+					ButtonRect.width = 32;
+					if (GUI.Button(ButtonRect,"Ping", EditorStyles.toolbarButton))
+					{
+						UnityEngine.Object o = AssetDatabase.LoadMainAssetAtPath(ai._Path);
+						EditorGUIUtility.PingObject(o);
+					}
 
 					ButtonRect.x = ButtonRect.x + 32;
 					ButtonRect.width = kToggleWidth;
@@ -619,19 +527,7 @@ namespace UMA.Controls
 
 		protected override bool CanMultiSelect(TreeViewItem item)
 		{
-			return true;
-		}
-
-		public static void InitIcons()
-		{
-			if (pingIcon == null)
-			{
-				pingIcon = EditorGUIUtility.IconContent("d_Selectable Icon","|Select the item in the project view");
-			}
-			if (inspectIcon == null)
-			{
-                inspectIcon = EditorGUIUtility.IconContent("d_search_icon","|Inspect the item in a popup inspector");
-            }
+			return false;
 		}
 
 		public static MultiColumnHeaderState CreateDefaultMultiColumnHeaderState(float treeViewWidth)
@@ -646,7 +542,7 @@ namespace UMA.Controls
 					sortingArrowAlignment = TextAlignment.Right,
 					width = 30,
 					minWidth = 30,
-					maxWidth = 30,
+					maxWidth = 60,
 					autoResize = false,
 					allowToggleVisibility = true
 				},
@@ -656,24 +552,12 @@ namespace UMA.Controls
 					headerTextAlignment = TextAlignment.Left,
 					sortedAscending = true,
 					sortingArrowAlignment = TextAlignment.Center,
-					width = 160,
-					minWidth = 130,
+					width = 150,
+					minWidth = 60,
 					autoResize = false,
 					allowToggleVisibility = false
 				},
-                new MultiColumnHeaderState.Column
-                {
-                    headerContent = new GUIContent("Action", "Actions"),
-                    headerTextAlignment = TextAlignment.Center,
-                    sortedAscending = true,
-                    sortingArrowAlignment = TextAlignment.Right,
-                    width = 60,
-                    minWidth = 60,
-                    maxWidth = 60,
-                    autoResize = false,
-                    allowToggleVisibility = true
-                },
-                new MultiColumnHeaderState.Column
+				new MultiColumnHeaderState.Column
 				{
 					headerContent = new GUIContent("Type"),
 					headerTextAlignment = TextAlignment.Left,
@@ -709,19 +593,6 @@ namespace UMA.Controls
 
 				new MultiColumnHeaderState.Column
 				{
-                    headerContent = new GUIContent("Tot", "Just the count"),
-                    headerTextAlignment = TextAlignment.Center,
-                    sortedAscending = true,
-                    sortingArrowAlignment = TextAlignment.Left,
-                    width = 40,
-                    minWidth = 40,
-                    maxWidth = 40,
-                    autoResize = true
-                },
-
-
-                new MultiColumnHeaderState.Column
-				{
 					headerContent = new GUIContent("Group", "Addressable Group this is in (asset bundle)"),
 					headerTextAlignment = TextAlignment.Left,
 					sortedAscending = true,
@@ -744,7 +615,7 @@ namespace UMA.Controls
 				},
 				new MultiColumnHeaderState.Column
 				{
-                    headerContent = new GUIContent("Ignore", "This is not included in addressables or resources"),
+					headerContent = new GUIContent("Keep", "This is always loaded"),
 					headerTextAlignment = TextAlignment.Center,
 					sortedAscending = true,
 					sortingArrowAlignment = TextAlignment.Left,
@@ -754,19 +625,7 @@ namespace UMA.Controls
 					autoResize = false,
 					allowToggleVisibility = true
 				},
-                new MultiColumnHeaderState.Column
-                {
-					headerContent = new GUIContent("Keep", "This is always loaded"),
-                    headerTextAlignment = TextAlignment.Center,
-                    sortedAscending = true,
-                    sortingArrowAlignment = TextAlignment.Left,
-                    width = 40,
-                    minWidth = 40,
-                    maxWidth = 40,
-                    autoResize = false,
-                    allowToggleVisibility = true
-                },
-                new MultiColumnHeaderState.Column
+				new MultiColumnHeaderState.Column
 				{
 					headerContent = new GUIContent("Commands", "Command Buttons"),
 					headerTextAlignment = TextAlignment.Center,

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using UMA.CharacterSystem;
@@ -23,24 +24,18 @@ namespace UMA.Examples
         {
             Dictionary<string, DnaSetter> allDNA = avatar.GetDNA();
             if (allDNA.ContainsKey(dnaName))
-            {
                 DNA = allDNA[dnaName];
-            }
             else
             {
                 if (Debug.isDebugBuild)
-                {
                     Debug.Log("dnaName not in dna name list!");
-                }
             }
 
             slider = GetComponent<Slider>();
             slider.onValueChanged.AddListener(ValueChanged);
 
             if(DNA != null)
-            {
                 slider.value = DNA.Get();
-            }
         }
 
         public void ValueChanged(float val)
@@ -53,9 +48,7 @@ namespace UMA.Examples
             else
             {
                 if (Debug.isDebugBuild)
-                {
                     Debug.Log("DNA is null!");
-                }
             }
         }
 

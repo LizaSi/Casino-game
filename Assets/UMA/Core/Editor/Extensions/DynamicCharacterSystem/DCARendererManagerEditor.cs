@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEditor;
 using UMA.CharacterSystem;
@@ -50,9 +51,7 @@ namespace UMA.Editors
             if (avatar != null && avatar.activeRace != null && avatar.activeRace.data != null)
             {
                 if (currentRaceData != avatar.activeRace.data)
-                {
                     UpdateOptions();
-                }
             }
 
             GUILayout.Space(10);
@@ -129,9 +128,7 @@ namespace UMA.Editors
                     }
                 }
                 if(unassigned)
-                {
                     EditorGUILayout.HelpBox("There are unassigned UMARendererAssets!", MessageType.Error);
-                }
 
                 EditorGUILayout.EndVertical();
                 GUILayout.Space(10);
@@ -145,9 +142,7 @@ namespace UMA.Editors
             for(int i = 0; i < array.arraySize; i++)
             {
                 if (array.GetArrayElementAtIndex(i).stringValue == item)
-                {
                     return true;
-                }
             }
             return false;
         }
@@ -178,10 +173,6 @@ namespace UMA.Editors
 
             if (avatar != null && avatar.activeRace != null && avatar.activeRace.data != null)
             {
-#if UMA_ADDRESSABLES
-                if (avatar.AddressableBuildPending)
-                    return;
-#endif
                 currentRaceData = avatar.activeRace.data;
                 wardrobeOptions.AddRange(avatar.activeRace.data.wardrobeSlots);
                 wardrobeOptions.Insert(0, "Add Wardrobe Slot");

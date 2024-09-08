@@ -40,22 +40,16 @@ namespace UMA.CharacterSystem
 	public void Initialize (DynamicCharacterAvatar Avatar) 
 		{
 
-            for (int i = 0; i < CreatedObjects.Count; i++)
-            {
-                GameObject go = CreatedObjects[i];
-                UMAUtils.DestroySceneObject(go);
-            }
-
-            CreatedObjects.Clear();
+		foreach(GameObject go in CreatedObjects) UMAUtils.DestroySceneObject(go);
+		CreatedObjects.Clear();
 
 			UMADnaBase[] DNA = Avatar.GetAllDNA();
 
 			List<DNAHolder> ValidDNA = new List<DNAHolder>();
 
-            for (int i1 = 0; i1 < DNA.Length; i1++)
+			foreach (UMADnaBase d in DNA)
 			{
-                UMADnaBase d = DNA[i1];
-                string[] names = d.Names;
+				string[] names = d.Names;
 				float[] values = d.Values;
 
 				for (int i=0;i<names.Length;i++)
@@ -70,11 +64,10 @@ namespace UMA.CharacterSystem
 			}
 
 			ValidDNA.Sort( );
-
-            for (int i = 0; i < ValidDNA.Count; i++)
+			
+			foreach(DNAHolder dna in ValidDNA)
 			{
-                DNAHolder dna = ValidDNA[i];
-                GameObject go = GameObject.Instantiate(DnaEditor);
+				GameObject go = GameObject.Instantiate(DnaEditor);
 				go.transform.SetParent(ContentArea.transform);
 				go.transform.localScale = new Vector3(1f, 1f, 1f);//Set the scale back to 1
 				DNAEditor de = go.GetComponentInChildren<DNAEditor>();
@@ -88,23 +81,18 @@ namespace UMA.CharacterSystem
 		{
 			bool retval = false;
 
-            for (int i = 0; i < Markers.Count; i++)
+			foreach(string s in Markers)
 			{
-                string s = Markers[i];
-                if (name.Contains(s))
+				if (name.Contains(s))
 				{
 					retval = true;
 					break;
 				}
 			}
 			if (InvertMarkers)
-            {
-                return !retval;
-            }
-            else
-            {
-                return retval;
-            }
-        }
+				return !retval;
+			else
+				return retval;
+		}
 	}
 }

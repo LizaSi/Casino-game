@@ -2,9 +2,9 @@ using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
 #endif
+using UnityEngine.Serialization;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace UMA
 {
@@ -73,47 +73,10 @@ namespace UMA
 		public UMAPackedRecipeBase.UMAPackRecipe GetPackedRecipe()
         {
 			if (packedRecipe != null)
-            {
-                return packedRecipe;
-            }
-
-            packedRecipe = (baseRaceRecipe as UMATextRecipe).PackedLoad(UMAContextBase.Instance);
+				return packedRecipe;
+			packedRecipe = (baseRaceRecipe as UMATextRecipe).PackedLoad(UMAContextBase.Instance);
 
 			return packedRecipe;
-		}
-
-		private Dictionary<string,List<string>> _usedBlendshapeNames = null;
-
-		public Dictionary<string, List<string>> GetDNAToBlendShapes()
-		{
-			if (_usedBlendshapeNames != null)
-			{
-                return _usedBlendshapeNames;
-            }
-			_usedBlendshapeNames = new Dictionary<string, List<string>>();
-			for(int i=0; i< dnaConverterList.Length; i++)
-			{
-				var plugins = dnaConverterList[i].GetPlugins();
-				for (int j=0;j< plugins.Count; j++)
-				{
-					if (plugins[j] is BlendshapeDNAConverterPlugin)
-					{
-						var plugin = plugins[j] as BlendshapeDNAConverterPlugin;
-						plugin.blendshapeDNAConverters.ForEach((converter) =>
-						{
-							converter.UsedDNANames.ForEach((name) =>
-							{
-								if (_usedBlendshapeNames.ContainsKey(name) == false)
-								{
-                                    _usedBlendshapeNames.Add(name, new List<string>());
-                                }
-							_usedBlendshapeNames[name].Add(converter.blendshapeToApply);
-                            });
-                        });
-					}
-				}
-            }
-			return _usedBlendshapeNames;
 		}
 
 		public Dictionary<string, float> GetDefaultDNA()
@@ -125,10 +88,9 @@ namespace UMA
 			if (RaceDNAValues.Count == 0)
             {
 				List<UMADnaBase> dna = UMAPackedRecipeBase.UnPackDNA(packedRecipe.packedDna);
-                for (int i1 = 0; i1 < dna.Count; i1++)
+				foreach(UMADnaBase udb in dna)
                 {
-                    UMADnaBase udb = dna[i1];
-                    for (int i=0;i < udb.Names.Length;i++)
+					for (int i=0;i < udb.Names.Length;i++)
                     {
 						if (RaceDNAValues.ContainsKey(udb.Names[i]) == false)
 						{
@@ -205,10 +167,9 @@ namespace UMA
 		/// </summary>
 		public bool IsCrossCompatibleWith(List<string> compatibleStrings)
 		{
-            for (int i = 0; i < compatibleStrings.Count; i++)
+			foreach (string val in compatibleStrings)
 			{
-                string val = compatibleStrings[i];
-                if (GetCrossCompatibleRaces().Contains(val))
+				if (GetCrossCompatibleRaces().Contains(val))
 				{
 					return true;
 				}
@@ -229,11 +190,8 @@ namespace UMA
 				//but they will have been shown a warning if their scripts access the field directly
 #if UNITY_EDITOR
 				if (Debug.isDebugBuild)
-                {
-                    Debug.Log("RaceData for " + raceName + " updated its backwardsCompatibleWith value to the new CrossCompatibilitySettings. All good.");
-                }
-
-                if (!Application.isPlaying)
+					Debug.Log("RaceData for " + raceName + " updated its backwardsCompatibleWith value to the new CrossCompatibilitySettings. All good.");
+				if (!Application.isPlaying)
 				{
 					//Debug.Log("RaceData for " + raceName + " updated its backwardsCompatibleWith value to the new CrossCompatibilitySettings. All good.");
 					backwardsCompatibleWith.Clear();
@@ -253,11 +211,8 @@ namespace UMA
 			UpdateOldRace();
 			List<string> ccRaces = new List<string>();
 			for (int i = 0; i < _crossCompatibilitySettings.settingsData.Count; i++)
-            {
-                ccRaces.Add(_crossCompatibilitySettings.settingsData[i].ccRace);
-            }
-
-            return ccRaces;
+				ccRaces.Add(_crossCompatibilitySettings.settingsData[i].ccRace);
+			return ccRaces;
 		}
 		/// <summary>
 		/// Sets the races that this race can be 'cross compatible with.
@@ -265,18 +220,14 @@ namespace UMA
 		public void SetCrossCompatibleRaces(List<string> ccRaces)
 		{
 			for (int i = 0; i < ccRaces.Count; i++)
-            {
-                _crossCompatibilitySettings.Add(ccRaces[i]);
-            }
-            //then remove any that were not in the list
-            List<string> racesToRemove = new List<string>();
+				_crossCompatibilitySettings.Add(ccRaces[i]);
+			//then remove any that were not in the list
+			List<string> racesToRemove = new List<string>();
 			for (int i = 0; i < _crossCompatibilitySettings.settingsData.Count; i++)
 			{
 				if (!ccRaces.Contains(_crossCompatibilitySettings.settingsData[i].ccRace))
-                {
-                    racesToRemove.Add(_crossCompatibilitySettings.settingsData[i].ccRace);
-                }
-            }
+					racesToRemove.Add(_crossCompatibilitySettings.settingsData[i].ccRace);
+			}
 			_crossCompatibilitySettings.Remove(racesToRemove);
 		}
 		/// <summary>
@@ -287,10 +238,8 @@ namespace UMA
 			for (int i = 0; i < _crossCompatibilitySettings.settingsData.Count; i++)
 			{
 				if (_crossCompatibilitySettings.settingsData[i].ccRace == crossCompatibleRace)
-                {
-                    return _crossCompatibilitySettings.settingsData[i].ccSettings;
-                }
-            }
+					return _crossCompatibilitySettings.settingsData[i].ccSettings;
+			}
 			return null;
 		}
 		/// <summary>
@@ -307,10 +256,8 @@ namespace UMA
 			{
 				var foundEquivalent = FindEquivalentSlot(races[i], crossCompatibleSlot, overlaysMustMatch);
 				if (foundEquivalent != "")
-                {
-                    return foundEquivalent;
-                }
-            }
+					return foundEquivalent;
+			}
 			return "";
 		}
 		/// <param name="race">The cross compatible race to check. i.e. is this race defined as compatible with the given race</param>
@@ -334,10 +281,8 @@ namespace UMA
 			{
 				var compatibilityForThisRace = _crossCompatibilitySettings.settingsData[i].GetOverlayCompatibility(crossCompatibleSlot);
 				if (compatibilityForThisRace != -1)
-                {
-                    return compatibilityForThisRace == 1 ? true : false;
-                }
-            }
+					return compatibilityForThisRace == 1 ? true : false;
+			}
 			return false;
 		}
 		/// <summary>
@@ -409,10 +354,8 @@ namespace UMA
 				for (int i = 0; i < ccSettings.Count; i++)
 				{
 					if (ccSettings[i].raceSlot == thisRacesSlot)
-                    {
-                        return ccSettings[i].compatibleRaceSlot;
-                    }
-                }
+						return ccSettings[i].compatibleRaceSlot;
+				}
 				return "";
 			}
 			/// <summary>
@@ -423,13 +366,9 @@ namespace UMA
 				for (int i = 0; i < ccSettings.Count; i++)
 				{
 					if (ccSettings[i].compatibleRaceSlot == compatibleSlot)
-                    {
-                        if ((overlaysMustMatch == true && ccSettings[i].overlaysMatch == true) || overlaysMustMatch == false)
-                        {
-                            return ccSettings[i].raceSlot;
-                        }
-                    }
-                }
+						if ((overlaysMustMatch == true && ccSettings[i].overlaysMatch == true) || overlaysMustMatch == false)
+							return ccSettings[i].raceSlot;
+				}
 				return "";
 			}
 			/// <summary>
@@ -440,10 +379,8 @@ namespace UMA
 				for (int i = 0; i < ccSettings.Count; i++)
 				{
 					if (ccSettings[i].compatibleRaceSlot == compatibleRaceSlot)
-                    {
-                        return ccSettings[i].overlaysMatch ? 1 : 0;
-                    }
-                }
+						return ccSettings[i].overlaysMatch ? 1 : 0;
+				}
 				return -1;
 			}
 			/// <summary>
@@ -462,10 +399,8 @@ namespace UMA
 					}
 				}
 				if (!found)
-                {
-                    ccSettings.Add(new CrossCompatibilityData(thisRacesSlot, compatibleRacesSlot, overlayCompatibility));
-                }
-            }
+					ccSettings.Add(new CrossCompatibilityData(thisRacesSlot, compatibleRacesSlot, overlayCompatibility));
+			}
 		}
 		[System.Serializable]
 		protected class CrossCompatibilitySettingsList
@@ -478,28 +413,22 @@ namespace UMA
 				for (int i = 0; i < settingsData.Count; i++)
 				{
 					if (settingsData[i].ccRace == crossCompatibleRace)
-                    {
-                        return true;
-                    }
-                }
+						return true;
+				}
 				return false;
 			}
 
 			public void Add(string crossCompatibleRace)
 			{
 				if (!Contains(crossCompatibleRace))
-                {
-                    settingsData.Add(new CrossCompatibilitySettings(crossCompatibleRace));
-                }
-            }
+					settingsData.Add(new CrossCompatibilitySettings(crossCompatibleRace));
+			}
 
 			public void Remove(List<string> races)
 			{
 				for (int i = 0; i < races.Count; i++)
-                {
-                    Remove(races[i]);
-                }
-            }
+					Remove(races[i]);
+			}
 
 			public void Remove(string crossCompatibleRace)
 			{
@@ -507,15 +436,11 @@ namespace UMA
 				for (int i = 0; i < settingsData.Count; i++)
 				{
 					if (settingsData[i].ccRace == crossCompatibleRace)
-                    {
-                        removeAt = i;
-                    }
-                }
+						removeAt = i;
+				}
 				if (removeAt > -1)
-                {
-                    settingsData.RemoveAt(removeAt);
-                }
-            }
+					settingsData.RemoveAt(removeAt);
+			}
 		}
 		//Race Thumbnails used in the GUI to give a visual representation of the race
 		[System.Serializable]
@@ -536,9 +461,8 @@ namespace UMA
             public Sprite GetThumbFor(string thumbToGet = "")
             {
                 Sprite foundSprite = fullThumb != null ? fullThumb : null;
-                for (int i = 0; i < wardrobeSlotThumbs.Count; i++)
+                foreach(WardrobeSlotThumb wardrobeThumb in wardrobeSlotThumbs)
                 {
-                    WardrobeSlotThumb wardrobeThumb = wardrobeSlotThumbs[i];
                     string[] thumbIsForArray = null;
                     wardrobeThumb.thumbIsFor.Replace(" ,", ",").Replace(", ", ",");
                     if (wardrobeThumb.thumbIsFor.IndexOf(",") == -1)
@@ -549,9 +473,8 @@ namespace UMA
                     {
                         thumbIsForArray = wardrobeThumb.thumbIsFor.Split(new string[1] { "," }, StringSplitOptions.RemoveEmptyEntries);
                     }
-                    for (int i1 = 0; i1 < thumbIsForArray.Length; i1++)
+                    foreach(string thumbFor in thumbIsForArray)
                     {
-                        string thumbFor = thumbIsForArray[i1];
                         if (thumbFor == thumbToGet)
                         {
                             foundSprite = wardrobeThumb.thumb;

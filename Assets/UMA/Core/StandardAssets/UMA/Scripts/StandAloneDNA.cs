@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
+using UMA;
 using static UMA.UMAPackedRecipeBase;
 
 namespace UMA
@@ -23,10 +25,9 @@ namespace UMA
             UMA.UMAData.UMARecipe umaRecipe = umaData._umaRecipe;
 
             umaRecipe.ClearDna();
-
-            for (int i = 0; i < DNA.Count; i++)
+       
+            foreach (UMADnaBase umd in DNA)
             {
-                UMADnaBase umd = DNA[i];
                 umaRecipe.AddDna(umd);
             }
             umaData._umaRecipe.ClearDNAConverters();
@@ -35,9 +36,8 @@ namespace UMA
         public void LoadDNAFromAvatarDefinition(AvatarDefinition adf)
         {
             var DNA = GetDNA();
-            for (int i = 0; i < adf.Dna.Length; i++)
+            foreach (var d in adf.Dna)
             {
-                DnaDef d = adf.Dna[i];
                 if (DNA.ContainsKey(d.Name))
                 {
                     DNA[d.Name].Set(d.Value);
@@ -59,14 +59,10 @@ namespace UMA
             avatarDefinition.RaceName = originalRace.raceName;
 
             if (avatarDefinition.Wardrobe == null)
-            {
                 avatarDefinition.Wardrobe = new string[0];
-            }
-
+            
             if (avatarDefinition.Colors == null)
-            {
                 avatarDefinition.Colors = new SharedColorDef[0];
-            }
 
             return avatarDefinition;
         }
@@ -83,17 +79,12 @@ namespace UMA
                 UMADnaBase[] dnaBase = umaData.GetAllDna();
 
                 if (recipe == null)
-                {
                     dnaBase = umaData.GetAllDna();
-                }
                 else
-                {
                     dnaBase = recipe.GetAllDna();
-                }
 
-                for (int j = 0; j < dnaBase.Length; j++)
+                foreach (UMADnaBase db in dnaBase)
                 {
-                    UMADnaBase db = dnaBase[j];
                     string Category = db.GetType().ToString();
                     IDNAConverter[] dcb = originalRace.GetConverters(db);
 

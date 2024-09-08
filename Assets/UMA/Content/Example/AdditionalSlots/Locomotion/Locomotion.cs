@@ -1,4 +1,5 @@
 using UnityEngine;
+using System.Collections;
 
 namespace UMA.Examples
 {
@@ -12,15 +13,9 @@ namespace UMA.Examples
         {
             animator = GetComponent<Animator>();
 
-            if (animator == null)
-            {
-                return;
-            }
-
+            if (animator == null) return;
             if (animator.layerCount >= 2)
-            {
                 animator.SetLayerWeight(1, 1);
-            }
         }
 
         void Update()
@@ -43,9 +38,7 @@ namespace UMA.Examples
         void OnCollisionEnter(Collision collision)
         {
             if (Debug.isDebugBuild)
-            {
                 Debug.Log(collision.collider.name + ":" + name);
-            }
         }
     }
 }

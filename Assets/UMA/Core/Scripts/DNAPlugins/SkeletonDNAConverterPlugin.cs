@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using UnityEngine;
 #if UNITY_EDITOR
 using UnityEditor;
@@ -7,7 +8,7 @@ using UMA.CharacterSystem;
 
 namespace UMA
 {
-    public class SkeletonDNAConverterPlugin : DynamicDNAPlugin
+	public class SkeletonDNAConverterPlugin : DynamicDNAPlugin
 	{
 		#region FIELDS
 
@@ -52,11 +53,9 @@ namespace UMA
 					for (int ci = 0; ci < skelModsUsedNames.Count; ci++)
 					{
 						if (!dict.ContainsKey(skelModsUsedNames[ci]))
-                        {
-                            dict.Add(skelModsUsedNames[ci], new List<int>());
-                        }
+							dict.Add(skelModsUsedNames[ci], new List<int>());
 
-                        dict[skelModsUsedNames[ci]].Add(i);
+						dict[skelModsUsedNames[ci]].Add(i);
 					}
 				}
 				return dict;
@@ -71,18 +70,10 @@ namespace UMA
 		public override void ApplyDNA(UMAData umaData, UMASkeleton skeleton, int dnaTypeHash)
 		{
 			var umaDna = umaData.GetDna(dnaTypeHash);
-			if (umaDna == null)
-            {
-                return;
-            }
-
-            var masterWeightCalc = masterWeight.GetWeight(umaDna);
+			var masterWeightCalc = masterWeight.GetWeight(umaDna);
 			if (masterWeightCalc == 0f)
-            {
-                return;
-            }
-
-            for (int i = 0; i < _skeletonModifiers.Count; i++)
+				return;
+			for (int i = 0; i < _skeletonModifiers.Count; i++)
 			{
 				_skeletonModifiers[i].umaDNA = umaDna;
 
@@ -183,10 +174,8 @@ namespace UMA
 			List<SkeletonModifier> importedSkeletonModifiers = new List<SkeletonModifier>();
 			bool isLegacy = false;
 			if (pluginToImport.GetType() == this.GetType())
-            {
-                importedSkeletonModifiers = (pluginToImport as SkeletonDNAConverterPlugin)._skeletonModifiers;
-            }
-            else if(pluginToImport.GetType().IsAssignableFrom(typeof(DynamicDNAConverterController)))
+				importedSkeletonModifiers = (pluginToImport as SkeletonDNAConverterPlugin)._skeletonModifiers;
+			else if(pluginToImport.GetType().IsAssignableFrom(typeof(DynamicDNAConverterController)))
 			{
 				var skelModPlugs = (pluginToImport as DynamicDNAConverterController).GetPlugins(typeof(SkeletonDNAConverterPlugin));
 				if(skelModPlugs.Count > 0)
@@ -194,7 +183,23 @@ namespace UMA
 					importedSkeletonModifiers = (skelModPlugs[0] as SkeletonDNAConverterPlugin)._skeletonModifiers;
 				}
 			}
-
+			else
+			{
+				if (typeof(GameObject).IsAssignableFrom(pluginToImport.GetType()))
+				{
+					var DDCB = (pluginToImport as GameObject).GetComponent<DynamicDNAConverterBehaviour>();
+					if(DDCB != null)
+					{
+						importedSkeletonModifiers = DDCB.skeletonModifiers;
+						//hmm this is not always the case because of the backwards compatible property giving us the first found skelModsPlugin aswell
+						//so if there is no converter controller, *then* its legacy- 
+						//or is it? the user could still assign a controller without upgrading and then try and drag the behaviour in here
+						//UMA2.8+ FixDNAPrefabs ConverterController doesn't do this backwards compatibility now
+						//if(DDCB.ConverterController == null)
+							isLegacy = true;
+					}
+				}
+			}
 			if(importedSkeletonModifiers != null)
 			{
 				// add the modifiers- if the import method is Replace this is a new list
@@ -203,11 +208,8 @@ namespace UMA
 
 				List<string> existingDNANames = new List<string>();
 				if (DNAAsset != null)
-                {
-                    existingDNANames.AddRange(DNAAsset.Names);
-                }
-
-                List<string> missingDNANames = new List<string>();
+					existingDNANames.AddRange(DNAAsset.Names);
+				List<string> missingDNANames = new List<string>();
 				//If any dnanames are misisng give the user the option to only overwrite matching dna names
 				//or add the missing dna names and continue
 				//or cancel
@@ -234,18 +236,14 @@ namespace UMA
 							}
 						}
 						if (!existed)
-                        {
-                            continue;
-                        }
-                    }
+							continue;
+					}
 					var usedDNANames = SkeletonModifierUsedDNANames(incomingModifiers[i], isLegacy);
 					for(int nc = 0; nc < usedDNANames.Count; nc++)
 					{
 						if (!existingDNANames.Contains(usedDNANames[nc]) && !missingDNANames.Contains(usedDNANames[nc]))
-                        {
-                            missingDNANames.Add(usedDNANames[nc]);
-                        }
-                    }
+							missingDNANames.Add(usedDNANames[nc]);
+					}
 				}
 				if (missingDNANames.Count > 0 && DNAAsset != null)
 				{
@@ -264,10 +262,8 @@ namespace UMA
 					//options: "Only Overwrite Existing DNA" "Add Missing DNA" "Cancel"
 					var missingDNAOption = EditorUtility.DisplayDialogComplex("Missing DNA in Current Converter", missingDNAMsg, "Only Overwrite Existing DNA", "Add Missing DNA", "Cancel");
 					if (missingDNAOption == 2)
-                    {
-                        return false;
-                    }
-                    else if (missingDNAOption == 1)
+						return false;
+					else if (missingDNAOption == 1)
 					{
 						//add the missing names
 						var assetNames = new List<string>(DNAAsset.Names);
@@ -299,38 +295,26 @@ namespace UMA
 								currentModifiers[ci].valuesX.val.value = incomingModifiers[i].valuesX.val.value;
 								//now currentModifiers should only ever have modifyingDNA but incomingModifiers might contain data in  legacy 'modifiers' OR in 'modifyingDNA'
 								if (isLegacy)
-                                {
-                                    ProcessSkelModOverwrites(currentModifiers[ci].valuesX.val.modifyingDNA, incomingModifiers[i].valuesX.val.modifiers, existingDNANames);
-                                }
-                                else
-                                {
-                                    ProcessSkelModOverwrites(currentModifiers[ci].valuesX.val.modifyingDNA, incomingModifiers[i].valuesX.val.modifyingDNA, existingDNANames);
-                                }
+									ProcessSkelModOverwrites(currentModifiers[ci].valuesX.val.modifyingDNA, incomingModifiers[i].valuesX.val.modifiers, existingDNANames);
+								else
+									ProcessSkelModOverwrites(currentModifiers[ci].valuesX.val.modifyingDNA, incomingModifiers[i].valuesX.val.modifyingDNA, existingDNANames);
 
-                                currentModifiers[ci].valuesY.min = incomingModifiers[i].valuesY.min;
+								currentModifiers[ci].valuesY.min = incomingModifiers[i].valuesY.min;
 								currentModifiers[ci].valuesY.max = incomingModifiers[i].valuesY.max;
 								currentModifiers[ci].valuesY.val.value = incomingModifiers[i].valuesY.val.value;
 								if (isLegacy)
-                                {
-                                    ProcessSkelModOverwrites(currentModifiers[ci].valuesY.val.modifyingDNA, incomingModifiers[i].valuesY.val.modifiers, existingDNANames);
-                                }
-                                else
-                                {
-                                    ProcessSkelModOverwrites(currentModifiers[ci].valuesY.val.modifyingDNA, incomingModifiers[i].valuesY.val.modifyingDNA, existingDNANames);
-                                }
+									ProcessSkelModOverwrites(currentModifiers[ci].valuesY.val.modifyingDNA, incomingModifiers[i].valuesY.val.modifiers, existingDNANames);
+								else
+									ProcessSkelModOverwrites(currentModifiers[ci].valuesY.val.modifyingDNA, incomingModifiers[i].valuesY.val.modifyingDNA, existingDNANames);
 
-                                currentModifiers[ci].valuesZ.min = incomingModifiers[i].valuesZ.min;
+								currentModifiers[ci].valuesZ.min = incomingModifiers[i].valuesZ.min;
 								currentModifiers[ci].valuesZ.max = incomingModifiers[i].valuesZ.max;
 								currentModifiers[ci].valuesZ.val.value = incomingModifiers[i].valuesZ.val.value;
 								if (isLegacy)
-                                {
-                                    ProcessSkelModOverwrites(currentModifiers[ci].valuesZ.val.modifyingDNA, incomingModifiers[i].valuesZ.val.modifiers, existingDNANames);
-                                }
-                                else
-                                {
-                                    ProcessSkelModOverwrites(currentModifiers[ci].valuesZ.val.modifyingDNA, incomingModifiers[i].valuesZ.val.modifyingDNA, existingDNANames);
-                                }
-                            }
+									ProcessSkelModOverwrites(currentModifiers[ci].valuesZ.val.modifyingDNA, incomingModifiers[i].valuesZ.val.modifiers, existingDNANames);
+								else
+									ProcessSkelModOverwrites(currentModifiers[ci].valuesZ.val.modifyingDNA, incomingModifiers[i].valuesZ.val.modifyingDNA, existingDNANames);
+							}
 							break;
 						}
 					}
@@ -380,11 +364,8 @@ namespace UMA
 			for (int i = 0; i < incomingMods.Count; i++)
 			{
 				if (!existingDNANames.Contains(incomingMods[i].dnaName))
-                {
-                    continue;
-                }
-
-                var foundInCurrent = false;
+					continue;
+				var foundInCurrent = false;
 				for (int ci = 0; ci < currentMods.Count; ci++)
 				{
 					if (currentMods[ci].dnaName == incomingMods[i].dnaName)
@@ -425,24 +406,18 @@ namespace UMA
 			for (int i = 0; i < xNames.Count; i++)
 			{
 				if (!usedNames.Contains(xNames[i]) && (dnaName == "" || (!string.IsNullOrEmpty(dnaName) && xNames[i] == dnaName)))
-                {
-                    usedNames.Add(xNames[i]);
-                }
-            }
+					usedNames.Add(xNames[i]);
+			}
 			for (int i = 0; i < yNames.Count; i++)
 			{
 				if (!usedNames.Contains(yNames[i]) && (dnaName == "" || (!string.IsNullOrEmpty(dnaName) && yNames[i] == dnaName)))
-                {
-                    usedNames.Add(yNames[i]);
-                }
-            }
+					usedNames.Add(yNames[i]);
+			}
 			for (int i = 0; i < zNames.Count; i++)
 			{
 				if (!usedNames.Contains(zNames[i]) && (dnaName == "" || (!string.IsNullOrEmpty(dnaName) && zNames[i] == dnaName)))
-                {
-                    usedNames.Add(zNames[i]);
-                }
-            }
+					usedNames.Add(zNames[i]);
+			}
 			if (searchLegacy)
 			{
 				//legacy names
@@ -452,10 +427,8 @@ namespace UMA
 						dnaName == "" || (!string.IsNullOrEmpty(dnaName) && skeletonModifier.valuesX.val.modifiers[xi].DNATypeName == dnaName))
 					{
 						if (!usedNames.Contains(skeletonModifier.valuesX.val.modifiers[xi].DNATypeName))
-                        {
-                            usedNames.Add(skeletonModifier.valuesX.val.modifiers[xi].DNATypeName);
-                        }
-                    }
+							usedNames.Add(skeletonModifier.valuesX.val.modifiers[xi].DNATypeName);
+					}
 				}
 				for (int yi = 0; yi < skeletonModifier.valuesY.val.modifiers.Count; yi++)
 				{
@@ -463,10 +436,8 @@ namespace UMA
 						dnaName == "" || (!string.IsNullOrEmpty(dnaName) && skeletonModifier.valuesY.val.modifiers[yi].DNATypeName == dnaName))
 					{
 						if (!usedNames.Contains(skeletonModifier.valuesY.val.modifiers[yi].DNATypeName))
-                        {
-                            usedNames.Add(skeletonModifier.valuesY.val.modifiers[yi].DNATypeName);
-                        }
-                    }
+							usedNames.Add(skeletonModifier.valuesY.val.modifiers[yi].DNATypeName);
+					}
 				}
 				for (int zi = 0; zi < skeletonModifier.valuesZ.val.modifiers.Count; zi++)
 				{
@@ -474,10 +445,8 @@ namespace UMA
 						dnaName == "" || (!string.IsNullOrEmpty(dnaName) && skeletonModifier.valuesZ.val.modifiers[zi].DNATypeName == dnaName))
 					{
 						if (!usedNames.Contains(skeletonModifier.valuesZ.val.modifiers[zi].DNATypeName))
-                        {
-                            usedNames.Add(skeletonModifier.valuesZ.val.modifiers[zi].DNATypeName);
-                        }
-                    }
+							usedNames.Add(skeletonModifier.valuesZ.val.modifiers[zi].DNATypeName);
+					}
 				}
 			}
 			return usedNames;

@@ -1,4 +1,4 @@
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
 
 namespace UMA.CharacterSystem
@@ -39,33 +39,14 @@ namespace UMA.CharacterSystem
 			avatar = GetComponent<DynamicCharacterAvatar>();
 			avatar.CharacterBegun.AddListener(CharacterBegun);
 			context = UMAContextBase.Instance;
-			lastState = RenderersEnabled; // only cause it to rebuild if it actually changes
 		}
 
         private void Update()
         {
             if (RenderersEnabled != lastState)
             {
-				if (avatar.activeRace.isValid == false)
-                {
-                    return;
-                }
-
-                if (avatar.UpdatePending())
-                {
-                    return;
-                }
-#if UMA_ADDRESSABLES
-                if (avatar.AddressableBuildPending)
-                {
-                    return;
-                }
-#endif
-                if (avatar.hide)
-                {
-                    return;
-                }
-
+				if (avatar.hide)
+					return;
                 lastState = RenderersEnabled;
                 avatar.BuildCharacter();
             }
@@ -73,34 +54,25 @@ namespace UMA.CharacterSystem
 
 		void CharacterBegun(UMAData umaData)
 		{
-            if (!RenderersEnabled)
-            {
-                return;
-            }
-            //If mesh is not dirty then we haven't changed slots.
-            if (!umaData.isMeshDirty)
-            {
-                return;
-            }
+            if (!RenderersEnabled) return;
+			//If mesh is not dirty then we haven't changed slots.
+			if (!umaData.isMeshDirty)
+				return;
 
-            SlotData[] slots = umaData.umaRecipe.slotDataList;
+			SlotData[] slots = umaData.umaRecipe.slotDataList;
 			slotsToAdd.Clear();
 
-            for (int i1 = 0; i1 < RendererElements.Count; i1++)
+			foreach (RendererElement element in RendererElements)
 			{
-                RendererElement element = RendererElements[i1];
-                if (element.rendererAssets == null || element.rendererAssets.Count <= 0)
-                {
-                    continue;
-                }
+				if (element.rendererAssets == null || element.rendererAssets.Count <= 0)
+					continue;
 
-                wardrobeSlotAssets.Clear();
+				wardrobeSlotAssets.Clear();
 
-                //First, lets collect a list of the slotDataAssets that are present in the wardrobe recipes of the wardrobe slots we've specified
-                for (int i2 = 0; i2 < element.wardrobeSlots.Count; i2++)
+				//First, lets collect a list of the slotDataAssets that are present in the wardrobe recipes of the wardrobe slots we've specified
+				foreach (string wardrobeSlot in element.wardrobeSlots)
 				{
-                    string wardrobeSlot = element.wardrobeSlots[i2];
-                    UMATextRecipe recipe = avatar.GetWardrobeItem(wardrobeSlot);
+					UMATextRecipe recipe = avatar.GetWardrobeItem(wardrobeSlot);
 					if (recipe != null)
 					{
 						recipe.Load(umaRecipe, context);
@@ -110,31 +82,18 @@ namespace UMA.CharacterSystem
 							for (int i = 0; i < umaRecipe.slotDataList.Length; i++)
 							{
 								SlotData slotData = umaRecipe.slotDataList[i];
-								if (slotData == null)
-                                {
-                                    continue;
-                                }
-
-                                if (slotData.isBlendShapeSource)
-                                {
-                                    continue;
-                                }
-
-                                if (slotData != null && slotData.asset != null)
-                                {
-                                    wardrobeSlotAssets.Add(slotData.asset);
-                                }
-                            }
+								if (slotData != null && slotData.asset != null)
+									wardrobeSlotAssets.Add(slotData.asset);
+							}
 						}
 					}
 				}
 
-                //Next, check each slot for if they are in the list of specified slots or exist in one of the wardrobe recipes of the wardrobe slot we specified.
-                for (int i2 = 0; i2 < slots.Length; i2++)
+				//Next, check each slot for if they are in the list of specified slots or exist in one of the wardrobe recipes of the wardrobe slot we specified.
+				foreach (SlotData slot in slots)
 				{
-                    SlotData slot = slots[i2];
-                    // if (element.slotAssets.Contains(slot.asset) || wardrobeSlotAssets.Contains(slot.asset))
-                    if (HasSlot(element.slotAssets,slot.slotName) || HasSlot(wardrobeSlotAssets,slot.slotName))
+					// if (element.slotAssets.Contains(slot.asset) || wardrobeSlotAssets.Contains(slot.asset))
+					if (HasSlot(element.slotAssets,slot.slotName) || HasSlot(wardrobeSlotAssets,slot.slotName))
 					{
 						//We check for at least one rendererAsset at the top level for loop.
 						//Set our existing slot to the first renderer in our renderer list.
@@ -165,19 +124,9 @@ namespace UMA.CharacterSystem
 
 		private bool HasSlot(List<SlotDataAsset> slots, string slotName)
 		{
-			if (slots != null)
+			foreach (SlotDataAsset sl in slots)
 			{
-                for (int i = 0; i < slots.Count; i++)
-				{
-                    SlotDataAsset sl = slots[i];
-                    if (sl != null)
-					{
-						if (sl.slotName == slotName)
-                        {
-                            return true;
-                        }
-                    }
-				}
+				if (sl.slotName == slotName) return true;
 			}
 			return false;
 		}

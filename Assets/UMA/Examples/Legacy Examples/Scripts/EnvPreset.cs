@@ -39,9 +39,7 @@ namespace UMA.Examples
             {
                 var mi = typeof(UnityEditor.Lightmapping).GetMethod("BakeAllReflectionProbesSnapshots", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
                 if (mi != null)
-                {
                     mi.Invoke(null, null);
-                }
             }
 #endif
         }

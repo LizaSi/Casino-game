@@ -1,11 +1,12 @@
 using UnityEngine;
 #if UNITY_EDITOR
+using UnityEditor;
 #endif
 using System.Collections.Generic;
 
 namespace UMA.CharacterSystem
 {
-    public class DynamicRaceLibrary : RaceLibrary
+	public class DynamicRaceLibrary : RaceLibrary
 	{
 
 		//extra fields for Dynamic Version
@@ -125,15 +126,8 @@ namespace UMA.CharacterSystem
 				return;
 
 	#endif
-			var Races = UMAAssetIndexer.Instance.GetAllAssets<RaceData>();
-
-			if (raceHash != null)
-			{
-                // Remove all races that don't match the hash
-
-			}
-
-			UpdateDynamicRaceLibrary(raceHash);
+			if (DynamicAssetLoader.Instance != null)
+				DynamicAssetLoader.Instance.AddAssets<RaceData>(ref assetBundlesUsedDict, dynamicallyAddFromResources, dynamicallyAddFromAssetBundles, downloadAssets, assetBundleNamesToSearch, resourcesFolderPath, raceHash, "", AddRaces);
 
 	#if UNITY_EDITOR
 			if (raceHash == null && !Application.isPlaying)
@@ -144,23 +138,11 @@ namespace UMA.CharacterSystem
 
 		public void UpdateDynamicRaceLibrary(string raceName)
 		{
-			var races = UMAAssetIndexer.Instance.GetAllAssets<RaceData>();
-            races.RemoveAll(x => x.raceName != raceName);
-			AddRaces(races.ToArray());
-        }
+				DynamicAssetLoader.Instance.AddAssets<RaceData>(ref assetBundlesUsedDict, dynamicallyAddFromResources, dynamicallyAddFromAssetBundles, downloadAssetsEnabled, assetBundleNamesToSearch, resourcesFolderPath, null, raceName, AddRaces);
+		}
 
-        public void UpdateDynamicRaceLibrary(int? raceHash)
-        {
-            var races = UMAAssetIndexer.Instance.GetAllAssets<RaceData>();
-			if (raceHash != null)
-			{
-				races.RemoveAll(x => x.name.GetHashCode() != raceHash);
-			}
-            AddRaces(races.ToArray());
-        }
-
-#pragma warning disable 618
-        private void AddRaces(RaceData[] races)
+	#pragma warning disable 618
+		private void AddRaces(RaceData[] races)
 		{
 			int currentNumRaces = raceElementList.Length;
 			foreach (RaceData race in races)

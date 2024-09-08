@@ -65,9 +65,7 @@ namespace UnityEngine.UI
             if (this.m_Stack.Count > 0 && object.ReferenceEquals(this.m_Stack.Peek(), element))
             {
                 if (Debug.isDebugBuild)
-                {
                     Debug.LogError("Internal error. Trying to destroy object that is already released to pool.");
-                }
             }
             if (this.m_ActionOnRelease != null)
             {
