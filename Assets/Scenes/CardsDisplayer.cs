@@ -177,18 +177,23 @@ public class CardsDisplayer : NetworkBehaviour
             UpdateCardsDisplay();
         if (msg.Leave)
         {
-            AllComponentsParent.SetActive(false);
-            ClientComponentsParent.SetActive(false);
-            newRoundButton.gameObject.SetActive(false);
-            winText.text = "";
-            CountdownTimer.RemoveTimer();
-            dealerChecked = false;
-            cardIndex = 0;
-            spawnedCardsNames = new();
-            spawnedCardsServer = new();
-            dealerRevealAllCards = false;
-            waitForNextRound = false;
+            LeaveGame();
         }
+    }
+
+    public void LeaveGame()
+    {
+        AllComponentsParent.SetActive(false);
+        ClientComponentsParent.SetActive(false);
+        newRoundButton.gameObject.SetActive(false);
+        winText.text = "";
+        CountdownTimer.RemoveTimer();
+        dealerChecked = false;
+        cardIndex = 0;
+        spawnedCardsNames = new();
+        spawnedCardsServer = new();
+        dealerRevealAllCards = false;
+        waitForNextRound = false;
     }
 
     public void Check_OnClick()

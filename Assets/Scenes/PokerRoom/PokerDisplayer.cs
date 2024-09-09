@@ -132,10 +132,15 @@ public class PokerDisplayer : NetworkBehaviour
         }
         if (msg.Leave)
         {
-            PokerComponentsParent.SetActive(false);
-            WinText.text = "";
-            CountdownTimer.RemoveTimer();
+            LeaveGame();
         }
+    }
+
+    public void LeaveGame()
+    {
+        PokerComponentsParent.SetActive(false);
+        WinText.text = "";
+        CountdownTimer.RemoveTimer();
     }
 
     private void DisplayCardDealer(string cardToAdd)
