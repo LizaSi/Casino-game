@@ -524,9 +524,13 @@ public class CardsDisplayer : NetworkBehaviour
             }
             
 
-            if (!base.Owner.IsLocalClient && avatar != null)
+            if (!base.Owner.IsLocalClient)
             {
                 StartCoroutine(ModifyAvatarInDelay(avatar));
+            }
+            else
+            {
+                ModifyAvatarAsHost(avatar, avatarCompressedString);
             }
         }
         else
@@ -588,6 +592,20 @@ public class CardsDisplayer : NetworkBehaviour
         if (!string.IsNullOrEmpty(clientAvatarString))
         {
             AvatarDefinition adf = AvatarDefinition.FromCompressedString(clientAvatarString, '|');
+            avatar.LoadAvatarDefinition(adf);
+            avatar.BuildCharacter(false); // don't restore old DNA...
+        }
+        else
+        {
+            Debug.LogError("Avatar string is null");
+        }
+    }
+
+    private void ModifyAvatarAsHost(DynamicCharacterAvatar avatar, string avatarString)
+    {
+        if (!string.IsNullOrEmpty(avatarString))
+        {
+            AvatarDefinition adf = AvatarDefinition.FromCompressedString(avatarString, '|');
             avatar.LoadAvatarDefinition(adf);
             avatar.BuildCharacter(false); // don't restore old DNA...
         }
