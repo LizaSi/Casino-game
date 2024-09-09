@@ -99,6 +99,7 @@ public class PlayerDisplayer : MonoBehaviour
     //public static void SetCameraPoker(int playerIndex)
     public static void SetCameraPoker(int playerIndex, string avatarCompressedString)
     {
+
         GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
         //////////////////////////
         DynamicCharacterAvatar avatar = instantiatedPlayer.GetComponentInChildren<DynamicCharacterAvatar>();

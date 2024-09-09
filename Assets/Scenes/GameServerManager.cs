@@ -6,7 +6,6 @@ using System.Collections.Generic;
 using System.Linq;
 using FishNet.Broadcast;
 using FishNet;
-//using Firebase.Database;
 using System.Threading.Tasks;
 using UnityEngine;
 using Firebase.Database;
@@ -16,7 +15,6 @@ public class GameServerManager : NetworkBehaviour
 {
     private Deck _deck;
     private int playerIndex = 0;
-    [SerializeField] Button ExitButton;
 
     public static event Action OnInitialized;
     public static event Action OnTurnPass;
@@ -45,12 +43,21 @@ public class GameServerManager : NetworkBehaviour
             _instance = this;
         }
         _instance._playerHands.OnChange += playerHands_OnChange;
-        if (InstanceFinder.IsServer)
-        {
-            ExitButton.gameObject.SetActive(true);
-        }
+        _instance.AvatarsSyncDict.OnChange += AvatarString_OnChange;
         NewRoundInit();
         OnInitialized?.Invoke();
+    }
+
+    private void AvatarString_OnChange(SyncDictionaryOperation op, NetworkConnection key, string value, bool asServer)
+    {
+        UpdateBroadcast msg = new() 
+        {
+            NewRound = false,
+            UpdateCards = false,
+            AvatarSet = true,
+            AvatarConn = key
+        };
+        InstanceFinder.ServerManager.Broadcast(msg);
     }
 
     private void OnDisable()
@@ -161,8 +168,6 @@ public class GameServerManager : NetworkBehaviour
             _playersIndexes[conn] = GenerateNewPlayerIndex();
         }
     }
-
-
 
     public static int GetPlayerIndex(NetworkConnection conn)
     {
@@ -366,6 +371,8 @@ public class GameServerManager : NetworkBehaviour
         public bool DealerTurn;
         public string NewCard;
         public bool Leave;
+        public bool AvatarSet;
+        public NetworkConnection AvatarConn;
     }
 
     public struct TurnPassBroadcast : IBroadcast

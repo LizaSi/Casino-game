@@ -40,6 +40,9 @@ public class PokerServerManager : NetworkBehaviour
     [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playersIndexes = new(); //starting from 0
     [SyncObject] private readonly SyncDictionary<NetworkConnection, int> _playerBets = new();
     [SyncObject] private readonly SyncDictionary<NetworkConnection, string> _playerNames = new();
+    [SyncObject] private readonly SyncDictionary<NetworkConnection, string> AvatarsSyncDict = new();
+
+
     public int Pot
     {
         get { return _pot; }
@@ -78,6 +81,23 @@ public class PokerServerManager : NetworkBehaviour
             Leave = true
         };
         InstanceFinder.ServerManager.Broadcast(msg);
+    }
+
+    [Client]
+    public static void SetAvatarString(string avatarString)
+    {
+        Instance.SetAvatarStringServer(avatarString);
+    }
+
+    [ServerRpc(RequireOwnership = false)]
+    public void SetAvatarStringServer(string avatarString, NetworkConnection sender = null)
+    {
+        AvatarsSyncDict[sender] = avatarString;
+    }
+
+    public static string GetAvatarString(NetworkConnection sender)
+    {
+        return Instance.AvatarsSyncDict[sender];
     }
 
     private void ClearGameData()
@@ -371,7 +391,7 @@ public class PokerServerManager : NetworkBehaviour
 
     private async Task UpdateCoins(NetworkConnection conn, int coinToDecrease)
     {
-        if (!_playerNames.TryGetValue(conn, out string name))
+      /*  if (!_playerNames.TryGetValue(conn, out string name))
             Debug.LogError("Player's name is not asigned");
 
         DatabaseReference userRef = FirebaseDatabase.DefaultInstance.GetReference("users").Child(name);
@@ -386,7 +406,7 @@ public class PokerServerManager : NetworkBehaviour
 
         int updatedCoins = currentCoins - coinToDecrease;
 
-        await userRef.Child("coins").SetValueAsync(updatedCoins);
+        await userRef.Child("coins").SetValueAsync(updatedCoins);*/
     }
 
     public static bool IsMyTurn(NetworkConnection conn)

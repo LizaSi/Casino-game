@@ -24,6 +24,7 @@ public class CardsDisplayer : NetworkBehaviour
     private List<string> spawnedCardsServer = new();
     private bool dealerRevealAllCards = false;
     private bool waitForNextRound = false;
+    private DynamicCharacterAvatar m_avatar;
 
 
     private void OnEnable()
@@ -54,7 +55,7 @@ public class CardsDisplayer : NetworkBehaviour
             GameServerManager.SetAvatarString(LoggedUser.AvatarCompressedString);
         }
 
-        AllComponentsParent.gameObject.SetActive(true);
+        AllComponentsParent.SetActive(true);
         if (playerIndex == 0)
         {
             waitForNextRound = true;
@@ -65,11 +66,8 @@ public class CardsDisplayer : NetworkBehaviour
             //PlayerDisplayer.SetCameraBlackJack(GetPlayerIndex(base.Owner) - 1); // -1 cuz index 1 is the host
             StartCoroutine(ClientTurnInDelay());
         }
-        //PlayerDisplayer.SetCameraBlackJack(GetPlayerIndex(base.Owner) - 1, LoggedUser.AvatarCompressedString); // -1 cuz index 1 is the host
         SetCameraAndAvatarBlackJack(GetPlayerIndex(base.Owner) - 1, LoggedUser.AvatarCompressedString); // -1 cuz index 1 is the host
-
     }
-
     private void NewRoundInit()
     {
         DespawnAllCards();
@@ -186,6 +184,10 @@ public class CardsDisplayer : NetworkBehaviour
         if (msg.Leave)
         {
             LeaveGame();
+        }
+        if (msg.AvatarSet && msg.AvatarConn == base.Owner)
+        {
+            ModifyAvatarInDelay();
         }
     }
 
@@ -503,6 +505,10 @@ public class CardsDisplayer : NetworkBehaviour
 
     private void SetCameraAndAvatarBlackJack(int playerIndex, string avatarCompressedString)
     {
+        if(!base.Owner.IsLocalClient && !InstanceFinder.IsServer)
+        {
+            return;
+        }
         GameObject instantiatedPlayer;
         if(playerIndex == 0)
         {
@@ -512,8 +518,9 @@ public class CardsDisplayer : NetworkBehaviour
         {
             instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
         }
-        //////////////////////////
+
         DynamicCharacterAvatar avatar = instantiatedPlayer.GetComponentInChildren<DynamicCharacterAvatar>();
+        m_avatar = avatar;
 
         if (InstanceFinder.IsServer)
         {
@@ -526,7 +533,7 @@ public class CardsDisplayer : NetworkBehaviour
 
             if (!base.Owner.IsLocalClient)
             {
-                StartCoroutine(ModifyAvatarInDelay(avatar));
+              //  StartCoroutine(ModifyAvatarInDelay(avatar)); 
             }
             else
             {
@@ -560,7 +567,6 @@ public class CardsDisplayer : NetworkBehaviour
             instantiatedPlayer.transform.localPosition = new Vector3(27f, 0, 22.31f);
             instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -69.77f, 0f);
             Debug.LogWarning("Displaying 2nd player's camera");
-
         }
         else if (playerIndex == 3)
         {
@@ -584,16 +590,17 @@ public class CardsDisplayer : NetworkBehaviour
         }
     }
 
-    private IEnumerator ModifyAvatarInDelay(DynamicCharacterAvatar avatar)
+    private void ModifyAvatarInDelay(/*DynamicCharacterAvatar avatar*/)
     {
-        yield return new WaitForSeconds(2f);
+    //    yield return new WaitForSeconds(2f);
+        
         string clientAvatarString = GetAvatarString(base.Owner);
 
         if (!string.IsNullOrEmpty(clientAvatarString))
         {
             AvatarDefinition adf = AvatarDefinition.FromCompressedString(clientAvatarString, '|');
-            avatar.LoadAvatarDefinition(adf);
-            avatar.BuildCharacter(false); // don't restore old DNA...
+            m_avatar.LoadAvatarDefinition(adf);
+            m_avatar.BuildCharacter(false); // don't restore old DNA...
         }
         else
         {
