@@ -61,7 +61,7 @@ public class PlayerDisplayer : MonoBehaviour
             instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
             Debug.LogWarning("Displaying Dealer");
         }
-        else if (playerIndex == 1 || playerIndex == 0)
+        else if (playerIndex == 1)
         {
             instantiatedPlayer.transform.localPosition = new Vector3(0, 0, 0);
             instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
