@@ -63,6 +63,7 @@ public class GameServerManager : NetworkBehaviour
         _instance._playerHands.Clear();
         _instance._playerIsMyTurn.Clear();
         _instance._playersIndexes.Clear();
+
         UpdateBroadcast msg = new()
         {
             Leave = true

@@ -11,6 +11,7 @@ using static GameServerManager;
 
 public class CardsDisplayer : NetworkBehaviour
 {
+    [SerializeField] private GameObject AllComponentsParent;
     [SerializeField] private GameObject ClientComponentsParent;
     [SerializeField] private TMP_Text winText;
     [SerializeField] public Button newRoundButton;
@@ -47,6 +48,8 @@ public class CardsDisplayer : NetworkBehaviour
     private void GameServerManager_OnInitialized()
     {
         int playerIndex = GetPlayerIndex(base.Owner);
+
+        AllComponentsParent.gameObject.SetActive(true);
         if (playerIndex == 0)
         {
             waitForNextRound = true;
@@ -174,6 +177,7 @@ public class CardsDisplayer : NetworkBehaviour
             UpdateCardsDisplay();
         if (msg.Leave)
         {
+            AllComponentsParent.SetActive(false);
             ClientComponentsParent.SetActive(false);
             newRoundButton.gameObject.SetActive(false);
             winText.text = "";

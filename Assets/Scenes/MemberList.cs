@@ -14,7 +14,9 @@ using TMPro;
 public class MemberList : NetworkBehaviour
 {
     [SerializeField] private TMP_Text displayText;
-    
+    [SerializeField] private Button blackJackButton;
+    [SerializeField] private Button pokerButton;
+
     [SyncObject]
     private readonly SyncDictionary<NetworkConnection, string> _playerNames = new();
 
@@ -89,7 +91,6 @@ public class MemberList : NetworkBehaviour
     {
         _playerNames[sender] = name;
         UpdateLobbyList();
-        Debug.Log(name + " is set");
     }
 
     public override void OnStartClient()
@@ -108,12 +109,22 @@ public class MemberList : NetworkBehaviour
 
     private void EnableStartButtons()
     {
-        GameObject backgroundPanel = GameObject.Find("Canvas/BackgroundPanel");
-        Button[] buttons = backgroundPanel.GetComponentsInChildren<Button>(true);
-
-        foreach (Button button in buttons)
+        pokerButton.gameObject.SetActive(true);
+        blackJackButton.gameObject.SetActive(true);
+        if (NetworkManager.ServerManager.Clients.Count < 2)
         {
-            button.gameObject.SetActive(true);
+            pokerButton.interactable = false;
+            blackJackButton.interactable = false;
+        }
+        else if(NetworkManager.ServerManager.Clients.Count < 3)
+        {
+           blackJackButton.interactable = true;
+            pokerButton.interactable = false;
+        }
+        else
+        {
+            blackJackButton.interactable = true;
+            pokerButton.interactable = true;
         }
     }
 
@@ -194,6 +205,7 @@ public class MemberList : NetworkBehaviour
             _playerNames.Remove(arg1);
             UpdateLobbyList();
         }
+        EnableStartButtons();
     }
 
     void LoadScene(string sceneName)

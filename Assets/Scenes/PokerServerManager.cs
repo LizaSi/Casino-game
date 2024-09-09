@@ -183,7 +183,7 @@ public class PokerServerManager : NetworkBehaviour
     {
         _playerBets[conn] = giveAmount;
         Pot += giveAmount;
-    //    await UpdateCoins(conn, giveAmount);
+        await UpdateCoins(conn, giveAmount);
     }
 
     private int getNextIndexTurn(int playersLength, int blindIndex)
