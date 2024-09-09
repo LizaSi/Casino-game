@@ -8,12 +8,23 @@ public class PlayerDisplayer : MonoBehaviour
     //public static void SetCameraBlackJack(int playerIndex)
     public static void SetCameraBlackJack(int playerIndex, string avatarCompressedString)
     {
-        GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
+        GameObject instantiatedPlayer;
+        if(playerIndex == 0)
+        {
+            instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/HostDealerPrefab"));
+            instantiatedPlayer.gameObject.SetActive(true);
+        }
+        else
+        {
+            instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
+        }
+        //GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
         //////////////////////////
         DynamicCharacterAvatar avatar = instantiatedPlayer.GetComponentInChildren<DynamicCharacterAvatar>();
 
+        //if (InstanceFinder.IsServer)
 
-        if (InstanceFinder.IsServer)
+        if (InstanceFinder.IsServer && playerIndex != 0)
         {
             Transform playerViewCameraTransform = instantiatedPlayer.transform.Find("PlayerViewCamera");
             playerViewCameraTransform.gameObject.SetActive(false);
@@ -31,7 +42,26 @@ public class PlayerDisplayer : MonoBehaviour
         //////////////////////////
         instantiatedPlayer.transform.localScale = new Vector3(1f, 1f, 1f);
         instantiatedPlayer.transform.rotation = Quaternion.identity;
-        if (playerIndex == 1)
+        /*
+        if(playerIndex == 0)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3((-4.719999)f, 0, (31.57)f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, -283.669f, 0f);
+        }
+        else if (playerIndex == 1)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(0, 0, 0);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
+            Debug.LogWarning("Displaying 1st player's camera");
+        }
+        */
+        if(playerIndex == 0)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(0, 0, 34.16f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+            Debug.LogWarning("Displaying Dealer");
+        }
+        else if (playerIndex == 1 || playerIndex == 0)
         {
             instantiatedPlayer.transform.localPosition = new Vector3(0, 0, 0);
             instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
