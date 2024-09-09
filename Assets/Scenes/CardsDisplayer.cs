@@ -49,6 +49,10 @@ public class CardsDisplayer : NetworkBehaviour
     private void GameServerManager_OnInitialized()
     {
         int playerIndex = GetPlayerIndex(base.Owner);
+        if (InstanceFinder.IsServer)
+        {
+            GameServerManager.SetAvatarString(LoggedUser.AvatarCompressedString);
+        }
 
         AllComponentsParent.gameObject.SetActive(true);
         if (playerIndex == 0)
@@ -506,28 +510,16 @@ public class CardsDisplayer : NetworkBehaviour
         //////////////////////////
         DynamicCharacterAvatar avatar = instantiatedPlayer.GetComponentInChildren<DynamicCharacterAvatar>();
 
-        //if (InstanceFinder.IsServer)
-        if (InstanceFinder.IsServer && playerIndex != 0)
+        if (InstanceFinder.IsServer)
         {
-            /*
             if(playerIndex != 0)
             {
                 Transform playerViewCameraTransform = instantiatedPlayer.transform.Find("PlayerViewCamera");
                 playerViewCameraTransform.gameObject.SetActive(false);
             }
-            */
-            Transform playerViewCameraTransform = instantiatedPlayer.transform.Find("PlayerViewCamera");
-            playerViewCameraTransform.gameObject.SetActive(false);
+            
 
             if (!base.Owner.IsLocalClient && avatar != null)
-            {
-                StartCoroutine(ModifyAvatarInDelay(avatar));
-            }
-        }
-        else if (InstanceFinder.IsServer && playerIndex == 0)
-        {
-            GameServerManager.SetAvatarString(avatarCompressedString);
-            if (avatar != null)
             {
                 StartCoroutine(ModifyAvatarInDelay(avatar));
             }
