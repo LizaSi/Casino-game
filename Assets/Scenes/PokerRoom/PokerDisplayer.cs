@@ -27,6 +27,8 @@ public class PokerDisplayer : NetworkBehaviour
     private readonly List<GameObject> spawnedCards = new();
     private readonly List<string> spawnedCardNames = new();
     private readonly List<Card> cardsOnTable = new();
+    private DynamicCharacterAvatar m_avatar;
+
 
     private void Start()
     {
@@ -45,13 +47,7 @@ public class PokerDisplayer : NetworkBehaviour
 
     private void setPlayerCamera()
     {
-        if (base.Owner.IsLocalClient && !InstanceFinder.IsServer)
-        {
-            int playerIndex = GetPlayerIndex(base.Owner);
-            Debug.LogWarning($"client index is {playerIndex}");
-            SetCameraAndAvatar(GetPlayerIndex(base.Owner), GetAvatarString(base.Owner));
-           // PlayerDisplayer.SetCameraPoker(playerIndex, LoggedUser.AvatarCompressedString); // -1 cuz index 1 is the host    }
-        }
+        SetCameraAndAvatar(GetPlayerIndex(base.Owner), LoggedUser.AvatarCompressedString);
     }
 
     public void InitGame()
@@ -66,6 +62,7 @@ public class PokerDisplayer : NetworkBehaviour
         InstanceFinder.ClientManager.RegisterBroadcast<TurnPassBroadcast>(OnTurnPassBroadcast);
         InstanceFinder.ClientManager.RegisterBroadcast<UpdateBroadcast>(OnUpdateFromServer);
         NewRoundInit();
+        setPlayerCamera();
     }
 
     private void NewRoundInit()
@@ -81,16 +78,6 @@ public class PokerDisplayer : NetworkBehaviour
         if (!InstanceFinder.IsServer)
         {
             StartCoroutine(JoinWithNameInDelay());
-            if (base.Owner.IsLocalClient)
-            {
-                //////// GameLogic File
-                /*
-                int playerIndex = GetPlayerIndex(base.Owner);
-                PlayerDisplayer.SetCameraPoker(playerIndex);
-                */
-                setPlayerCamera();
-                //betCoinsText.text = "Gave " + givenAmount.ToString();
-            }
         }
     }
 
@@ -135,6 +122,12 @@ public class PokerDisplayer : NetworkBehaviour
         if (msg.Leave)
         {
             LeaveGame();
+        }
+        if(msg.AvatarSet && msg.AvatarConn == base.Owner)
+        {
+       //     if (InstanceFinder.IsServer && base.Owner.IsLocalClient)
+            //    return;
+            ModifyAvatarInDelay();
         }
     }
 
@@ -392,29 +385,34 @@ public class PokerDisplayer : NetworkBehaviour
         {
             return;
         }
-        GameObject instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
+        GameObject instantiatedPlayer;
+        if (playerIndex == -1)
+        {
+            instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/HostDealerPrefab"));
+        }
+        else
+        {
+            instantiatedPlayer = Instantiate(Resources.Load<GameObject>("Players/PlayerWithCamera"));
+        }
         DynamicCharacterAvatar avatar = instantiatedPlayer.GetComponentInChildren<DynamicCharacterAvatar>();
-
+        m_avatar = avatar;
         if (InstanceFinder.IsServer)
         {
-            Transform playerViewCameraTransform = instantiatedPlayer.transform.Find("PlayerViewCamera");
-            playerViewCameraTransform.gameObject.SetActive(false);
-
-
-            if (!base.Owner.IsLocalClient)
-            {
-                StartCoroutine(ModifyAvatarInDelay(avatar));
+            if (base.Owner.IsLocalClient)
+            {                
+                ModifyAvatarAsHost(avatar, avatarCompressedString);
             }
             else
             {
-                ModifyAvatarAsHost(avatar, avatarCompressedString);
+              //Transform playerViewCameraTransform = instantiatedPlayer.transform.Find("PlayerViewCamera");
+              //  playerViewCameraTransform.gameObject.SetActive(false);
             }
         }
         else
         {
-            PokerServerManager.SetAvatarString(avatarCompressedString);
-            //StartCoroutine(ModifyAvatarInDelay(avatar));
+            SetAvatarString(avatarCompressedString);
         }
+        
         instantiatedPlayer.transform.localScale = new Vector3(1f, 1f, 1f);
         instantiatedPlayer.transform.rotation = Quaternion.identity;
         if (playerIndex == 0)
@@ -452,16 +450,16 @@ public class PokerDisplayer : NetworkBehaviour
         }
     }
 
-    private IEnumerator ModifyAvatarInDelay(DynamicCharacterAvatar avatar)
+    private void ModifyAvatarInDelay()
     {
-        yield return new WaitForSeconds(2f);
+      //  yield return new WaitForSeconds(2f);
         string clientAvatarString = GetAvatarString(base.Owner);
 
         if (!string.IsNullOrEmpty(clientAvatarString))
         {
             AvatarDefinition adf = AvatarDefinition.FromCompressedString(clientAvatarString, '|');
-            avatar.LoadAvatarDefinition(adf);
-            avatar.BuildCharacter(false); // don't restore old DNA...
+            m_avatar.LoadAvatarDefinition(adf);
+            m_avatar.BuildCharacter(false); // don't restore old DNA...
         }
         else
         {

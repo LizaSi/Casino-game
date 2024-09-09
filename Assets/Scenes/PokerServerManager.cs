@@ -69,8 +69,21 @@ public class PokerServerManager : NetworkBehaviour
         }
 
         Instance._playerIsMyTurn.OnChange += playerTurn_OnChange;
+        Instance.AvatarsSyncDict.OnChange += AvatarsSyncDict_OnChange; 
         newRoundInit();
         OnInitialized?.Invoke();
+    }
+
+    private void AvatarsSyncDict_OnChange(SyncDictionaryOperation op, NetworkConnection key, string value, bool asServer)
+    {
+        UpdateBroadcast msg = new()
+        {
+            NewRound = false,
+            UpdateCards = false,
+            AvatarSet = true,
+            AvatarConn = key
+        };
+        InstanceFinder.ServerManager.Broadcast(msg);
     }
 
     public static void LeaveGame()
@@ -525,6 +538,8 @@ public class PokerServerManager : NetworkBehaviour
         public bool IsWinMessage;
         public string WinnerName;
         public bool Leave;
+        public bool AvatarSet;
+        public NetworkConnection AvatarConn;
     }
 
     public struct TurnPassBroadcast : IBroadcast

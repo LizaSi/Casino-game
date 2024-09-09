@@ -187,6 +187,7 @@ public class CardsDisplayer : NetworkBehaviour
         }
         if (msg.AvatarSet && msg.AvatarConn == base.Owner)
         {
+           // if( (!InstanceFinder.IsServer && !base.Owner.IsLocalClient))
             ModifyAvatarInDelay();
         }
     }
