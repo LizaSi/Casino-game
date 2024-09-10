@@ -398,6 +398,12 @@ public class PokerDisplayer : NetworkBehaviour
         m_avatar = avatar;
         if (InstanceFinder.IsServer)
         {
+            if (playerIndex != -1)
+            {
+                Transform playerViewCameraTransform = instantiatedPlayer.transform.Find("PlayerViewCamera");
+                playerViewCameraTransform.gameObject.SetActive(false);
+            }
+
             if (base.Owner.IsLocalClient)
             {                
                 ModifyAvatarAsHost(avatar, avatarCompressedString);
@@ -415,7 +421,13 @@ public class PokerDisplayer : NetworkBehaviour
         
         instantiatedPlayer.transform.localScale = new Vector3(1f, 1f, 1f);
         instantiatedPlayer.transform.rotation = Quaternion.identity;
-        if (playerIndex == 0)
+        if (playerIndex == -1)
+        {
+            instantiatedPlayer.transform.localPosition = new Vector3(0, 0, 34.16f);
+            instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, 90f, 0f);
+            Debug.LogWarning("Displaying Dealer");
+        }
+        else if (playerIndex == 0)
         {
             instantiatedPlayer.transform.localPosition = new Vector3(-1.11f, 0f, -0.09f);
             instantiatedPlayer.transform.rotation = Quaternion.Euler(0f, 0f, 0f);
